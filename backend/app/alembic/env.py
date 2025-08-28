@@ -4,6 +4,14 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+import sys
+from pathlib import Path
+
+# backend/app/alembic/env.py
+BACKEND_DIR = Path(__file__).resolve().parents[2]  # go up from .../app/alembic -> .../backend
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -18,7 +26,8 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
-from app.models import SQLModel  # noqa
+from app.models import SQLModel, User, Chat, ChatJoin, ChatMessage, Request, RequestJoin, Tag, TagJoin
+ # noqa
 from app.core.config import settings # noqa
 
 target_metadata = SQLModel.metadata
@@ -30,7 +39,9 @@ target_metadata = SQLModel.metadata
 
 
 def get_url():
-    return str(settings.SQLALCHEMY_DATABASE_URI)
+    url = str(settings.SQLALCHEMY_DATABASE_URI)
+    print("debug_url: " + url)
+    return url
 
 
 def run_migrations_offline():
