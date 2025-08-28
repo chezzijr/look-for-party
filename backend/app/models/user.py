@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column, DateTime
+from datetime import datetime
 
 if TYPE_CHECKING:
-    from .item import Item
     from .request import Request, RequestUser
     from .chat import ChatMessage, ChatUser
 
@@ -56,7 +57,6 @@ class User(UserBase, table=True):
     request_memberships: list["RequestUser"] = Relationship(back_populates="user") # Join table for requests and users
     owned_requests: list["Request"] = Relationship(back_populates="owner") 
     sent_messages: list["ChatMessage"] = Relationship(back_populates="sender") 
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
