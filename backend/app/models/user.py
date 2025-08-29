@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
-from sqlalchemy import Column, DateTime
-from datetime import datetime
+
+
 
 if TYPE_CHECKING:
     from .request import Request, RequestUser
