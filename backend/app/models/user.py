@@ -3,33 +3,11 @@ from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
-from sqlalchemy import Column, DateTime, func
-from datetime import datetime
-from enum import Enum
 
-# ---------- Enums (tweak as you like) ----------
-class ChatRole(str, Enum):
-    owner = "owner"
-    admin = "admin"
-    member = "member"
-
-
-class RequestRole(str, Enum):
-    owner = "owner"
-    collaborator = "collaborator"
-    viewer = "viewer"
-
-
-class MessageStatus(str, Enum):
-    visible = "visible"
-    edited = "edited"
-    deleted = "deleted"
-
-
-# ---------- Users ----------
 if TYPE_CHECKING:
     from .item import Item
-
+    from .request import Request, RequestUser
+    from .chat import ChatMessage, ChatUser
 
 # Shared properties
 class UserBase(SQLModel):
@@ -74,7 +52,6 @@ class User(UserBase, table=True):
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-
     chat_memberships: list["ChatUser"] = Relationship(back_populates="user", cascade_delete=True) 
     request_memberships: list["RequestUser"] = Relationship(back_populates="user") # Join table for requests and users
     owned_requests: list["Request"] = Relationship(back_populates="owner") 
@@ -90,60 +67,3 @@ class UserPublic(UserBase):
 class UsersPublic(SQLModel):
     data: list[UserPublic]
     count: int
-
-
-# Shared properties
-class ItemBase(SQLModel):
-    title: str = Field(min_length=1, max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-
-
-# Properties to receive on item creation
-class ItemCreate(ItemBase):
-    pass
-
-
-# Properties to receive on item update
-class ItemUpdate(ItemBase):
-    title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
-
-
-# Database model, database table inferred from class name
-class Item(ItemBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="items")
-
-
-# Properties to return via API, id is always required
-class ItemPublic(ItemBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
-    count: int
-
-
-# Generic message
-class Message(SQLModel):
-    message: str
-
-
-# JSON payload containing access token
-class Token(SQLModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-# Contents of JWT token
-class TokenPayload(SQLModel):
-    sub: str | None = None
-
-
-class NewPassword(SQLModel):
-    token: str
-    new_password: str = Field(min_length=8, max_length=40)
