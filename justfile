@@ -11,11 +11,23 @@ install-backend:
 init: install-frontend install-backend
 
 # Start development container
-up:
+up *args:
     @echo "Starting up containers..."
-    @docker compose -f {{DEV_COMPOSE_FILE}} up -d --remove-orphans
+    @docker compose -f {{DEV_COMPOSE_FILE}} up -d --remove-orphans {{args}}
 
 # Stop development container
-down:
+down *args:
     @echo "Stopping containers..."
-    @docker compose -f {{DEV_COMPOSE_FILE}} down
+    @docker compose -f {{DEV_COMPOSE_FILE}} down {{args}}
+
+logs service:
+    @docker compose -f {{DEV_COMPOSE_FILE}} logs {{service}}
+
+generate_migration message:
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec backend alembic revision --autogenerate -m "{{message}}"
+
+migrate_up:
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec backend alembic upgrade head
+
+migrate_down:
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec backend alembic downgrade -1
