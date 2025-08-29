@@ -9,6 +9,11 @@ if TYPE_CHECKING:
     from .request import Request, RequestUser
     from .chat import ChatMessage, ChatUser
 
+if TYPE_CHECKING:
+    from .item import Item
+    from .request import Request, RequestUser
+    from .chat import ChatMessage, ChatUser
+
 # Shared properties
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
