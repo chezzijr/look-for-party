@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta, timezone
+
 import jwt
 from jwt.exceptions import InvalidTokenError
-from datetime import datetime, timedelta, timezone
+
 from app.core import security
 from app.core.config import settings
 

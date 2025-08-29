@@ -1,12 +1,8 @@
-from sqlmodel import Field, Relationship, SQLModel
-from datetime import datetime, timezone
-from sqlalchemy import event
-from sqlalchemy.dialects.postgresql import JSON
+import uuid
+from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
-import uuid
-
-from typing import TYPE_CHECKING, Optional
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .item import Item

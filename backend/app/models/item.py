@@ -1,7 +1,7 @@
+import uuid
 from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
-import uuid
 
 if TYPE_CHECKING:
     from .user import User
