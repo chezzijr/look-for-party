@@ -5,7 +5,6 @@ from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
 
-
 if TYPE_CHECKING:
     from .request import Request, RequestUser
     from .chat import ChatMessage, ChatUser
