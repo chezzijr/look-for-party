@@ -17,7 +17,7 @@ services:
       start_period: 30s
       timeout: 10s
     volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
+      - app-db-data-dev:/var/lib/postgresql/data/pgdata
     env_file:
       - .env
     environment:
@@ -114,31 +114,6 @@ services:
         npm run dev -- --host 0.0.0.0 --port 5173
       "
 
-  playwright:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.playwright
-      args:
-        - VITE_API_URL=http://backend:8000
-        - NODE_ENV=production
-    ipc: host
-    depends_on:
-      - backend
-      - mailcatcher
-    env_file:
-      - .env
-    environment:
-      - VITE_API_URL=http://backend:8000
-      - MAILCATCHER_HOST=http://mailcatcher:1080
-      # For the reports when run locally
-      - PLAYWRIGHT_HTML_HOST=0.0.0.0
-      - CI=${CI}
-    volumes:
-      - ./frontend/blob-report:/app/blob-report
-      - ./frontend/test-results:/app/test-results
-    ports:
-      - 9323:9323
-
   prestart:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     build:
@@ -147,6 +122,8 @@ services:
       db:
         condition: service_healthy
         restart: true
+    volumes:
+      - ./backend/app/alembic/versions:/app/app/alembic/versions
     command: bash scripts/prestart.sh
     env_file:
       - .env
@@ -170,4 +147,4 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
 
 volumes:
-  app-db-data:
+  app-db-data-dev:
