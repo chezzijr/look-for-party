@@ -20,6 +20,7 @@
 
 ### Internal
 
+* chore: log when fail deploy. PR [#26](https://github.com/chezzijr/look-for-party/pull/26) by [@chezzijr](https://github.com/chezzijr).
 * fix: creation of .env file. PR [#25](https://github.com/chezzijr/look-for-party/pull/25) by [@chezzijr](https://github.com/chezzijr).
 *  Update staging deployment workflow to trigger on main branch. PR [#24](https://github.com/chezzijr/look-for-party/pull/24) by [@chezzijr](https://github.com/chezzijr).
 * Chore/setup dev env. PR [#22](https://github.com/chezzijr/look-for-party/pull/22) by [@chezzijr](https://github.com/chezzijr).
