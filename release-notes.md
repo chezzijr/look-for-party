@@ -20,6 +20,7 @@
 
 ### Internal
 
+*  Update staging deployment workflow to trigger on main branch. PR [#24](https://github.com/chezzijr/look-for-party/pull/24) by [@chezzijr](https://github.com/chezzijr).
 * Chore/setup dev env. PR [#22](https://github.com/chezzijr/look-for-party/pull/22) by [@chezzijr](https://github.com/chezzijr).
 * ⬆ Bump actions/checkout from 4 to 5. PR [#1768](https://github.com/fastapi/full-stack-fastapi-template/pull/1768) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump actions/download-artifact from 4 to 5. PR [#1754](https://github.com/fastapi/full-stack-fastapi-template/pull/1754) by [@dependabot[bot]](https://github.com/apps/dependabot).
