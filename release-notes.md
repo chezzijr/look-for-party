@@ -2,6 +2,8 @@
 
 ## Latest Changes
 
+* ⬆ Bump traefik from 3.0 to 3.5. PR [#2](https://github.com/chezzijr/look-for-party/pull/2) by [@dependabot[bot]](https://github.com/apps/dependabot).
+
 ### Fixes
 
 * 🐛 Close sidebar drawer on user selection. PR [#1515](https://github.com/fastapi/full-stack-fastapi-template/pull/1515) by [@dtellz](https://github.com/dtellz).
