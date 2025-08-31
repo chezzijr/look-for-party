@@ -38,4 +38,4 @@ class TagRequest(SQLModel, table=True):
     request_id: uuid.UUID = Field(foreign_key="requests.id", index=True)
 
     tag: Tag = Relationship(back_populates="requests")
-    request: Request = Relationship(back_populates="tags")
+    request: "Request" = Relationship(back_populates="tags")

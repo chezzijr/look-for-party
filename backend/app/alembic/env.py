@@ -26,8 +26,7 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
-from app.models import SQLModel, User, Chat, ChatJoin, ChatMessage, Request, RequestJoin, Tag, TagJoin
- # noqa
+from app.models import *
 from app.core.config import settings # noqa
 
 target_metadata = SQLModel.metadata
@@ -40,7 +39,6 @@ target_metadata = SQLModel.metadata
 
 def get_url():
     url = str(settings.SQLALCHEMY_DATABASE_URI)
-    print("debug_url: " + url)
     return url
 
 

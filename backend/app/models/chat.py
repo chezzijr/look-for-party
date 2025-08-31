@@ -1,25 +1,12 @@
 import uuid
 
 from typing import TYPE_CHECKING
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import CheckConstraint, Field, Relationship, SQLModel, String
 from sqlalchemy import Column, DateTime, func
 from datetime import datetime
-from enum import Enum
 
 if TYPE_CHECKING:
     from .user import User
-
-
-class ChatRole(str, Enum):
-    owner = "owner"
-    admin = "admin"
-    member = "member"
-
-class MessageStatus(str, Enum):
-    visible = "visible"
-    edited = "edited"
-    deleted = "deleted"
-
 
 
 class ChatBase(SQLModel):
@@ -53,26 +40,45 @@ class ChatUser(SQLModel, table=True):
     Association object: user<->chat with extra columns.
     """
     __tablename__ = "chats_users"
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('owner', 'admin', 'member')",
+            name="check_chat_role"
+        ),
+    )
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
 
     user_id: uuid.UUID = Field(foreign_key="users.id", index=True)
     chat_id: uuid.UUID = Field(foreign_key="chats.id", index=True)
 
-    role: ChatRole = Field(default=ChatRole.member)
     joined_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
+
+    role: str = Field(
+        sa_column=Column(String(20), nullable=False, server_default="member")
+    )
+
     last_read_time: datetime | None = None
     notification_setting: str | None = Field(default=None, max_length=255)
 
-    user: User = Relationship(back_populates="chat_memberships")
+    user: "User" = Relationship(back_populates="chat_memberships")
     chat: Chat = Relationship(back_populates="members")
 
 
 class ChatMessageBase(SQLModel):
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('sent', 'edited', 'deleted')",
+            name="check_status"
+        ),
+    )
+
     text: str
-    status: MessageStatus = Field(default=MessageStatus.visible)
+    status: str = Field(
+        sa_column=Column(String(20), nullable=False, server_default="sent")
+    )
 
 
 class ChatMessage(ChatMessageBase, table=True):
@@ -84,11 +90,12 @@ class ChatMessage(ChatMessageBase, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
 
+
     chat_id: uuid.UUID = Field(foreign_key="chats.id", index=True)
     sender_id: uuid.UUID = Field(foreign_key="users.id", index=True)
 
     chat: Chat = Relationship(back_populates="messages")
-    sender: User = Relationship(back_populates="sent_messages")
+    sender: "User" = Relationship(back_populates="sent_messages")
 
 
 class ChatMessagePublic(ChatMessageBase):
@@ -97,6 +104,6 @@ class ChatMessagePublic(ChatMessageBase):
     chat_id: uuid.UUID
     sender_id: uuid.UUID
 
-class ChatsMessagePublic(ChatMessageBase):
+class ChatMessagesPublic(ChatMessageBase):
     data: list[ChatMessagePublic]
     count: int

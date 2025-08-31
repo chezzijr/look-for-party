@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .item import Item
     from .request import Request, RequestUser
     from .chat import ChatMessage, ChatUser
-    
+
 
 # Shared properties
 class UserBase(SQLModel):
@@ -16,7 +16,7 @@ class UserBase(SQLModel):
     is_active: bool = True
     is_superuser: bool = False
     username: str | None = Field(default=None, max_length=255)
-    
+    description: str | None = Field(default=None, max_length=255)
 
 
 # Properties to receive via API on creation
@@ -57,7 +57,6 @@ class User(UserBase, table=True):
     request_memberships: list["RequestUser"] = Relationship(back_populates="user") # Join table for requests and users
     owned_requests: list["Request"] = Relationship(back_populates="owner") 
     sent_messages: list["ChatMessage"] = Relationship(back_populates="sender") 
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
