@@ -22,6 +22,7 @@
 
 ### Internal
 
+* fix: use separate docker compose file for staging deploy. PR [#28](https://github.com/chezzijr/look-for-party/pull/28) by [@chezzijr](https://github.com/chezzijr).
 * fix: include necessary env so it wont intefere with container env. PR [#27](https://github.com/chezzijr/look-for-party/pull/27) by [@chezzijr](https://github.com/chezzijr).
 * chore: log when fail deploy. PR [#26](https://github.com/chezzijr/look-for-party/pull/26) by [@chezzijr](https://github.com/chezzijr).
 * fix: creation of .env file. PR [#25](https://github.com/chezzijr/look-for-party/pull/25) by [@chezzijr](https://github.com/chezzijr).
