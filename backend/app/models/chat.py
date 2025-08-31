@@ -16,7 +16,7 @@ class ChatBase(SQLModel):
 class Chat(ChatBase, table=True):
     __tablename__ = "chats"
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
