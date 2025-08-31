@@ -1,21 +1,14 @@
 import uuid
 
 from typing import TYPE_CHECKING
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import CheckConstraint, Field, Relationship, SQLModel, String
 from sqlalchemy import Column, DateTime, func
 from datetime import datetime
 from enum import Enum
 
 if TYPE_CHECKING:
-    from .request import Request, RequestUser
     from .user import User
     from .tag import Tag, TagRequest
-
-
-class RequestRole(str, Enum):
-    owner = "owner"
-    collaborator = "admin"
-    viewer = "member"
 
 
 class RequestBase(SQLModel):
@@ -44,7 +37,7 @@ class Request(RequestBase, table=True):
     )
 
     owner_id: uuid.UUID = Field(foreign_key="users.id", index=True)
-    owner: User = Relationship(back_populates="owned_requests")
+    owner: "User" = Relationship(back_populates="owned_requests")
 
     members: list["RequestUser"] = Relationship(back_populates="request")
     tags: list["TagRequest"] = Relationship(back_populates="request")
@@ -71,23 +64,25 @@ class RequestUser(SQLModel, table=True):
     Association object: user<->request with extra columns.
     """
     __tablename__ = "requests_users"
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('owner', 'admin', 'member')",
+            name="check_request_role"
+        ),
+    )
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
 
     user_id: uuid.UUID = Field(foreign_key="users.id", index=True)
     request_id: uuid.UUID = Field(foreign_key="requests.id", index=True)
 
-    role: RequestRole = Field(default=RequestRole.member)
+    role: str = Field(
+        sa_column=Column(String(20), nullable=False, server_default="member")
+    )
     joined_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
 
 
-    user: User = Relationship(back_populates="request_memberships")
+    user: "User" = Relationship(back_populates="request_memberships")
     request: Request = Relationship(back_populates="members")
-
-class RequestUserCreate(RequestUser):
-    pass
-
-class RequestUserUpdate(RequestUser):
-    pass
