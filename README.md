@@ -30,71 +30,71 @@ LFP addresses the gap in existing social platforms where group discovery require
 ## Platform Features
 
 ### Quest Creation & Management
-*   **Quest Posting:** Define objective, party size (min/max), required skills, duration, location
-*   **Quest Merging:** Auto-merge similar quests to avoid duplication and increase matching
-*   **Visibility Controls:** Open (public applications) or Closed (invitation-only)
+- **Quest Posting:** Define objective, party size (min/max), required skills, duration, location
+- **Quest Merging:** Auto-merge similar quests to avoid duplication and increase matching
+- **Visibility Controls:** Open (public applications) or Closed (invitation-only)
 
 ### Smart Discovery
-*   **Natural Language Search:** "Looking for weekend coding project" matches relevant quests
-*   **Multi-Criteria Matching:** Bio, skills, location, availability, group size preferences
-*   **Intelligent Filtering:** Tags, location radius, time commitment, difficulty level
+- **Natural Language Search:** "Looking for weekend coding project" matches relevant quests
+- **Multi-Criteria Matching:** Bio, skills, location, availability, group size preferences
+- **Intelligent Filtering:** Tags, location radius, time commitment, difficulty level
 
 ### Application System
-*   **Application Messages:** Personalized "cover letter" explaining interest and qualifications
-*   **Quest Master Review:** Approve/deny applications with feedback
-*   **Application History:** Transparent record of all applications and decisions
+- **Application Messages:** Personalized "cover letter" explaining interest and qualifications
+- **Quest Master Review:** Approve/deny applications with feedback
+- **Application History:** Transparent record of all applications and decisions
 
 ### Quest Lifecycle
-*   **Status Tracking:** Active → In Progress → Completed → Archived
-*   **Analytics:** Success rates, popular activities, matching effectiveness
-*   **Archive System:** Maintain history without cluttering active quest board
+- **Status Tracking:** Active → In Progress → Completed → Archived
+- **Analytics:** Success rates, popular activities, matching effectiveness
+- **Archive System:** Maintain history without cluttering active quest board
 
 ### Reputation System
-*   **Post-Quest Rating:** Party members rate each other on reliability, skills, teamwork
-*   **Credit Score:** Algorithmic score based on ratings, completion rate, participation history
-*   **Impact:** Higher scores get better visibility, auto-approval, priority matching
-*   **Recovery Path:** Reputation can be rebuilt through consistent positive participation
+- **Post-Quest Rating:** Party members rate each other on reliability, skills, teamwork
+- **Credit Score:** Algorithmic score based on ratings, completion rate, participation history
+- **Impact:** Higher scores get better visibility, auto-approval, priority matching
+- **Recovery Path:** Reputation can be rebuilt through consistent positive participation
 
 ### Quest Board Interface
-*   **Visual Quest Log:** MMO-inspired interface displaying available parties as quest cards
-*   **Color-Coded Categories:** 
-    *   **Urgent** (red) - Needs immediate filling or starting soon
-    *   **Active** (green) - Regular recruiting, good availability
-    *   **Long-term** (blue) - Future planning, flexible timeline
-*   **Quick Filters:** "Available Now", "This Week", "Long-term", "Remote", "In-Person"
-*   **Quest Difficulty Indicators:** Time commitment, skill level required, group dynamics complexity
-*   **Live Status Updates:** Real-time updates on party formation progress and available slots
+- **Visual Quest Log:** MMO-inspired interface displaying available parties as quest cards
+- **Color-Coded Categories:** 
+  - **Urgent** (red) - Needs immediate filling or starting soon
+  - **Active** (green) - Regular recruiting, good availability
+  - **Long-term** (blue) - Future planning, flexible timeline
+- **Quick Filters:** "Available Now", "This Week", "Long-term", "Remote", "In-Person"
+- **Quest Difficulty Indicators:** Time commitment, skill level required, group dynamics complexity
+- **Live Status Updates:** Real-time updates on party formation progress and available slots
 
 ### Discovery Modes
-*   **"I'm Available Now":** Immediate matching for users ready to join activities within hours
-*   **"Browse Opportunities":** Traditional search and filter through available parties
-*   **"Recruit for My Quest":** Reverse matching where the system actively finds suitable people for your party
-*   **"Serendipity Mode":** Algorithm suggests unexpected but compatible opportunities based on expanded interest matching
+- **"I'm Available Now":** Immediate matching for users ready to join activities within hours
+- **"Browse Opportunities":** Traditional search and filter through available parties
+- **"Recruit for My Quest":** Reverse matching where the system actively finds suitable people for your party
+- **"Serendipity Mode":** Algorithm suggests unexpected but compatible opportunities based on expanded interest matching
 
 ### Smart Matching Algorithms
-*   **Skill Complementarity:** Matches based on what the party needs rather than just similarity
-*   **Temporal Alignment:** Time zone coordination for online activities, schedule matching for in-person events
-*   **Commitment Level Matching:** Pairs casual participants with casual groups, serious with serious
-*   **Geographic Proximity:** Location-aware matching for in-person activities with travel distance preferences
-*   **Communication Style Compatibility:** Matches based on preferred interaction styles (voice, text, structured vs casual)
+- **Skill Complementarity:** Matches based on what the party needs rather than just similarity
+- **Temporal Alignment:** Time zone coordination for online activities, schedule matching for in-person events
+- **Commitment Level Matching:** Pairs casual participants with casual groups, serious with serious
+- **Geographic Proximity:** Location-aware matching for in-person activities with travel distance preferences
+- **Communication Style Compatibility:** Matches based on preferred interaction styles (voice, text, structured vs casual)
 
 ### Communication & Coordination
-*   **Party Chat:** Purpose-built communication for quest planning and execution
-*   **Coordination Tools:** Scheduling polls, shared checklists, file sharing, role assignments
-*   **Structured Channels:** Planning discussions separate from general chat
-*   **Smart Onboarding:** Guided intro flow for new party members
+- **Party Chat:** Purpose-built communication for quest planning and execution
+- **Coordination Tools:** Scheduling polls, shared checklists, file sharing, role assignments
+- **Structured Channels:** Planning discussions separate from general chat
+- **Smart Onboarding:** Guided intro flow for new party members
 
 ### Gamification
-*   **Achievements:** Quest completions, "Reliable Teammate" badges, "Quest Master" ratings, domain expertise
-*   **Progress Tracking:** Completion rates, satisfaction scores, repeat collaborations
-*   **Unlockables:** Advanced features, priority matching, special recognition via participation history
+- **Achievements:** Quest completions, "Reliable Teammate" badges, "Quest Master" ratings, domain expertise
+- **Progress Tracking:** Completion rates, satisfaction scores, repeat collaborations
+- **Unlockables:** Advanced features, priority matching, special recognition via participation history
 
 ### User Profiles
-*   **Skills & Interests:** Comprehensive tagging for precise matching
-*   **Availability:** Calendar integration for scheduling coordination
-*   **Portfolio:** Showcase experience, past projects, achievements
-*   **Preferences:** Group size, activity types, commitment levels, leadership style
-*   **Quest History:** Public record of completed quests and ratings received
+- **Skills & Interests:** Comprehensive tagging for precise matching
+- **Availability:** Calendar integration for scheduling coordination
+- **Portfolio:** Showcase experience, past projects, achievements
+- **Preferences:** Group size, activity types, commitment levels, leadership style
+- **Quest History:** Public record of completed quests and ratings received
 
 ---
 
