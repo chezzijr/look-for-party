@@ -2,6 +2,8 @@
 
 ## Latest Changes
 
+* ⬆ Bump traefik from 3.0 to 3.5. PR [#2](https://github.com/chezzijr/look-for-party/pull/2) by [@dependabot[bot]](https://github.com/apps/dependabot).
+
 ### Fixes
 
 * 🐛 Close sidebar drawer on user selection. PR [#1515](https://github.com/fastapi/full-stack-fastapi-template/pull/1515) by [@dtellz](https://github.com/dtellz).
@@ -20,6 +22,12 @@
 
 ### Internal
 
+* fix: use separate docker compose file for staging deploy. PR [#28](https://github.com/chezzijr/look-for-party/pull/28) by [@chezzijr](https://github.com/chezzijr).
+* fix: include necessary env so it wont intefere with container env. PR [#27](https://github.com/chezzijr/look-for-party/pull/27) by [@chezzijr](https://github.com/chezzijr).
+* chore: log when fail deploy. PR [#26](https://github.com/chezzijr/look-for-party/pull/26) by [@chezzijr](https://github.com/chezzijr).
+* fix: creation of .env file. PR [#25](https://github.com/chezzijr/look-for-party/pull/25) by [@chezzijr](https://github.com/chezzijr).
+*  Update staging deployment workflow to trigger on main branch. PR [#24](https://github.com/chezzijr/look-for-party/pull/24) by [@chezzijr](https://github.com/chezzijr).
+* Chore/setup dev env. PR [#22](https://github.com/chezzijr/look-for-party/pull/22) by [@chezzijr](https://github.com/chezzijr).
 * ⬆ Bump actions/checkout from 4 to 5. PR [#1768](https://github.com/fastapi/full-stack-fastapi-template/pull/1768) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump actions/download-artifact from 4 to 5. PR [#1754](https://github.com/fastapi/full-stack-fastapi-template/pull/1754) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump tiangolo/latest-changes from 0.3.2 to 0.4.0. PR [#1744](https://github.com/fastapi/full-stack-fastapi-template/pull/1744) by [@dependabot[bot]](https://github.com/apps/dependabot).
