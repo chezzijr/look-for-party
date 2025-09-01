@@ -2,6 +2,7 @@
 
 ## Latest Changes
 
+* ⬆ Bump node from 20-alpine to 24-alpine. PR [#17](https://github.com/chezzijr/look-for-party/pull/17) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump @playwright/test from 1.52.0 to 1.55.0 in /frontend. PR [#16](https://github.com/chezzijr/look-for-party/pull/16) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump @tanstack/react-query from 5.74.9 to 5.85.5 in /frontend. PR [#15](https://github.com/chezzijr/look-for-party/pull/15) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump react-error-boundary from 5.0.0 to 6.0.0 in /frontend. PR [#11](https://github.com/chezzijr/look-for-party/pull/11) by [@dependabot[bot]](https://github.com/apps/dependabot).
