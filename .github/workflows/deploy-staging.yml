@@ -3,7 +3,7 @@ name: Deploy to Staging
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
@@ -23,10 +23,58 @@ jobs:
       SMTP_USER: ${{ secrets.SMTP_USER }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       EMAILS_FROM_EMAIL: ${{ secrets.EMAILS_FROM_EMAIL }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - run: docker compose -f docker-compose.yml --project-name ${{ secrets.STACK_NAME_STAGING }} build
-      - run: docker compose -f docker-compose.yml --project-name ${{ secrets.STACK_NAME_STAGING }} up -d
+      - name: Create .env file with necessary variables only
+        run: |
+          cat > .env << EOF
+          # Environment configuration
+          ENVIRONMENT=${ENVIRONMENT}
+          DOMAIN=${DOMAIN}
+          FRONTEND_HOST=https://dashboard.${DOMAIN}
+
+          # Project settings
+          PROJECT_NAME="Look for Party - Staging"
+          STACK_NAME=${STACK_NAME}
+
+          # Backend CORS
+          BACKEND_CORS_ORIGINS="https://dashboard.${DOMAIN},https://api.${DOMAIN}"
+
+          # Security
+          SECRET_KEY=${SECRET_KEY}
+          FIRST_SUPERUSER=${FIRST_SUPERUSER}
+          FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
+
+          # Email settings
+          EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
+          SMTP_TLS=True
+          SMTP_SSL=False
+          SMTP_PORT=587
+
+          # Database
+          POSTGRES_SERVER=db
+          POSTGRES_PORT=5432
+          POSTGRES_DB=${POSTGRES_DB}
+          POSTGRES_USER=${POSTGRES_USER}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+          # Docker images
+          DOCKER_IMAGE_BACKEND=lfp-backend
+          DOCKER_IMAGE_FRONTEND=lfp-frontend
+          EOF
+      - run: docker compose -f docker-compose.staging.yml --project-name ${{ secrets.STACK_NAME_STAGING }} build
+      - run: docker compose -f docker-compose.staging.yml --project-name ${{ secrets.STACK_NAME_STAGING }} up -d
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          echo "=== Container Status ==="
+          docker ps -a --filter name=${{ secrets.STACK_NAME_STAGING }}
+          echo "=== Database Logs ==="
+          docker logs ${{ secrets.STACK_NAME_STAGING }}-db-1 || true
+          echo "=== Backend Logs ==="
+          docker logs ${{ secrets.STACK_NAME_STAGING }}-backend-1 || true
