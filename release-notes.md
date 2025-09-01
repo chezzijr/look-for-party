@@ -2,6 +2,7 @@
 
 ## Latest Changes
 
+* ⬆ Bump @biomejs/biome from 1.9.4 to 2.2.2 in /frontend. PR [#18](https://github.com/chezzijr/look-for-party/pull/18) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump traefik from 3.0 to 3.5. PR [#2](https://github.com/chezzijr/look-for-party/pull/2) by [@dependabot[bot]](https://github.com/apps/dependabot).
 
 ### Fixes
