@@ -2,6 +2,7 @@
 
 ## Latest Changes
 
+* ⬆ Bump alembic from 1.15.2 to 1.16.5 in /backend. PR [#21](https://github.com/chezzijr/look-for-party/pull/21) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump email-validator from 2.2.0 to 2.3.0 in /backend. PR [#19](https://github.com/chezzijr/look-for-party/pull/19) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump node from 20-alpine to 24-alpine. PR [#17](https://github.com/chezzijr/look-for-party/pull/17) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump @playwright/test from 1.52.0 to 1.55.0 in /frontend. PR [#16](https://github.com/chezzijr/look-for-party/pull/16) by [@dependabot[bot]](https://github.com/apps/dependabot).
