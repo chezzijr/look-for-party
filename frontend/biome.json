@@ -1,16 +1,25 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
-  "organizeImports": {
-    "enabled": true
+
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   },
+
   "files": {
-    "ignore": [
-      "node_modules",
-      "src/routeTree.gen.ts",
-      "playwright.config.ts",
-      "playwright-report"
+
+    "includes": [
+      "**",                       
+      "!node_modules/**",        
+      "!src/routeTree.gen.ts",
+      "!playwright.config.ts",
+      "!playwright-report/**"
     ]
   },
+
   "linter": {
     "enabled": true,
     "rules": {
@@ -24,6 +33,7 @@
       }
     }
   },
+
   "formatter": {
     "indentStyle": "space"
   },
@@ -33,4 +43,6 @@
       "semicolons": "asNeeded"
     }
   }
+
+
 }
