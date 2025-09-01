@@ -2,6 +2,7 @@
 
 ## Latest Changes
 
+* ⬆ Bump pydantic from 2.9.2 to 2.11.7 in /backend. PR [#8](https://github.com/chezzijr/look-for-party/pull/8) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump node from 20 to 24 in /frontend. PR [#5](https://github.com/chezzijr/look-for-party/pull/5) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump pydantic-settings from 2.9.1 to 2.10.1 in /backend. PR [#4](https://github.com/chezzijr/look-for-party/pull/4) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump @tanstack/router-vite-plugin from 1.19.0 to 1.131.28 in /frontend. PR [#20](https://github.com/chezzijr/look-for-party/pull/20) by [@dependabot[bot]](https://github.com/apps/dependabot).
