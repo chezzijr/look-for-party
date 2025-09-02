@@ -267,7 +267,7 @@ export const UserCreateSchema = {
       title: "Is Superuser",
       default: false,
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -277,7 +277,7 @@ export const UserCreateSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     password: {
       type: "string",
@@ -309,7 +309,7 @@ export const UserPublicSchema = {
       title: "Is Superuser",
       default: false,
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -319,7 +319,7 @@ export const UserPublicSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     id: {
       type: "string",
@@ -346,7 +346,7 @@ export const UserRegisterSchema = {
       minLength: 8,
       title: "Password",
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -356,7 +356,7 @@ export const UserRegisterSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
   },
   type: "object",
@@ -389,7 +389,7 @@ export const UserUpdateSchema = {
       title: "Is Superuser",
       default: false,
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -399,7 +399,7 @@ export const UserUpdateSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     password: {
       anyOf: [
@@ -421,7 +421,7 @@ export const UserUpdateSchema = {
 
 export const UserUpdateMeSchema = {
   properties: {
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -431,7 +431,7 @@ export const UserUpdateMeSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     email: {
       anyOf: [
