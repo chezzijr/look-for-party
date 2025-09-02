@@ -29,6 +29,7 @@
 
 ### Docs
 
+* 📝 Update project documentation and development workflow. PR [#30](https://github.com/chezzijr/look-for-party/pull/30) by [@chezzijr](https://github.com/chezzijr).
 * ✏️ Fix small typo in `deployment.md`. PR [#1679](https://github.com/fastapi/full-stack-fastapi-template/pull/1679) by [@cassmtnr](https://github.com/cassmtnr).
 
 ### Internal
