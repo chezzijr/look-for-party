@@ -28,9 +28,6 @@ class ItemUpdate(ItemBase):
 class Item(ItemBase, table=True):
     __tablename__ = "items"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="users.id", nullable=False, ondelete="CASCADE"
-    )
 
 
 # Properties to return via API, id is always required
@@ -82,7 +79,6 @@ class Item(ItemBase, table=True):
 # Properties to return via API, id is always required
 class ItemPublic(ItemBase):
     id: uuid.UUID
-    owner_id: uuid.UUID
 
 
 class ItemsPublic(SQLModel):

@@ -104,6 +104,6 @@ class ChatMessagePublic(ChatMessageBase):
     chat_id: uuid.UUID
     sender_id: uuid.UUID
 
-class ChatMessagesPublic(ChatMessageBase):
+class ChatMessagesPublic(SQLModel):
     data: list[ChatMessagePublic]
     count: int
