@@ -23,6 +23,14 @@ down *args:
 logs service:
     @docker compose -f {{DEV_COMPOSE_FILE}} logs {{service}}
 
+# Stop specific service
+stop service:
+    @docker compose -f {{DEV_COMPOSE_FILE}} stop {{service}}
+
+# Execute command on service container
+exec service *command:
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec {{service}} {{command}}
+
 generate_migration message:
     @docker compose -f {{DEV_COMPOSE_FILE}} exec backend alembic revision --autogenerate -m "{{message}}"
 

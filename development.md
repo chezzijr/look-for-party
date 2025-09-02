@@ -1,11 +1,25 @@
 # FastAPI Project - Development
 
+## Prerequisites
+
+Install dependencies for both frontend and backend:
+
+```bash
+just init
+```
+
 ## Docker Compose
 
 * Start the local stack with Docker Compose:
 
 ```bash
-docker compose watch
+just up
+```
+
+* Stop the development containers:
+
+```bash
+just down
 ```
 
 * Now you can open your browser and interact with these URLs:
@@ -22,16 +36,42 @@ Traefik UI, to see how the routes are being handled by the proxy: http://localho
 
 **Note**: The first time you start your stack, it might take a minute for it to be ready. While the backend waits for the database to be ready and configures everything. You can check the logs to monitor it.
 
-To check the logs, run (in another terminal):
+To check the logs of a specific service, use:
 
 ```bash
-docker compose logs
+just logs <service>
 ```
 
-To check the logs of a specific service, add the name of the service, e.g.:
-
+For example:
 ```bash
-docker compose logs backend
+just logs backend
+just logs frontend
+```
+
+## Adding Dependencies During Development
+
+When you need to add packages while containers are running:
+
+**Frontend (npm packages):**
+```bash
+just exec frontend npm install <package-name>
+```
+
+**Backend (Python packages):**
+```bash
+just exec backend uv add <package-name>
+```
+
+**General command execution:**
+```bash
+just exec <service> <command>
+```
+
+Examples:
+```bash
+just exec backend bash              # Get shell access to backend
+just exec frontend sh               # Get shell access to frontend  
+just exec backend uv pip list      # List installed Python packages
 ```
 
 ## Local Development
@@ -45,7 +85,7 @@ This way, you could turn off a Docker Compose service and start its local develo
 For example, you can stop that `frontend` service in the Docker Compose, in another terminal, run:
 
 ```bash
-docker compose stop frontend
+just stop frontend
 ```
 
 And then start the local frontend development server:
@@ -58,7 +98,7 @@ npm run dev
 Or you could stop the `backend` Docker Compose service:
 
 ```bash
-docker compose stop backend
+just stop backend
 ```
 
 And then you can run the local development server for the backend:
@@ -91,16 +131,14 @@ The domain `localhost.tiangolo.com` is a special domain that is configured (with
 After you update it, run again:
 
 ```bash
-docker compose watch
+just up
 ```
 
 When deploying, for example in production, the main Traefik is configured outside of the Docker Compose files. For local development, there's an included Traefik in `docker-compose.override.yml`, just to let you test that the domains work as expected, for example with `api.localhost.tiangolo.com` and `dashboard.localhost.tiangolo.com`.
 
 ## Docker Compose files and env vars
 
-There is a main `docker-compose.yml` file with all the configurations that apply to the whole stack, it is used automatically by `docker compose`.
-
-And there's also a `docker-compose.override.yml` with overrides for development, for example to mount the source code as a volume. It is used automatically by `docker compose` to apply overrides on top of `docker-compose.yml`.
+There is a `docker-compose.dev.yml` file with all the configurations for the development stack, used by the justfile commands.
 
 These Docker Compose files use the `.env` file containing configurations to be injected as environment variables in the containers.
 
@@ -109,7 +147,8 @@ They also use some additional configurations taken from environment variables se
 After changing variables, make sure you restart the stack:
 
 ```bash
-docker compose watch
+just down
+just up
 ```
 
 ## The .env file
@@ -164,6 +203,26 @@ ruff.....................................................................Passed
 ruff-format..............................................................Passed
 eslint...................................................................Passed
 prettier.................................................................Passed
+```
+
+## Database Migrations
+
+Generate a new migration:
+
+```bash
+just generate_migration "your migration message"
+```
+
+Apply migrations:
+
+```bash
+just migrate_up
+```
+
+Rollback last migration:
+
+```bash
+just migrate_down
 ```
 
 ## URLs
