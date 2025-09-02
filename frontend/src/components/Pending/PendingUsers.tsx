@@ -5,7 +5,7 @@ const PendingUsers = () => (
   <Table.Root size={{ base: "sm", md: "md" }}>
     <Table.Header>
       <Table.Row>
-        <Table.ColumnHeader w="sm">Full name</Table.ColumnHeader>
+        <Table.ColumnHeader w="sm">Username</Table.ColumnHeader>
         <Table.ColumnHeader w="sm">Email</Table.ColumnHeader>
         <Table.ColumnHeader w="sm">Role</Table.ColumnHeader>
         <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
