@@ -27,7 +27,7 @@ class UserCreate(UserBase):
 class UserRegister(SQLModel):
     email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8, max_length=40)
-    full_name: str | None = Field(default=None, max_length=255)
+    username: str | None = Field(default=None, max_length=255)
 
 
 # Properties to receive via API on update, all are optional
@@ -54,9 +54,9 @@ class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     chat_memberships: list["ChatUser"] = Relationship(back_populates="user", cascade_delete=True) 
-    request_memberships: list["RequestUser"] = Relationship(back_populates="user") # Join table for requests and users
-    owned_requests: list["Request"] = Relationship(back_populates="owner") 
-    sent_messages: list["ChatMessage"] = Relationship(back_populates="sender") 
+    request_memberships: list["RequestUser"] = Relationship(back_populates="user", cascade_delete=True) # Join table for requests and users
+    owned_requests: list["Request"] = Relationship(back_populates="owner", cascade_delete=True) 
+    sent_messages: list["ChatMessage"] = Relationship(back_populates="sender")
 
 
 # Properties to return via API, id is always required
