@@ -36,7 +36,7 @@ class Request(RequestBase, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     )
 
-    owner_id: uuid.UUID = Field(foreign_key="users.id", index=True, ondelete="CASCADE")
+    owner_id: uuid.UUID = Field(foreign_key="users.id", index=True)
     owner: "User" = Relationship(back_populates="owned_requests")
 
     members: list["RequestUser"] = Relationship(back_populates="request")
