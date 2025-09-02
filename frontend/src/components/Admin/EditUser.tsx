@@ -116,14 +116,14 @@ const EditUser = ({ user }: EditUserProps) => {
               </Field>
 
               <Field
-                invalid={!!errors.full_name}
-                errorText={errors.full_name?.message}
-                label="Full Name"
+                invalid={!!errors.username}
+                errorText={errors.username?.message}
+                label="Username"
               >
                 <Input
                   id="name"
-                  {...register("full_name")}
-                  placeholder="Full name"
+                  {...register("username")}
+                  placeholder="Username"
                   type="text"
                 />
               </Field>

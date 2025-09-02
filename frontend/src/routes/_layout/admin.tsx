@@ -71,8 +71,8 @@ function UsersTable() {
         <Table.Body>
           {users?.map((user) => (
             <Table.Row key={user.id} opacity={isPlaceholderData ? 0.5 : 1}>
-              <Table.Cell color={!user.full_name ? "gray" : "inherit"}>
-                {user.full_name || "N/A"}
+              <Table.Cell color={!user.username ? "gray" : "inherit"}>
+                {user.username || "N/A"}
                 {currentUser?.id === user.id && (
                   <Badge ml="1" colorScheme="teal">
                     You
