@@ -51,7 +51,7 @@ const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: () => {
-      navigate({ to: "/" })
+      navigate({ to: "/dashboard" })
     },
     onError: (err: ApiError) => {
       handleError(err)
@@ -60,7 +60,7 @@ const useAuth = () => {
 
   const logout = () => {
     localStorage.removeItem("access_token")
-    navigate({ to: "/login" })
+    navigate({ to: "/" })
   }
 
   return {

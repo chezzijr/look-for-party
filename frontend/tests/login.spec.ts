@@ -51,7 +51,7 @@ test("Log in with valid email and password ", async ({ page }) => {
   await fillForm(page, firstSuperuser, firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await page.waitForURL("/")
+  await page.waitForURL("/dashboard")
 
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
@@ -85,7 +85,7 @@ test("Successful log out", async ({ page }) => {
   await fillForm(page, firstSuperuser, firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await page.waitForURL("/")
+  await page.waitForURL("/dashboard")
 
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
@@ -93,7 +93,7 @@ test("Successful log out", async ({ page }) => {
 
   await page.getByTestId("user-menu").click()
   await page.getByRole("menuitem", { name: "Log out" }).click()
-  await page.waitForURL("/login")
+  await page.waitForURL("/")
 })
 
 test("Logged-out user cannot access protected routes", async ({ page }) => {
@@ -102,7 +102,7 @@ test("Logged-out user cannot access protected routes", async ({ page }) => {
   await fillForm(page, firstSuperuser, firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await page.waitForURL("/")
+  await page.waitForURL("/dashboard")
 
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
