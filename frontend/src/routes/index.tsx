@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Link as RouterLink, createFileRoute, redirect } from "@tanstack/react-router"
-import { FiArrowRight, FiShield, FiUsers, FiZap } from "react-icons/fi"
+import { FiArrowRight, FiTarget, FiUsers, FiZap } from "react-icons/fi"
 
 import { Button } from "@/components/ui/button"
 
@@ -36,7 +36,7 @@ function LandingPage() {
           <Flex alignItems="center">
             <Image src={Logo} alt="Logo" height={8} mr={4} />
             <Heading size="lg" color="blue.500">
-              FastAPI Template
+              Look For Party
             </Heading>
           </Flex>
           <Stack direction="row" gap={4}>
@@ -60,24 +60,23 @@ function LandingPage() {
             lineHeight={1.2}
             fontWeight="bold"
           >
-            Build Modern Web Applications with{" "}
+            Find Your Perfect{" "}
             <Text as="span" color="blue.500">
-              FastAPI & React
+              Collaboration Party
             </Text>
           </Heading>
           <Text fontSize="xl" color="gray.subtle" maxW="2xl">
-            A comprehensive full-stack template featuring FastAPI backend, React
-            frontend, authentication, and modern developer tools. Get started in
-            minutes, not hours.
+            Intent-first platform for quest-based collaboration. Start with what you want to accomplish, 
+            find the right party members to make it happen. No more endless scrolling - just purposeful connections.
           </Text>
           <Stack direction={{ base: "column", sm: "row" }} gap={4}>
             <Button asChild variant="solid" size="lg">
               <RouterLink to="/signup">
-                Get Started Free <FiArrowRight />
+                Start Your Quest <FiArrowRight />
               </RouterLink>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <RouterLink to="/login">Sign In</RouterLink>
+              <RouterLink to="/login">Join Existing Party</RouterLink>
             </Button>
           </Stack>
         </VStack>
@@ -88,10 +87,10 @@ function LandingPage() {
         <VStack gap={12}>
           <VStack gap={4} textAlign="center">
             <Heading as="h2" size="xl">
-              Everything You Need
+              How LFP Works
             </Heading>
             <Text fontSize="lg" color="gray.subtle" maxW="2xl">
-              Built with industry best practices and modern technologies
+              Intent-first collaboration that connects the right people for the right quests
             </Text>
           </VStack>
           
@@ -101,19 +100,19 @@ function LandingPage() {
             align="stretch"
           >
             <FeatureCard
-              icon={FiZap}
-              title="Fast Development"
-              description="Hot reload, automatic API generation, and modern tooling for rapid development cycles."
+              icon={FiTarget}
+              title="Quest-Based Discovery"
+              description="Start with your objective, not who you know. Create or join quests based on what you want to accomplish."
             />
             <FeatureCard
-              icon={FiShield}
-              title="Secure by Default"
-              description="Built-in authentication, password hashing, and security best practices out of the box."
+              icon={FiZap}
+              title="Smart Matching"
+              description="Algorithm finds complementary skills, compatible schedules, and the right party size for your quest."
             />
             <FeatureCard
               icon={FiUsers}
-              title="User Management"
-              description="Complete user registration, login, password recovery, and profile management system."
+              title="Temporary Teams"
+              description="Form parties for specific quests, collaborate effectively, then rate and disband when complete."
             />
           </Flex>
         </VStack>
@@ -124,15 +123,15 @@ function LandingPage() {
         <Container maxW="7xl" px={4} py={20}>
           <VStack gap={8} textAlign="center">
             <Heading as="h2" size="xl">
-              Ready to Get Started?
+              Ready to Find Your Party?
             </Heading>
             <Text fontSize="lg" maxW="2xl">
-              Join developers building modern applications with our template.
-              Create your account and start building today.
+              Join the quest-based collaboration platform where objectives come first.
+              Create your first quest or join an existing party today.
             </Text>
             <Button asChild size="lg" bg="white" color="blue.500" _hover={{ bg: "gray.50" }}>
               <RouterLink to="/signup">
-                Create Account <FiArrowRight />
+                Start Collaborating <FiArrowRight />
               </RouterLink>
             </Button>
           </VStack>
@@ -150,10 +149,10 @@ function LandingPage() {
           >
             <Flex alignItems="center">
               <Image src={Logo} alt="Logo" height={6} mr={2} />
-              <Text fontSize="sm">FastAPI Template</Text>
+              <Text fontSize="sm">Look For Party</Text>
             </Flex>
             <Text fontSize="sm" color="gray.400">
-              © 2024 FastAPI Template. Built with FastAPI & React.
+              © 2024 Look For Party. Intent-first quest-based collaboration.
             </Text>
           </Flex>
         </Container>
