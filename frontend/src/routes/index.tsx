@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 
 import { isLoggedIn } from "@/hooks/useAuth"
 import Logo from "/assets/images/fastapi-logo.svg"
+import { IconType } from "react-icons"
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -162,7 +163,7 @@ function LandingPage() {
 }
 
 interface FeatureCardProps {
-  icon: React.ComponentType
+  icon: IconType
   title: string
   description: string
 }
