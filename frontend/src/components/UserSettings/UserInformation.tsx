@@ -37,7 +37,7 @@ const UserInformation = () => {
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
-      full_name: currentUser?.full_name,
+      username: currentUser?.username,
       email: currentUser?.email,
     },
   })
@@ -80,10 +80,10 @@ const UserInformation = () => {
           as="form"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <Field label="Full name">
+          <Field label="Username">
             {editMode ? (
               <Input
-                {...register("full_name", { maxLength: 30 })}
+                {...register("username", { maxLength: 30 })}
                 type="text"
                 size="md"
               />
@@ -91,11 +91,11 @@ const UserInformation = () => {
               <Text
                 fontSize="md"
                 py={2}
-                color={!currentUser?.full_name ? "gray" : "inherit"}
+                color={!currentUser?.username ? "gray" : "inherit"}
                 truncate
                 maxW="sm"
               >
-                {currentUser?.full_name || "N/A"}
+                {currentUser?.username || "N/A"}
               </Text>
             )}
           </Field>

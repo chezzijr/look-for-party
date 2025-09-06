@@ -23,7 +23,7 @@ test("All tabs are visible", async ({ page }) => {
   }
 })
 
-test.describe("Edit user full name and email successfully", () => {
+test.describe("Edit user Username and email successfully", () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
   test("Edit user name with a valid name", async ({ page }) => {
@@ -39,7 +39,7 @@ test.describe("Edit user full name and email successfully", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "My profile" }).click()
     await page.getByRole("button", { name: "Edit" }).click()
-    await page.getByLabel("Full name").fill(updatedName)
+    await page.getByLabel("Username").fill(updatedName)
     await page.getByRole("button", { name: "Save" }).click()
     await expect(page.getByText("User updated successfully")).toBeVisible()
     // Check if the new name is displayed on the page
@@ -104,12 +104,12 @@ test.describe("Edit user with invalid data", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "My profile" }).click()
     await page.getByRole("button", { name: "Edit" }).click()
-    await page.getByLabel("Full name").fill(updatedName)
+    await page.getByLabel("Username").fill(updatedName)
     await page.getByRole("button", { name: "Cancel" }).first().click()
     await expect(
       page
         .getByLabel("My profile")
-        .getByText(user.full_name as string, { exact: true }),
+        .getByText(user.username as string, { exact: true }),
     ).toBeVisible()
   })
 
