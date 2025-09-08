@@ -22,7 +22,6 @@ export type ItemPublic = {
   title: string
   description?: string | null
   id: string
-  owner_id: string
 }
 
 export type ItemsPublic = {
@@ -47,7 +46,7 @@ export type NewPassword = {
 export type PrivateUserCreate = {
   email: string
   password: string
-  full_name: string
+  username: string
   is_verified?: boolean
 }
 
@@ -65,7 +64,8 @@ export type UserCreate = {
   email: string
   is_active?: boolean
   is_superuser?: boolean
-  full_name?: string | null
+  username?: string | null
+  description?: string | null
   password: string
 }
 
@@ -73,14 +73,15 @@ export type UserPublic = {
   email: string
   is_active?: boolean
   is_superuser?: boolean
-  full_name?: string | null
+  username?: string | null
+  description?: string | null
   id: string
 }
 
 export type UserRegister = {
   email: string
   password: string
-  full_name?: string | null
+  username?: string | null
 }
 
 export type UsersPublic = {
@@ -92,13 +93,15 @@ export type UserUpdate = {
   email?: string | null
   is_active?: boolean
   is_superuser?: boolean
-  full_name?: string | null
+  username?: string | null
+  description?: string | null
   password?: string | null
 }
 
 export type UserUpdateMe = {
-  full_name?: string | null
+  username?: string | null
   email?: string | null
+  description?: string | null
 }
 
 export type ValidationError = {

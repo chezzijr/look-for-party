@@ -1,7 +1,8 @@
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
+
 
 if TYPE_CHECKING:
     from .user import User
@@ -25,17 +26,12 @@ class ItemUpdate(ItemBase):
 
 # Database model, database table inferred from class name
 class Item(ItemBase, table=True):
+    __tablename__ = "items"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: Optional["User"] = Relationship(back_populates="items")
-
 
 # Properties to return via API, id is always required
 class ItemPublic(ItemBase):
     id: uuid.UUID
-    owner_id: uuid.UUID
 
 
 class ItemsPublic(SQLModel):
