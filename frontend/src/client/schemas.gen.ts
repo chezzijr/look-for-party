@@ -69,7 +69,6 @@ export const HTTPValidationErrorSchema = {
   title: "HTTPValidationError",
 } as const
 
-
 export const MessageSchema = {
   properties: {
     message: {
