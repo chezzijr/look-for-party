@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select
+from sqlmodel import func, select
 
 from app import crud
 from app.api.deps import (
@@ -13,15 +13,15 @@ from app.api.deps import (
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models import (
+    Message,
+    UpdatePassword,
     User,
     UserCreate,
+    UserPublic,
     UserRegister,
+    UsersPublic,
     UserUpdate,
     UserUpdateMe,
-    UserPublic,
-    UsersPublic,
-    UpdatePassword,
-    Message,
 )
 from app.utils import generate_new_account_email, send_email
 

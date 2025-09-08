@@ -1,14 +1,13 @@
 import uuid
-
-from typing import TYPE_CHECKING
-from sqlmodel import CheckConstraint, Field, Relationship, SQLModel, String
-from sqlalchemy import Column, DateTime, func
 from datetime import datetime
-from enum import Enum
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Column, DateTime, func
+from sqlmodel import CheckConstraint, Field, Relationship, SQLModel, String
 
 if TYPE_CHECKING:
-    from .user import User
     from .tag import Tag, TagRequest
+    from .user import User
 
 
 class RequestBase(SQLModel):

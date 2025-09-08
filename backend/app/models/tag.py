@@ -1,6 +1,6 @@
 import uuid
-
 from typing import TYPE_CHECKING
+
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ class Tag(TagBase, table=True):
     requests: list["TagRequest"] = Relationship(back_populates="tag")
 
 class TagPublic(TagBase):
-    id: uuid.UUID    
+    id: uuid.UUID
 
 class TagsPublic(SQLModel):
     data: list[TagPublic]

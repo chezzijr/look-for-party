@@ -1,9 +1,9 @@
 import uuid
-
-from typing import TYPE_CHECKING
-from sqlmodel import CheckConstraint, Field, Relationship, SQLModel, String
-from sqlalchemy import Column, DateTime, func
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Column, DateTime, func
+from sqlmodel import CheckConstraint, Field, Relationship, SQLModel, String
 
 if TYPE_CHECKING:
     from .user import User
@@ -17,7 +17,7 @@ class Chat(ChatBase, table=True):
     __tablename__ = "chats"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    
+
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
