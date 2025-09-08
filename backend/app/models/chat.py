@@ -13,6 +13,7 @@ class ChatBase(SQLModel):
     name: str
     newest_message_at: datetime | None = None
 
+
 class Chat(ChatBase, table=True):
     __tablename__ = "chats"
 
@@ -25,10 +26,12 @@ class Chat(ChatBase, table=True):
     members: list["ChatUser"] = Relationship(back_populates="chat")
     messages: list["ChatMessage"] = Relationship(back_populates="chat")
 
+
 class ChatPublic(ChatBase):
     id: uuid.UUID
     newest_message_at: datetime | None
     created_at: datetime
+
 
 class ChatsPublic(SQLModel):
     data: list[ChatPublic]
@@ -39,12 +42,10 @@ class ChatUser(SQLModel, table=True):
     """
     Association object: user<->chat with extra columns.
     """
+
     __tablename__ = "chats_users"
     __table_args__ = (
-        CheckConstraint(
-            "role IN ('owner', 'admin', 'member')",
-            name="check_chat_role"
-        ),
+        CheckConstraint("role IN ('owner', 'admin', 'member')", name="check_chat_role"),
     )
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
@@ -69,10 +70,7 @@ class ChatUser(SQLModel, table=True):
 
 class ChatMessageBase(SQLModel):
     __table_args__ = (
-        CheckConstraint(
-            "status IN ('sent', 'edited', 'deleted')",
-            name="check_status"
-        ),
+        CheckConstraint("status IN ('sent', 'edited', 'deleted')", name="check_status"),
     )
 
     text: str
@@ -90,7 +88,6 @@ class ChatMessage(ChatMessageBase, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
 
-
     chat_id: uuid.UUID = Field(foreign_key="chats.id", index=True)
     sender_id: uuid.UUID = Field(foreign_key="users.id", index=True)
 
@@ -103,6 +100,7 @@ class ChatMessagePublic(ChatMessageBase):
     created_at: datetime
     chat_id: uuid.UUID
     sender_id: uuid.UUID
+
 
 class ChatMessagesPublic(SQLModel):
     data: list[ChatMessagePublic]

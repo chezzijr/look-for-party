@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from .chat import ChatMessage, ChatUser
     from .request import Request, RequestUser
 
+
 # Shared properties
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
@@ -51,9 +52,15 @@ class User(UserBase, table=True):
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    chat_memberships: list["ChatUser"] = Relationship(back_populates="user", cascade_delete=True)
-    request_memberships: list["RequestUser"] = Relationship(back_populates="user", cascade_delete=True) # Join table for requests and users
-    owned_requests: list["Request"] = Relationship(back_populates="owner", cascade_delete=True)
+    chat_memberships: list["ChatUser"] = Relationship(
+        back_populates="user", cascade_delete=True
+    )
+    request_memberships: list["RequestUser"] = Relationship(
+        back_populates="user", cascade_delete=True
+    )  # Join table for requests and users
+    owned_requests: list["Request"] = Relationship(
+        back_populates="owner", cascade_delete=True
+    )
     sent_messages: list["ChatMessage"] = Relationship(back_populates="sender")
 
 

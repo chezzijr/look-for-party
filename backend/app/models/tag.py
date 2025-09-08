@@ -18,8 +18,10 @@ class Tag(TagBase, table=True):
 
     requests: list["TagRequest"] = Relationship(back_populates="tag")
 
+
 class TagPublic(TagBase):
     id: uuid.UUID
+
 
 class TagsPublic(SQLModel):
     data: list[TagPublic]
@@ -30,6 +32,7 @@ class TagRequest(SQLModel, table=True):
     """
     Association table: request<->tag (no extra columns needed, but we keep PK for simplicity).
     """
+
     __tablename__ = "tags_requests"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)

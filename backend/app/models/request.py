@@ -17,11 +17,14 @@ class RequestBase(SQLModel):
     size: int | None
     need_review: bool = False
 
+
 class RequestCreate(RequestBase):
     pass
 
+
 class RequestUpdate(RequestBase):
     pass
+
 
 class Request(RequestBase, table=True):
     __tablename__ = "requests"
@@ -32,7 +35,9 @@ class Request(RequestBase, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     updated_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+        sa_column=Column(
+            DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        )
     )
 
     owner_id: uuid.UUID = Field(foreign_key="users.id", index=True)
@@ -48,6 +53,7 @@ class RequestPublic(RequestBase):
     created_at: datetime
     updated_at: datetime
 
+
 class RequestPublicExtended(RequestPublic):
     members: list["User"]
     tags: list["Tag"]
@@ -62,11 +68,11 @@ class RequestUser(SQLModel, table=True):
     """
     Association object: user<->request with extra columns.
     """
+
     __tablename__ = "requests_users"
     __table_args__ = (
         CheckConstraint(
-            "role IN ('owner', 'admin', 'member')",
-            name="check_request_role"
+            "role IN ('owner', 'admin', 'member')", name="check_request_role"
         ),
     )
 
@@ -81,7 +87,6 @@ class RequestUser(SQLModel, table=True):
     joined_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
-
 
     user: "User" = Relationship(back_populates="request_memberships")
     request: Request = Relationship(back_populates="members")
