@@ -69,119 +69,6 @@ export const HTTPValidationErrorSchema = {
   title: "HTTPValidationError",
 } as const
 
-export const ItemCreateSchema = {
-  properties: {
-    title: {
-      type: "string",
-      maxLength: 255,
-      minLength: 1,
-      title: "Title",
-    },
-    description: {
-      anyOf: [
-        {
-          type: "string",
-          maxLength: 255,
-        },
-        {
-          type: "null",
-        },
-      ],
-      title: "Description",
-    },
-  },
-  type: "object",
-  required: ["title"],
-  title: "ItemCreate",
-} as const
-
-export const ItemPublicSchema = {
-  properties: {
-    title: {
-      type: "string",
-      maxLength: 255,
-      minLength: 1,
-      title: "Title",
-    },
-    description: {
-      anyOf: [
-        {
-          type: "string",
-          maxLength: 255,
-        },
-        {
-          type: "null",
-        },
-      ],
-      title: "Description",
-    },
-    id: {
-      type: "string",
-      format: "uuid",
-      title: "Id",
-    },
-    owner_id: {
-      type: "string",
-      format: "uuid",
-      title: "Owner Id",
-    },
-  },
-  type: "object",
-  required: ["title", "id", "owner_id"],
-  title: "ItemPublic",
-} as const
-
-export const ItemUpdateSchema = {
-  properties: {
-    title: {
-      anyOf: [
-        {
-          type: "string",
-          maxLength: 255,
-          minLength: 1,
-        },
-        {
-          type: "null",
-        },
-      ],
-      title: "Title",
-    },
-    description: {
-      anyOf: [
-        {
-          type: "string",
-          maxLength: 255,
-        },
-        {
-          type: "null",
-        },
-      ],
-      title: "Description",
-    },
-  },
-  type: "object",
-  title: "ItemUpdate",
-} as const
-
-export const ItemsPublicSchema = {
-  properties: {
-    data: {
-      items: {
-        $ref: "#/components/schemas/ItemPublic",
-      },
-      type: "array",
-      title: "Data",
-    },
-    count: {
-      type: "integer",
-      title: "Count",
-    },
-  },
-  type: "object",
-  required: ["data", "count"],
-  title: "ItemsPublic",
-} as const
-
 export const MessageSchema = {
   properties: {
     message: {
@@ -267,7 +154,7 @@ export const UserCreateSchema = {
       title: "Is Superuser",
       default: false,
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -277,7 +164,7 @@ export const UserCreateSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     password: {
       type: "string",
@@ -309,7 +196,7 @@ export const UserPublicSchema = {
       title: "Is Superuser",
       default: false,
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -319,7 +206,7 @@ export const UserPublicSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     id: {
       type: "string",
@@ -346,7 +233,7 @@ export const UserRegisterSchema = {
       minLength: 8,
       title: "Password",
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -356,7 +243,7 @@ export const UserRegisterSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
   },
   type: "object",
@@ -389,7 +276,7 @@ export const UserUpdateSchema = {
       title: "Is Superuser",
       default: false,
     },
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -399,7 +286,7 @@ export const UserUpdateSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     password: {
       anyOf: [
@@ -421,7 +308,7 @@ export const UserUpdateSchema = {
 
 export const UserUpdateMeSchema = {
   properties: {
-    full_name: {
+    username: {
       anyOf: [
         {
           type: "string",
@@ -431,7 +318,7 @@ export const UserUpdateMeSchema = {
           type: "null",
         },
       ],
-      title: "Full Name",
+      title: "Username",
     },
     email: {
       anyOf: [
