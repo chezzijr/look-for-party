@@ -67,7 +67,7 @@ function LandingPage() {
             </Text>
           </Heading>
           <Text fontSize="xl" color="gray.subtle" maxW="2xl">
-            Intent-first platform for quest-based collaboration. Start with what you want to accomplish, 
+            Intent-first platform for quest-based collaboration. Start with what you want to accomplish,
             find the right party members to make it happen. No more endless scrolling - just purposeful connections.
           </Text>
           <Stack direction={{ base: "column", sm: "row" }} gap={4}>
@@ -94,7 +94,7 @@ function LandingPage() {
               Intent-first collaboration that connects the right people for the right quests
             </Text>
           </VStack>
-          
+
           <Flex
             gap={8}
             direction={{ base: "column", md: "row" }}
