@@ -2,10 +2,12 @@ import uuid
 
 from sqlmodel import Session, select
 
-from app.models import Quest, QuestCreate, QuestUpdate, QuestStatus
+from app.models import Quest, QuestCreate, QuestStatus, QuestUpdate
 
 
-def create_quest(*, session: Session, quest_in: QuestCreate, creator_id: uuid.UUID) -> Quest:
+def create_quest(
+    *, session: Session, quest_in: QuestCreate, creator_id: uuid.UUID
+) -> Quest:
     db_quest = Quest.model_validate(quest_in, update={"creator_id": creator_id})
     session.add(db_quest)
     session.commit()
@@ -18,7 +20,13 @@ def get_quest(*, session: Session, quest_id: uuid.UUID) -> Quest | None:
     return session.exec(statement).first()
 
 
-def get_quests(*, session: Session, skip: int = 0, limit: int = 100, status: QuestStatus | None = None) -> list[Quest]:
+def get_quests(
+    *,
+    session: Session,
+    skip: int = 0,
+    limit: int = 100,
+    status: QuestStatus | None = None,
+) -> list[Quest]:
     statement = select(Quest)
     if status:
         statement = statement.where(Quest.status == status)
@@ -26,8 +34,16 @@ def get_quests(*, session: Session, skip: int = 0, limit: int = 100, status: Que
     return list(session.exec(statement).all())
 
 
-def get_quests_by_creator(*, session: Session, creator_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[Quest]:
-    statement = select(Quest).where(Quest.creator_id == creator_id).offset(skip).limit(limit).order_by(Quest.created_at.desc())
+def get_quests_by_creator(
+    *, session: Session, creator_id: uuid.UUID, skip: int = 0, limit: int = 100
+) -> list[Quest]:
+    statement = (
+        select(Quest)
+        .where(Quest.creator_id == creator_id)
+        .offset(skip)
+        .limit(limit)
+        .order_by(Quest.created_at.desc())
+    )
     return list(session.exec(statement).all())
 
 

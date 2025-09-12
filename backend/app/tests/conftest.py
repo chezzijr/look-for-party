@@ -7,11 +7,11 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from app.core.db import engine, init_db
 from app.main import app
-from app.models import User, Quest, QuestApplication, Party, PartyMember
+from app.models import Party, PartyMember, Quest, QuestApplication, User
+from app.tests.utils.party import PartyFactory
+from app.tests.utils.quest import QuestApplicationFactory, QuestFactory
 from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import get_superuser_token_headers
-from app.tests.utils.quest import QuestFactory, QuestApplicationFactory
-from app.tests.utils.party import PartyFactory
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -56,6 +56,7 @@ def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]
 def quest_data() -> dict:
     """Generate quest data properly serialized for JSON requests."""
     import json
+
     return json.loads(QuestFactory().model_dump_json())
 
 
@@ -63,6 +64,7 @@ def quest_data() -> dict:
 def quest_application_data() -> dict:
     """Generate quest application data properly serialized for JSON requests."""
     import json
+
     return json.loads(QuestApplicationFactory().model_dump_json())
 
 
@@ -70,4 +72,5 @@ def quest_application_data() -> dict:
 def party_data() -> dict:
     """Generate party data properly serialized for JSON requests."""
     import json
+
     return json.loads(PartyFactory().model_dump_json())

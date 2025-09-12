@@ -1,6 +1,14 @@
 from fastapi import APIRouter
 
-from app.api.routes import login, private, users, utils, quests, quest_applications, parties
+from app.api.routes import (
+    login,
+    parties,
+    private,
+    quest_applications,
+    quests,
+    users,
+    utils,
+)
 from app.core.config import settings
 
 api_router = APIRouter()

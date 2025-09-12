@@ -1,22 +1,20 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
-    Party,
-    PartyCreate,
-    PartyPublic,
-    PartyUpdate,
+    Message,
     PartiesPublic,
-    PartyMember,
+    PartyCreate,
     PartyMemberCreate,
     PartyMemberPublic,
-    PartyMemberUpdate,
     PartyMembersPublic,
-    Message,
+    PartyMemberUpdate,
+    PartyPublic,
+    PartyUpdate,
 )
 
 router = APIRouter(prefix="/parties", tags=["parties"])
@@ -36,24 +34,30 @@ def create_party(
     quest = crud.get_quest(session=session, quest_id=party_in.quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
-    
+
     # Check if current user is the creator
     if quest.creator_id != current_user.id and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Only quest creator can form a party")
-    
+        raise HTTPException(
+            status_code=403, detail="Only quest creator can form a party"
+        )
+
     # Check if party already exists
-    existing_party = crud.get_party_by_quest(session=session, quest_id=party_in.quest_id)
+    existing_party = crud.get_party_by_quest(
+        session=session, quest_id=party_in.quest_id
+    )
     if existing_party:
-        raise HTTPException(status_code=400, detail="Party already exists for this quest")
-    
+        raise HTTPException(
+            status_code=400, detail="Party already exists for this quest"
+        )
+
     party = crud.create_party(session=session, party_in=party_in)
-    
+
     # Add the quest creator as the first member and leader
     member_create = PartyMemberCreate(user_id=current_user.id, is_leader=True)
     crud.create_party_member(
         session=session, member_in=member_create, party_id=party.id
     )
-    
+
     return party
 
 
@@ -73,9 +77,7 @@ def read_my_parties(
 
 
 @router.get("/{party_id}", response_model=PartyPublic)
-def read_party(
-    session: SessionDep, party_id: uuid.UUID
-) -> Any:
+def read_party(session: SessionDep, party_id: uuid.UUID) -> Any:
     """
     Get party by ID.
     """
@@ -99,18 +101,18 @@ def update_party(
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
-    
+
     # Check permissions - quest creator or party leader
     quest = crud.get_quest(session=session, quest_id=party.quest_id)
     is_creator = quest and quest.creator_id == current_user.id
-    
+
     # Check if user is a party leader
     members = crud.get_party_members(session=session, party_id=party_id)
     is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
-    
+
     if not is_creator and not is_leader and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     party = crud.update_party(session=session, db_party=party, party_in=party_in)
     return party
 
@@ -128,7 +130,7 @@ def read_party_members(
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
-    
+
     members = crud.get_party_members(
         session=session, party_id=party_id, active_only=active_only
     )
@@ -149,28 +151,30 @@ def add_party_member(
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
-    
+
     # Check permissions - quest creator or party leader
     quest = crud.get_quest(session=session, quest_id=party.quest_id)
     is_creator = quest and quest.creator_id == current_user.id
-    
+
     members = crud.get_party_members(session=session, party_id=party_id)
     is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
-    
+
     if not is_creator and not is_leader and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Check if user is already a member
-    existing_member = any(m.user_id == member_in.user_id and m.is_active for m in members)
+    existing_member = any(
+        m.user_id == member_in.user_id and m.is_active for m in members
+    )
     if existing_member:
         raise HTTPException(status_code=400, detail="User is already a party member")
-    
+
     # Check party size limits
     if quest:
         active_count = len([m for m in members if m.is_active])
         if active_count >= quest.party_size_max:
             raise HTTPException(status_code=400, detail="Party is at maximum capacity")
-    
+
     member = crud.create_party_member(
         session=session, member_in=member_in, party_id=party_id
     )
@@ -192,29 +196,38 @@ def update_party_member(
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
-    
+
     member = crud.get_party_member(session=session, member_id=member_id)
     if not member or member.party_id != party_id:
         raise HTTPException(status_code=404, detail="Party member not found")
-    
+
     # Check permissions
     quest = crud.get_quest(session=session, quest_id=party.quest_id)
     is_creator = quest and quest.creator_id == current_user.id
     is_self = member.user_id == current_user.id
-    
+
     members = crud.get_party_members(session=session, party_id=party_id)
     is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
-    
+
     # Leadership changes can only be done by quest creator or existing leaders
     if member_in.is_leader is not None:
         if not is_creator and not is_leader and not current_user.is_superuser:
-            raise HTTPException(status_code=403, detail="Not enough permissions to change leadership")
-    
+            raise HTTPException(
+                status_code=403, detail="Not enough permissions to change leadership"
+            )
+
     # Role changes can be done by leaders, creator, or the member themselves
     if member_in.role is not None:
-        if not is_creator and not is_leader and not is_self and not current_user.is_superuser:
-            raise HTTPException(status_code=403, detail="Not enough permissions to change role")
-    
+        if (
+            not is_creator
+            and not is_leader
+            and not is_self
+            and not current_user.is_superuser
+        ):
+            raise HTTPException(
+                status_code=403, detail="Not enough permissions to change role"
+            )
+
     member = crud.update_party_member(
         session=session, db_member=member, member_in=member_in
     )
@@ -234,25 +247,32 @@ def remove_party_member(
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
-    
+
     member = crud.get_party_member(session=session, member_id=member_id)
     if not member or member.party_id != party_id:
         raise HTTPException(status_code=404, detail="Party member not found")
-    
+
     # Check permissions
     quest = crud.get_quest(session=session, quest_id=party.quest_id)
     is_creator = quest and quest.creator_id == current_user.id
     is_self = member.user_id == current_user.id
-    
+
     members = crud.get_party_members(session=session, party_id=party_id)
     is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
-    
-    if not is_creator and not is_leader and not is_self and not current_user.is_superuser:
+
+    if (
+        not is_creator
+        and not is_leader
+        and not is_self
+        and not current_user.is_superuser
+    ):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Check if trying to remove the quest creator (not allowed)
     if quest and member.user_id == quest.creator_id:
-        raise HTTPException(status_code=400, detail="Cannot remove quest creator from party")
-    
+        raise HTTPException(
+            status_code=400, detail="Cannot remove quest creator from party"
+        )
+
     crud.remove_party_member(session=session, member_id=member_id)
     return Message(message="Party member removed successfully")

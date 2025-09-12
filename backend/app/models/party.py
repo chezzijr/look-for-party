@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .user import User
     from .quest import Quest
+    from .user import User
 
 
 class PartyStatus(str, Enum):
@@ -21,7 +21,7 @@ class PartyStatus(str, Enum):
 class PartyBase(SQLModel):
     status: PartyStatus = Field(
         default=PartyStatus.FORMING,
-        sa_column_kwargs={"server_default": PartyStatus.FORMING.value}
+        sa_column_kwargs={"server_default": PartyStatus.FORMING.value},
     )
     chat_channel_id: str | None = Field(default=None, max_length=255)
 
@@ -46,7 +46,9 @@ class Party(PartyBase, table=True):
 
     # Relationships
     quest: "Quest" = Relationship(back_populates="party")
-    members: list["PartyMember"] = Relationship(back_populates="party", cascade_delete=True)
+    members: list["PartyMember"] = Relationship(
+        back_populates="party", cascade_delete=True
+    )
 
 
 # Party Member model

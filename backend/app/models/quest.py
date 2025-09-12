@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .user import User
     from .party import Party
+    from .user import User
 
 
 class QuestCategory(str, Enum):
@@ -70,7 +70,7 @@ class QuestBase(SQLModel):
     estimated_duration: str | None = Field(default=None, max_length=100)
     visibility: QuestVisibility = Field(
         default=QuestVisibility.PUBLIC,
-        sa_column_kwargs={"server_default": QuestVisibility.PUBLIC.value}
+        sa_column_kwargs={"server_default": QuestVisibility.PUBLIC.value},
     )
 
 
@@ -102,13 +102,15 @@ class Quest(QuestBase, table=True):
     creator_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     status: QuestStatus = Field(
         default=QuestStatus.RECRUITING,
-        sa_column_kwargs={"server_default": QuestStatus.RECRUITING.value}
+        sa_column_kwargs={"server_default": QuestStatus.RECRUITING.value},
     )
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
     creator: "User" = Relationship(back_populates="created_quests")
-    applications: list["QuestApplication"] = Relationship(back_populates="quest", cascade_delete=True)
+    applications: list["QuestApplication"] = Relationship(
+        back_populates="quest", cascade_delete=True
+    )
     party: Optional["Party"] = Relationship(back_populates="quest", cascade_delete=True)
 
 
@@ -135,7 +137,7 @@ class QuestApplication(QuestApplicationBase, table=True):
     applicant_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     status: ApplicationStatus = Field(
         default=ApplicationStatus.PENDING,
-        sa_column_kwargs={"server_default": ApplicationStatus.PENDING.value}
+        sa_column_kwargs={"server_default": ApplicationStatus.PENDING.value},
     )
     applied_at: datetime = Field(default_factory=datetime.utcnow)
     reviewed_at: datetime | None = Field(default=None)
