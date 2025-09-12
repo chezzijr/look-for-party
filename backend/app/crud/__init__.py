@@ -5,9 +5,6 @@ from .user import (
     authenticate,
 )
 
-from .item import (
-    create_item,
-)
 
 from .quest import (
     create_quest,

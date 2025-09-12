@@ -8,7 +8,6 @@ from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .item import Item
     from .quest import Quest, QuestApplication
     from .party import Party, PartyMember
 
@@ -99,7 +98,6 @@ class User(UserBase, table=True):
     total_completed_quests: int = Field(default=0, ge=0)
 
     # Relationships
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
     created_quests: list["Quest"] = Relationship(back_populates="creator", cascade_delete=True)
     applications: list["QuestApplication"] = Relationship(back_populates="applicant", cascade_delete=True)
     party_memberships: list["PartyMember"] = Relationship(back_populates="user", cascade_delete=True)
