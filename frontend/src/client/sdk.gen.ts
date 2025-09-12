@@ -23,8 +23,47 @@ import type {
   LoginResetPasswordResponse,
   LoginRecoverPasswordHtmlContentData,
   LoginRecoverPasswordHtmlContentResponse,
+  PartiesCreatePartyData,
+  PartiesCreatePartyResponse,
+  PartiesReadMyPartiesResponse,
+  PartiesReadPartyData,
+  PartiesReadPartyResponse,
+  PartiesUpdatePartyData,
+  PartiesUpdatePartyResponse,
+  PartiesReadPartyMembersData,
+  PartiesReadPartyMembersResponse,
+  PartiesAddPartyMemberData,
+  PartiesAddPartyMemberResponse,
+  PartiesUpdatePartyMemberData,
+  PartiesUpdatePartyMemberResponse,
+  PartiesRemovePartyMemberData,
+  PartiesRemovePartyMemberResponse,
   PrivateCreateUserData,
   PrivateCreateUserResponse,
+  QuestApplicationsApplyToQuestData,
+  QuestApplicationsApplyToQuestResponse,
+  QuestApplicationsReadMyApplicationsData,
+  QuestApplicationsReadMyApplicationsResponse,
+  QuestApplicationsReadQuestApplicationsData,
+  QuestApplicationsReadQuestApplicationsResponse,
+  QuestApplicationsReadApplicationData,
+  QuestApplicationsReadApplicationResponse,
+  QuestApplicationsUpdateApplicationData,
+  QuestApplicationsUpdateApplicationResponse,
+  QuestApplicationsWithdrawApplicationData,
+  QuestApplicationsWithdrawApplicationResponse,
+  QuestsReadQuestsData,
+  QuestsReadQuestsResponse,
+  QuestsCreateQuestData,
+  QuestsCreateQuestResponse,
+  QuestsReadMyQuestsData,
+  QuestsReadMyQuestsResponse,
+  QuestsReadQuestData,
+  QuestsReadQuestResponse,
+  QuestsUpdateQuestData,
+  QuestsUpdateQuestResponse,
+  QuestsDeleteQuestData,
+  QuestsDeleteQuestResponse,
   UsersReadUsersData,
   UsersReadUsersResponse,
   UsersCreateUserData,
@@ -274,6 +313,198 @@ export class LoginService {
   }
 }
 
+export class PartiesService {
+  /**
+   * Create Party
+   * Create party for a quest (quest creator only).
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns PartyPublic Successful Response
+   * @throws ApiError
+   */
+  public static createParty(
+    data: PartiesCreatePartyData,
+  ): CancelablePromise<PartiesCreatePartyResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/parties/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read My Parties
+   * Get current user's party memberships.
+   * @returns PartiesPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMyParties(): CancelablePromise<PartiesReadMyPartiesResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/parties/my",
+    })
+  }
+
+  /**
+   * Read Party
+   * Get party by ID.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @returns PartyPublic Successful Response
+   * @throws ApiError
+   */
+  public static readParty(
+    data: PartiesReadPartyData,
+  ): CancelablePromise<PartiesReadPartyResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/parties/{party_id}",
+      path: {
+        party_id: data.partyId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Party
+   * Update party (party leaders and quest creator only).
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.requestBody
+   * @returns PartyPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateParty(
+    data: PartiesUpdatePartyData,
+  ): CancelablePromise<PartiesUpdatePartyResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/parties/{party_id}",
+      path: {
+        party_id: data.partyId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Party Members
+   * Get party members.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.activeOnly
+   * @returns PartyMembersPublic Successful Response
+   * @throws ApiError
+   */
+  public static readPartyMembers(
+    data: PartiesReadPartyMembersData,
+  ): CancelablePromise<PartiesReadPartyMembersResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/parties/{party_id}/members",
+      path: {
+        party_id: data.partyId,
+      },
+      query: {
+        active_only: data.activeOnly,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Add Party Member
+   * Add member to party (party leaders and quest creator only).
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.requestBody
+   * @returns PartyMemberPublic Successful Response
+   * @throws ApiError
+   */
+  public static addPartyMember(
+    data: PartiesAddPartyMemberData,
+  ): CancelablePromise<PartiesAddPartyMemberResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/parties/{party_id}/members",
+      path: {
+        party_id: data.partyId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Party Member
+   * Update party member (party leaders, quest creator, or the member themselves).
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.memberId
+   * @param data.requestBody
+   * @returns PartyMemberPublic Successful Response
+   * @throws ApiError
+   */
+  public static updatePartyMember(
+    data: PartiesUpdatePartyMemberData,
+  ): CancelablePromise<PartiesUpdatePartyMemberResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/parties/{party_id}/members/{member_id}",
+      path: {
+        party_id: data.partyId,
+        member_id: data.memberId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Remove Party Member
+   * Remove member from party (party leaders, quest creator, or the member themselves).
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.memberId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static removePartyMember(
+    data: PartiesRemovePartyMemberData,
+  ): CancelablePromise<PartiesRemovePartyMemberResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/parties/{party_id}/members/{member_id}",
+      path: {
+        party_id: data.partyId,
+        member_id: data.memberId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
 export class PrivateService {
   /**
    * Create User
@@ -291,6 +522,306 @@ export class PrivateService {
       url: "/api/v1/private/users/",
       body: data.requestBody,
       mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class QuestApplicationsService {
+  /**
+   * Apply To Quest
+   * Apply to a quest.
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.requestBody
+   * @returns QuestApplicationPublic Successful Response
+   * @throws ApiError
+   */
+  public static applyToQuest(
+    data: QuestApplicationsApplyToQuestData,
+  ): CancelablePromise<QuestApplicationsApplyToQuestResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/quest-applications/quests/{quest_id}/apply",
+      path: {
+        quest_id: data.questId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read My Applications
+   * Get current user's applications.
+   * @param data The data for the request.
+   * @param data.status
+   * @returns QuestApplicationsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMyApplications(
+    data: QuestApplicationsReadMyApplicationsData = {},
+  ): CancelablePromise<QuestApplicationsReadMyApplicationsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quest-applications/my",
+      query: {
+        status: data.status,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Quest Applications
+   * Get applications for a quest (quest creator only).
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.status
+   * @returns QuestApplicationsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readQuestApplications(
+    data: QuestApplicationsReadQuestApplicationsData,
+  ): CancelablePromise<QuestApplicationsReadQuestApplicationsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quest-applications/quests/{quest_id}/applications",
+      path: {
+        quest_id: data.questId,
+      },
+      query: {
+        status: data.status,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Application
+   * Get application by ID.
+   * @param data The data for the request.
+   * @param data.applicationId
+   * @returns QuestApplicationPublic Successful Response
+   * @throws ApiError
+   */
+  public static readApplication(
+    data: QuestApplicationsReadApplicationData,
+  ): CancelablePromise<QuestApplicationsReadApplicationResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quest-applications/{application_id}",
+      path: {
+        application_id: data.applicationId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Application
+   * Update application (approve/reject by quest creator, or edit by applicant).
+   * @param data The data for the request.
+   * @param data.applicationId
+   * @param data.requestBody
+   * @returns QuestApplicationPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateApplication(
+    data: QuestApplicationsUpdateApplicationData,
+  ): CancelablePromise<QuestApplicationsUpdateApplicationResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/quest-applications/{application_id}",
+      path: {
+        application_id: data.applicationId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Withdraw Application
+   * Withdraw application (applicant only).
+   * @param data The data for the request.
+   * @param data.applicationId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static withdrawApplication(
+    data: QuestApplicationsWithdrawApplicationData,
+  ): CancelablePromise<QuestApplicationsWithdrawApplicationResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/quest-applications/{application_id}",
+      path: {
+        application_id: data.applicationId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class QuestsService {
+  /**
+   * Read Quests
+   * Retrieve quests.
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @param data.status
+   * @param data.category
+   * @returns QuestsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readQuests(
+    data: QuestsReadQuestsData = {},
+  ): CancelablePromise<QuestsReadQuestsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quests/",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+        status: data.status,
+        category: data.category,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Create Quest
+   * Create new quest.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static createQuest(
+    data: QuestsCreateQuestData,
+  ): CancelablePromise<QuestsCreateQuestResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/quests/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read My Quests
+   * Retrieve current user's quests.
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @returns QuestsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMyQuests(
+    data: QuestsReadMyQuestsData = {},
+  ): CancelablePromise<QuestsReadMyQuestsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quests/my",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Quest
+   * Get quest by ID.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static readQuest(
+    data: QuestsReadQuestData,
+  ): CancelablePromise<QuestsReadQuestResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quests/{quest_id}",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Quest
+   * Update quest.
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.requestBody
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateQuest(
+    data: QuestsUpdateQuestData,
+  ): CancelablePromise<QuestsUpdateQuestResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/quests/{quest_id}",
+      path: {
+        quest_id: data.questId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Quest
+   * Delete quest.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static deleteQuest(
+    data: QuestsDeleteQuestData,
+  ): CancelablePromise<QuestsDeleteQuestResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/quests/{quest_id}",
+      path: {
+        quest_id: data.questId,
+      },
       errors: {
         422: "Validation Error",
       },
