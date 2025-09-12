@@ -39,3 +39,23 @@ migrate_up:
 
 migrate_down:
     @docker compose -f {{DEV_COMPOSE_FILE}} exec backend alembic downgrade -1
+
+# Run frontend tests (Playwright E2E)
+test-frontend:
+    @echo "Running frontend tests..."
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec frontend npx playwright test
+
+# Run backend tests (pytest)
+test-backend:
+    @echo "Running backend tests..."
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec backend uv run pytest
+
+# Run both frontend and backend tests in parallel
+[parallel]
+test: test-frontend test-backend
+
+# Run tests with coverage (backend only)
+test-backend-coverage:
+    @echo "Running backend tests with coverage..."
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec backend uv run coverage run -m pytest
+    @docker compose -f {{DEV_COMPOSE_FILE}} exec backend uv run coverage report
