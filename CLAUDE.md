@@ -50,7 +50,12 @@ When completing features or development phases, ALWAYS follow this documentation
    - Add new technical architecture details if infrastructure changed
    - Update development scripts if new commands were added
 
-5. **Commit Documentation Updates**
+5. **Update README.md (if applicable)**
+   - Update development status and implementation progress
+   - Update tech stack or feature descriptions if significantly changed
+   - Keep "What's Implemented & Working" section current
+
+6. **Commit Documentation Updates**
    - Create a dedicated commit for documentation updates
    - Use descriptive commit messages like "docs: update progress after completing Phase 1 foundation"
 
@@ -63,22 +68,27 @@ When completing features or development phases, ALWAYS follow this documentation
 
 ### When to Update Documentation
 - **After completing any major feature or system** (e.g., completing CRUD operations for a model)
-- **After completing a development phase** (e.g., Phase 1: Foundation)
+- **After completing a development phase** (e.g., Phase 1: Foundation) 
 - **After significant architectural changes** (e.g., adding new API routes, database migrations)
 - **Before starting the next major development phase**
 - **When implementation significantly exceeds or deviates from the original PLAN.md**
+- **MANDATORY: After implementing any new model, API endpoint, or core functionality** - Documentation updates are not optional
+
+### Documentation Update Priority
+**CRITICAL**: Documentation updates must be treated as part of the implementation, not an afterthought. The feature is not considered complete until all relevant documentation (PROGRESS.md, PLAN.md, CLAUDE.md, README.md) accurately reflects the current state.
 
 This workflow ensures project documentation always reflects current reality and provides accurate guidance for future development phases.
 
 ## LFP Platform Architecture
 
 ### Current Implementation Status
-**Latest Update**: Model refactoring completed (September 14, 2025)
+**Latest Update**: Application model enhancement completed (September 14, 2025)
 - ✅ **User Model**: Streamlined by removing search preferences (preferred_commitment_level, communication_style)
 - ✅ **Quest Model**: Simplified by removing complexity fields (difficulty_level, time_commitment, is_urgent)
 - ✅ **Party Model**: Enhanced with role-based permissions, removed FORMING status, renamed DISBANDED to ARCHIVED with clear semantics
 - ✅ **PartyMember Model**: Updated roles (OWNER/MODERATOR/MEMBER) with implicit permissions
-- ✅ **Database Migration**: Successfully applied (migration 94392b1dfe35) with 90/90 backend tests passing
+- ✅ **Application Model**: Complete quest application system with enhanced fields (relevant_skills, created_at, updated_at), moved to dedicated application.py file
+- ✅ **Database Migrations**: Successfully applied all migrations (latest: f32093191d49) with 90/90 backend tests passing
 
 ### Current Frontend Routes (Post-Refactor)
 The frontend uses TanStack Router with file-based routing:
@@ -156,6 +166,7 @@ Located in `/frontend/tests/`:
 - **Proper Relationships**: Use SQLModel relationships with cascade rules
 - **Migration Strategy**: Alembic migrations with proper rollback testing
 - **Indexing**: Strategic indexes for query performance
+- **Enum Fields**: For enum fields with default values, always include `sa_column_kwargs={"server_default": EnumValue.DEFAULT.value}` to ensure PostgreSQL database-level defaults match SQLModel defaults
 
 ### API Design Standards
 - **REST Conventions**: Consistent endpoint naming and HTTP methods

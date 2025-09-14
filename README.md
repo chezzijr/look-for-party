@@ -105,7 +105,7 @@ LFP addresses the gap in existing social platforms where group discovery require
 - **Authentication System:** Complete user registration, login, password recovery flows
 - **Quest Management:** Full CRUD operations with quest lifecycle management
 - **Party System:** Role-based permissions (OWNER/MODERATOR/MEMBER) with member management and status lifecycle (ACTIVE → COMPLETED → ARCHIVED)
-- **Application Flow:** Complete apply → review → approve/reject workflow
+- **Application System:** Complete quest application workflow with relevant skills tracking, status management, and comprehensive apply → review → approve/reject functionality
 - **Database Architecture:** Clean, normalized schema optimized for matching algorithms
 - **Development Environment:** Docker Compose with hot reload and comprehensive testing (90/90 backend tests passing)
 

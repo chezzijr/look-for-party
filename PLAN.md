@@ -204,10 +204,10 @@ class Application(ApplicationBase, table=True):
     # Application Details
     message: str = Field(min_length=1, max_length=1000)
     relevant_skills: str | None = Field(default=None, max_length=500)
-    availability: str | None = Field(default=None, max_length=500)
+    proposed_role: str | None = Field(default=None, max_length=100)  # Additional field for role specification
     
-    # Status
-    status: str = Field(default="pending")  # 'pending', 'approved', 'rejected', 'withdrawn'
+    # Status  
+    status: ApplicationStatus = Field(default=ApplicationStatus.PENDING, sa_column_kwargs={"server_default": ApplicationStatus.PENDING.value})
     
     # Review
     reviewed_at: datetime | None = Field(default=None)
@@ -215,6 +215,7 @@ class Application(ApplicationBase, table=True):
     
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    applied_at: datetime = Field(default_factory=datetime.utcnow)  # Backward compatibility
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Relationships
