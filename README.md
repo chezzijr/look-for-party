@@ -37,7 +37,7 @@ LFP addresses the gap in existing social platforms where group discovery require
 ### Smart Discovery
 - **Natural Language Search:** "Looking for weekend coding project" matches relevant quests
 - **Multi-Criteria Matching:** Bio, skills, location, availability, group size preferences
-- **Intelligent Filtering:** Tags, location radius, time commitment, difficulty level
+- **Intelligent Filtering:** Tags, location radius, commitment preferences
 
 ### Application System
 - **Application Messages:** Personalized "cover letter" explaining interest and qualifications
@@ -62,7 +62,6 @@ LFP addresses the gap in existing social platforms where group discovery require
   - **Active** (green) - Regular recruiting, good availability
   - **Long-term** (blue) - Future planning, flexible timeline
 - **Quick Filters:** "Available Now", "This Week", "Long-term", "Remote", "In-Person"
-- **Quest Difficulty Indicators:** Time commitment, skill level required, group dynamics complexity
 - **Live Status Updates:** Real-time updates on party formation progress and available slots
 
 ### Discovery Modes
@@ -74,9 +73,8 @@ LFP addresses the gap in existing social platforms where group discovery require
 ### Smart Matching Algorithms
 - **Skill Complementarity:** Matches based on what the party needs rather than just similarity
 - **Temporal Alignment:** Time zone coordination for online activities, schedule matching for in-person events
-- **Commitment Level Matching:** Pairs casual participants with casual groups, serious with serious
+- **Dynamic Commitment Matching:** Flexible matching based on request-time preferences rather than static user profiles
 - **Geographic Proximity:** Location-aware matching for in-person activities with travel distance preferences
-- **Communication Style Compatibility:** Matches based on preferred interaction styles (voice, text, structured vs casual)
 
 ### Communication & Coordination
 - **Party Chat:** Purpose-built communication for quest planning and execution
@@ -93,8 +91,33 @@ LFP addresses the gap in existing social platforms where group discovery require
 - **Skills & Interests:** Comprehensive tagging for precise matching
 - **Availability:** Calendar integration for scheduling coordination
 - **Portfolio:** Showcase experience, past projects, achievements
-- **Preferences:** Group size, activity types, commitment levels, leadership style
+- **Preferences:** Group size, activity types, leadership style
 - **Quest History:** Public record of completed quests and ratings received
+
+---
+
+## 🚀 Current Development Status
+
+**Overall Progress:** 45% Complete (Phase 2 - Smart Features: 70% complete)
+
+### ✅ **What's Implemented & Working**
+- **Core Backend Foundation:** FastAPI + SQLModel + PostgreSQL with streamlined, production-ready models
+- **Authentication System:** Complete user registration, login, password recovery flows
+- **Quest Management:** Full CRUD operations with quest lifecycle management
+- **Party System:** Role-based permissions (OWNER/MODERATOR/MEMBER) with member management and status lifecycle (ACTIVE → COMPLETED → ARCHIVED)
+- **Application Flow:** Complete apply → review → approve/reject workflow
+- **Database Architecture:** Clean, normalized schema optimized for matching algorithms
+- **Development Environment:** Docker Compose with hot reload and comprehensive testing (90/90 backend tests passing)
+
+### 🚧 **In Development**
+- **Semantic Search Engine:** Vector database integration with OpenAI embeddings
+- **Smart Matching Algorithms:** Multi-factor compatibility scoring system
+- **Frontend Quest Board:** MMO-style interface for quest discovery
+
+### ⚠️ **Planned Next**
+- **Real-time Communication:** WebSocket integration for live updates and party chat
+- **Mobile Optimization:** Responsive design and mobile-first quest browsing
+- **Recommendation Engine:** Personalized quest suggestions and serendipity matching
 
 ---
 
@@ -118,3 +141,37 @@ Hybrid recommendation system combining multiple techniques for accurate, relevan
 - **Multi-Signal Integration:** Click behavior, time spent viewing, application patterns
 - **Vector Database:** Pinecone/Milvus for real-time similarity search at scale
 - **A/B Testing:** Continuous model optimization via Precision@k, CTR, join rates
+
+---
+
+## 🛠️ Development Setup
+
+### Quick Start
+```bash
+# Clone and setup
+git clone https://github.com/chezzijr/look-for-party.git
+cd look-for-party
+
+# Initialize dependencies 
+just init
+
+# Start development environment
+just up
+
+# Run tests
+just test-backend
+```
+
+### Tech Stack
+- **Backend:** FastAPI + SQLModel + PostgreSQL + Redis
+- **Frontend:** React 18 + TanStack Router + Chakra UI v3
+- **AI/Search:** OpenAI API + Pinecone (planned)
+- **Development:** Docker Compose + Just + Playwright
+
+### Key Commands
+- `just up/down` - Start/stop development containers
+- `just migrate_up` - Apply database migrations
+- `just test-backend` - Run backend tests (90/90 passing)
+- `npm run dev` - Start frontend development server
+
+*See [development.md](development.md) and [PLAN.md](PLAN.md) for comprehensive setup and architecture details.*
