@@ -1,3 +1,4 @@
+from .application import *
 from .msg import *
 from .party import *
 from .quest import *

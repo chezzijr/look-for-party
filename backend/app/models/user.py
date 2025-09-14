@@ -8,8 +8,9 @@ from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .application import QuestApplication
     from .party import PartyMember
-    from .quest import Quest, QuestApplication
+    from .quest import Quest
 
 
 # Shared properties

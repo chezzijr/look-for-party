@@ -96,6 +96,7 @@ class QuestApplicationCreateFactory(factory.Factory):
 
     message = factory.Faker("paragraph", nb_sentences=3)
     proposed_role = factory.Faker("job")
+    relevant_skills = factory.Faker("sentence", nb_words=8)
 
 
 def create_quest_application(

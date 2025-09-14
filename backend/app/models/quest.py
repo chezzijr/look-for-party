@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .application import QuestApplication
     from .party import Party
     from .user import User
 
@@ -46,13 +47,6 @@ class CommitmentLevel(str, Enum):
     SERIOUS = "SERIOUS"
     PROFESSIONAL = "PROFESSIONAL"
 
-
-class ApplicationStatus(str, Enum):
-    PENDING = "PENDING"
-    APPROVED = "APPROVED"
-    REJECTED = "REJECTED"
-    WITHDRAWN = "WITHDRAWN"
-    EXPIRED = "EXPIRED"
 
 
 # Shared properties
@@ -132,40 +126,6 @@ class Quest(QuestBase, table=True):
     party: Optional["Party"] = Relationship(back_populates="quest", cascade_delete=True)
 
 
-# Quest Application model
-class QuestApplicationBase(SQLModel):
-    message: str = Field(max_length=1000)
-    proposed_role: str | None = Field(default=None, max_length=100)
-
-
-class QuestApplicationCreate(QuestApplicationBase):
-    pass
-
-
-class QuestApplicationUpdate(SQLModel):
-    message: str | None = Field(default=None, max_length=1000)
-    proposed_role: str | None = Field(default=None, max_length=100)
-    status: ApplicationStatus | None = Field(default=None)
-    reviewer_feedback: str | None = Field(default=None, max_length=500)
-
-
-class QuestApplication(QuestApplicationBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False)
-    applicant_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    status: ApplicationStatus = Field(
-        default=ApplicationStatus.PENDING,
-        sa_column_kwargs={"server_default": ApplicationStatus.PENDING.value},
-    )
-    applied_at: datetime = Field(default_factory=datetime.utcnow)
-    reviewed_at: datetime | None = Field(default=None)
-    reviewer_feedback: str | None = Field(default=None, max_length=500)
-
-    # Relationships
-    quest: Quest = Relationship(back_populates="applications")
-    applicant: "User" = Relationship(back_populates="applications")
-
-
 # Properties to return via API
 class QuestPublic(QuestBase):
     id: uuid.UUID
@@ -182,24 +142,4 @@ class QuestDetail(QuestPublic):
 
 class QuestsPublic(SQLModel):
     data: list[QuestPublic]
-    count: int
-
-
-class QuestApplicationPublic(QuestApplicationBase):
-    id: uuid.UUID
-    quest_id: uuid.UUID
-    applicant_id: uuid.UUID
-    status: ApplicationStatus
-    applied_at: datetime
-    reviewed_at: datetime | None
-    reviewer_feedback: str | None
-
-
-class QuestApplicationDetail(QuestApplicationPublic):
-    quest: QuestPublic
-    applicant: "User" = Field(exclude={"hashed_password"})
-
-
-class QuestApplicationsPublic(SQLModel):
-    data: list[QuestApplicationPublic]
     count: int
