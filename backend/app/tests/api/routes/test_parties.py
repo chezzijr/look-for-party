@@ -36,7 +36,7 @@ def test_create_party(
     assert response.status_code == 200
     content = response.json()
     assert content["quest_id"] == quest["id"]
-    assert content["status"] == PartyStatus.FORMING
+    assert content["status"] == PartyStatus.ACTIVE
     assert "id" in content
     assert "formed_at" in content
 
@@ -213,8 +213,8 @@ def test_read_party_members(client: TestClient, db: Session) -> None:
     party = create_party(db, quest_id=quest.id)
 
     # Create some members
-    member1 = create_party_member(db, party_id=party.id, is_leader=True)
-    member2 = create_party_member(db, party_id=party.id)
+    member1 = create_party_member(db, party_id=party.id, role="OWNER")
+    member2 = create_party_member(db, party_id=party.id, role="MEMBER")
 
     response = client.get(f"{settings.API_V1_STR}/parties/{party.id}/members")
     assert response.status_code == 200
@@ -254,7 +254,7 @@ def test_add_party_member_as_creator(
     new_user = create_user(db)
 
     # Add member to party
-    member_data = {"user_id": str(new_user.id), "role": "Tank", "is_leader": False}
+    member_data = {"user_id": str(new_user.id), "role": "MEMBER"}
     response = client.post(
         f"{settings.API_V1_STR}/parties/{party['id']}/members",
         headers=superuser_token_headers,
@@ -263,8 +263,7 @@ def test_add_party_member_as_creator(
     assert response.status_code == 200
     content = response.json()
     assert content["user_id"] == str(new_user.id)
-    assert content["role"] == "Tank"
-    assert content["is_leader"] is False
+    assert content["role"] == "MEMBER"
 
 
 def test_add_party_member_forbidden(
@@ -313,7 +312,7 @@ def test_update_party_member_role(
 
     # Add a member
     new_user = create_user(db)
-    member_data = {"user_id": str(new_user.id), "role": "DPS"}
+    member_data = {"user_id": str(new_user.id), "role": "MEMBER"}
     response = client.post(
         f"{settings.API_V1_STR}/parties/{party['id']}/members",
         headers=superuser_token_headers,
@@ -322,7 +321,7 @@ def test_update_party_member_role(
     member = response.json()
 
     # Update member role
-    update_data = {"role": "Healer", "is_leader": True}
+    update_data = {"role": "MODERATOR"}
     response = client.put(
         f"{settings.API_V1_STR}/parties/{party['id']}/members/{member['id']}",
         headers=superuser_token_headers,
@@ -330,8 +329,7 @@ def test_update_party_member_role(
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["role"] == "Healer"
-    assert content["is_leader"] is True
+    assert content["role"] == "MODERATOR"
 
 
 def test_remove_party_member(
@@ -378,7 +376,7 @@ def test_remove_party_member(
     response = client.get(f"{settings.API_V1_STR}/parties/{party['id']}/members")
     assert response.status_code == 200
     content = response.json()
-    active_member_ids = [m["id"] for m in content["data"] if m["is_active"]]
+    active_member_ids = [m["id"] for m in content["data"] if m["status"] == "active"]
     assert member["id"] not in active_member_ids
 
 
@@ -408,7 +406,7 @@ def test_cannot_remove_quest_creator(
     # Get party members to find the creator member
     response = client.get(f"{settings.API_V1_STR}/parties/{party['id']}/members")
     members = response.json()["data"]
-    creator_member = next(m for m in members if m["is_leader"])
+    creator_member = next(m for m in members if m["role"] == "OWNER")
 
     # Try to remove quest creator
     response = client.delete(

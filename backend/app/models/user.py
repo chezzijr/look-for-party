@@ -12,20 +12,6 @@ if TYPE_CHECKING:
     from .quest import Quest, QuestApplication
 
 
-class CommitmentLevel(str, Enum):
-    CASUAL = "CASUAL"
-    MODERATE = "MODERATE"
-    SERIOUS = "SERIOUS"
-    PROFESSIONAL = "PROFESSIONAL"
-
-
-class CommunicationStyle(str, Enum):
-    TEXT = "TEXT"
-    VOICE = "VOICE"
-    VIDEO = "VIDEO"
-    MIXED = "MIXED"
-
-
 # Shared properties
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
@@ -35,16 +21,6 @@ class UserBase(SQLModel):
     bio: str | None = Field(default=None)
     location: str | None = Field(default=None, max_length=255)
     timezone: str | None = Field(default=None, max_length=50)
-    preferred_party_size_min: int = Field(default=2, ge=1, le=50)
-    preferred_party_size_max: int = Field(default=8, ge=1, le=50)
-    preferred_commitment_level: CommitmentLevel = Field(
-        default=CommitmentLevel.CASUAL,
-        sa_column_kwargs={"server_default": CommitmentLevel.CASUAL.value},
-    )
-    communication_style: CommunicationStyle = Field(
-        default=CommunicationStyle.TEXT,
-        sa_column_kwargs={"server_default": CommunicationStyle.TEXT.value},
-    )
 
 
 # Properties to receive via API on creation
@@ -65,10 +41,6 @@ class UserUpdate(UserBase):
     bio: str | None = Field(default=None)
     location: str | None = Field(default=None, max_length=255)
     timezone: str | None = Field(default=None, max_length=50)
-    preferred_party_size_min: int | None = Field(default=None, ge=1, le=50)
-    preferred_party_size_max: int | None = Field(default=None, ge=1, le=50)
-    preferred_commitment_level: CommitmentLevel | None = Field(default=None)
-    communication_style: CommunicationStyle | None = Field(default=None)
 
 
 class UserUpdateMe(SQLModel):
@@ -77,10 +49,6 @@ class UserUpdateMe(SQLModel):
     bio: str | None = Field(default=None)
     location: str | None = Field(default=None, max_length=255)
     timezone: str | None = Field(default=None, max_length=50)
-    preferred_party_size_min: int | None = Field(default=None, ge=1, le=50)
-    preferred_party_size_max: int | None = Field(default=None, ge=1, le=50)
-    preferred_commitment_level: CommitmentLevel | None = Field(default=None)
-    communication_style: CommunicationStyle | None = Field(default=None)
 
 
 class UpdatePassword(SQLModel):

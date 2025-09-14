@@ -6,13 +6,13 @@ from sqlmodel import Session
 
 from app import crud
 from app.models import (
-    CommitmentLevel,
-    CommunicationStyle,
     LocationType,
+    CommitmentLevel,
     Party,
     PartyCreate,
     PartyMember,
     PartyMemberCreate,
+    PartyMemberRole,
     PartyStatus,
     Quest,
     QuestApplication,
@@ -37,14 +37,6 @@ class UserCreateFactory(factory.Factory):
     bio = factory.Faker("paragraph", nb_sentences=3)
     location = factory.Faker("city")
     timezone = factory.Faker("timezone")
-    preferred_party_size_min = factory.Faker("random_int", min=2, max=4)
-    preferred_party_size_max = factory.Faker("random_int", min=5, max=10)
-    preferred_commitment_level = factory.Faker(
-        "random_element", elements=[e.value for e in CommitmentLevel]
-    )
-    communication_style = factory.Faker(
-        "random_element", elements=[e.value for e in CommunicationStyle]
-    )
 
 
 def create_user(db: Session, **kwargs) -> User:
@@ -60,6 +52,7 @@ class QuestCreateFactory(factory.Factory):
 
     title = factory.Faker("sentence", nb_words=4)
     description = factory.Faker("text", max_nb_chars=500)
+    objective = factory.Faker("sentence", nb_words=8)
     category = factory.Faker(
         "random_element", elements=[e.value for e in QuestCategory]
     )
@@ -80,6 +73,7 @@ class QuestCreateFactory(factory.Factory):
         "random_element",
         elements=["1-2 hours", "Half day", "Full day", "Weekend", "1 week"],
     )
+    auto_approve = factory.Faker("boolean")
     visibility = factory.Faker(
         "random_element", elements=[e.value for e in QuestVisibility]
     )
@@ -151,8 +145,10 @@ class PartyMemberCreateFactory(factory.Factory):
         model = PartyMemberCreate
 
     user_id = factory.LazyFunction(uuid.uuid4)
-    role = factory.Faker("job")
-    is_leader = factory.Faker("boolean")
+    role = factory.Faker(
+        "random_element", elements=[e.value for e in PartyMemberRole]
+    )
+    status = "active"
 
 
 def create_party_member(
@@ -194,9 +190,9 @@ def create_party_with_members(
     party = create_party(db, quest_id=quest.id)
     members = []
 
-    # Add quest creator as leader
+    # Add quest creator as owner
     creator_member = create_party_member(
-        db, party_id=party.id, user_id=quest.creator_id, is_leader=True
+        db, party_id=party.id, user_id=quest.creator_id, role=PartyMemberRole.OWNER
     )
     members.append(creator_member)
 

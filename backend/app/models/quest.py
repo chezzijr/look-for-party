@@ -59,15 +59,17 @@ class ApplicationStatus(str, Enum):
 class QuestBase(SQLModel):
     title: str = Field(min_length=5, max_length=200)
     description: str = Field(min_length=20, max_length=2000)
+    objective: str = Field(min_length=10, max_length=500)
     category: QuestCategory
     party_size_min: int = Field(ge=1, le=50)
     party_size_max: int = Field(ge=1, le=50)
     required_commitment: CommitmentLevel
     location_type: LocationType
-    location_detail: str | None = Field(default=None)
+    location_detail: str | None = Field(default=None, max_length=255)
     starts_at: datetime | None = Field(default=None)
     deadline: datetime | None = Field(default=None)
     estimated_duration: str | None = Field(default=None, max_length=100)
+    auto_approve: bool = Field(default=False)
     visibility: QuestVisibility = Field(
         default=QuestVisibility.PUBLIC,
         sa_column_kwargs={"server_default": QuestVisibility.PUBLIC.value},
@@ -83,15 +85,17 @@ class QuestCreate(QuestBase):
 class QuestUpdate(SQLModel):
     title: str | None = Field(default=None, min_length=5, max_length=200)
     description: str | None = Field(default=None, min_length=20, max_length=2000)
+    objective: str | None = Field(default=None, min_length=10, max_length=500)
     category: QuestCategory | None = Field(default=None)
     party_size_min: int | None = Field(default=None, ge=1, le=50)
     party_size_max: int | None = Field(default=None, ge=1, le=50)
     required_commitment: CommitmentLevel | None = Field(default=None)
     location_type: LocationType | None = Field(default=None)
-    location_detail: str | None = Field(default=None)
+    location_detail: str | None = Field(default=None, max_length=255)
     starts_at: datetime | None = Field(default=None)
     deadline: datetime | None = Field(default=None)
     estimated_duration: str | None = Field(default=None, max_length=100)
+    auto_approve: bool | None = Field(default=None)
     visibility: QuestVisibility | None = Field(default=None)
     status: QuestStatus | None = Field(default=None)
 
@@ -104,7 +108,21 @@ class Quest(QuestBase, table=True):
         default=QuestStatus.RECRUITING,
         sa_column_kwargs={"server_default": QuestStatus.RECRUITING.value},
     )
+    
+    # Matching & Discovery fields
+    embedding_vector: str | None = Field(default=None, max_length=10000)  # JSON string of vector
+    search_keywords: str | None = Field(default=None, max_length=1000)
+    
+    # Analytics & Tracking
+    view_count: int = Field(default=0, ge=0)
+    application_count: int = Field(default=0, ge=0)
+    current_party_size: int = Field(default=1, ge=1)  # Creator counts as 1
+    
+    # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    activated_at: datetime | None = Field(default=None)
+    completed_at: datetime | None = Field(default=None)
 
     # Relationships
     creator: "User" = Relationship(back_populates="created_quests")

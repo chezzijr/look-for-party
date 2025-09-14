@@ -11,18 +11,26 @@ if TYPE_CHECKING:
 
 
 class PartyStatus(str, Enum):
-    FORMING = "FORMING"
     ACTIVE = "ACTIVE"
     COMPLETED = "COMPLETED"
-    DISBANDED = "DISBANDED"
+    ARCHIVED = "ARCHIVED"
+
+
+class PartyMemberRole(str, Enum):
+    OWNER = "OWNER"
+    MODERATOR = "MODERATOR"
+    MEMBER = "MEMBER"
 
 
 # Shared properties
 class PartyBase(SQLModel):
+    name: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
     status: PartyStatus = Field(
-        default=PartyStatus.FORMING,
-        sa_column_kwargs={"server_default": PartyStatus.FORMING.value},
+        default=PartyStatus.ACTIVE,
+        sa_column_kwargs={"server_default": PartyStatus.ACTIVE.value},
     )
+    is_private: bool = Field(default=False)
     chat_channel_id: str | None = Field(default=None, max_length=255)
 
 
@@ -33,7 +41,10 @@ class PartyCreate(PartyBase):
 
 # Properties to receive on party update
 class PartyUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
     status: PartyStatus | None = Field(default=None)
+    is_private: bool | None = Field(default=None)
     chat_channel_id: str | None = Field(default=None, max_length=255)
 
 
@@ -42,7 +53,9 @@ class Party(PartyBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False, unique=True)
     formed_at: datetime = Field(default_factory=datetime.utcnow)
-    disbanded_at: datetime | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    completed_at: datetime | None = Field(default=None)
+    archived_at: datetime | None = Field(default=None)
 
     # Relationships
     quest: "Quest" = Relationship(back_populates="party")
@@ -53,8 +66,11 @@ class Party(PartyBase, table=True):
 
 # Party Member model
 class PartyMemberBase(SQLModel):
-    role: str | None = Field(default=None, max_length=100)
-    is_leader: bool = Field(default=False)
+    role: PartyMemberRole = Field(
+        default=PartyMemberRole.MEMBER,
+        sa_column_kwargs={"server_default": PartyMemberRole.MEMBER.value},
+    )
+    status: str = Field(default="active", max_length=20)  # 'active', 'inactive', 'removed'
 
 
 class PartyMemberCreate(PartyMemberBase):
@@ -62,8 +78,8 @@ class PartyMemberCreate(PartyMemberBase):
 
 
 class PartyMemberUpdate(SQLModel):
-    role: str | None = Field(default=None, max_length=100)
-    is_leader: bool | None = Field(default=None)
+    role: PartyMemberRole | None = Field(default=None)
+    status: str | None = Field(default=None, max_length=20)
 
 
 class PartyMember(PartyMemberBase, table=True):
@@ -72,7 +88,6 @@ class PartyMember(PartyMemberBase, table=True):
     user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     joined_at: datetime = Field(default_factory=datetime.utcnow)
     left_at: datetime | None = Field(default=None)
-    is_active: bool = Field(default=True)
 
     # Relationships
     party: Party = Relationship(back_populates="members")
@@ -84,7 +99,7 @@ class PartyPublic(PartyBase):
     id: uuid.UUID
     quest_id: uuid.UUID
     formed_at: datetime
-    disbanded_at: datetime | None
+    archived_at: datetime | None
 
 
 class PartyDetail(PartyPublic):
@@ -104,7 +119,6 @@ class PartyMemberPublic(PartyMemberBase):
     user_id: uuid.UUID
     joined_at: datetime
     left_at: datetime | None
-    is_active: bool
 
 
 class PartyMemberDetail(PartyMemberPublic):

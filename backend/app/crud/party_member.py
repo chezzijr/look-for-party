@@ -25,7 +25,7 @@ def get_party_members(
 ) -> list[PartyMember]:
     statement = select(PartyMember).where(PartyMember.party_id == party_id)
     if active_only:
-        statement = statement.where(PartyMember.is_active)
+        statement = statement.where(PartyMember.status == "active")
     statement = statement.order_by(PartyMember.joined_at)
     return list(session.exec(statement).all())
 
@@ -35,7 +35,7 @@ def get_user_party_memberships(
 ) -> list[PartyMember]:
     statement = select(PartyMember).where(PartyMember.user_id == user_id)
     if active_only:
-        statement = statement.where(PartyMember.is_active)
+        statement = statement.where(PartyMember.status == "active")
     statement = statement.order_by(PartyMember.joined_at.desc())
     return list(session.exec(statement).all())
 
@@ -56,7 +56,7 @@ def remove_party_member(*, session: Session, member_id: uuid.UUID) -> bool:
     if member:
         from datetime import datetime
 
-        member.is_active = False
+        member.status = "inactive"
         member.left_at = datetime.utcnow()
         session.add(member)
         session.commit()

@@ -53,7 +53,7 @@ def create_party(
     party = crud.create_party(session=session, party_in=party_in)
 
     # Add the quest creator as the first member and leader
-    member_create = PartyMemberCreate(user_id=current_user.id, is_leader=True)
+    member_create = PartyMemberCreate(user_id=current_user.id, role="OWNER")
     crud.create_party_member(
         session=session, member_in=member_create, party_id=party.id
     )
@@ -108,7 +108,7 @@ def update_party(
 
     # Check if user is a party leader
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
+    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
 
     if not is_creator and not is_leader and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -157,21 +157,21 @@ def add_party_member(
     is_creator = quest and quest.creator_id == current_user.id
 
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
+    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
 
     if not is_creator and not is_leader and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Check if user is already a member
     existing_member = any(
-        m.user_id == member_in.user_id and m.is_active for m in members
+        m.user_id == member_in.user_id and m.status == "active" for m in members
     )
     if existing_member:
         raise HTTPException(status_code=400, detail="User is already a party member")
 
     # Check party size limits
     if quest:
-        active_count = len([m for m in members if m.is_active])
+        active_count = len([m for m in members if m.status == "active"])
         if active_count >= quest.party_size_max:
             raise HTTPException(status_code=400, detail="Party is at maximum capacity")
 
@@ -207,10 +207,10 @@ def update_party_member(
     is_self = member.user_id == current_user.id
 
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
+    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
 
-    # Leadership changes can only be done by quest creator or existing leaders
-    if member_in.is_leader is not None:
+    # Role changes to leadership roles can only be done by quest creator or existing leaders
+    if member_in.role is not None and member_in.role in ["OWNER", "MODERATOR"]:
         if not is_creator and not is_leader and not current_user.is_superuser:
             raise HTTPException(
                 status_code=403, detail="Not enough permissions to change leadership"
@@ -258,7 +258,7 @@ def remove_party_member(
     is_self = member.user_id == current_user.id
 
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.is_leader for m in members)
+    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
 
     if (
         not is_creator
