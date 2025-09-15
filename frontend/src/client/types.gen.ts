@@ -18,8 +18,6 @@ export type Body_login_login_access_token = {
 
 export type CommitmentLevel = "CASUAL" | "MODERATE" | "SERIOUS" | "PROFESSIONAL"
 
-export type CommunicationStyle = "TEXT" | "VOICE" | "VIDEO" | "MIXED"
-
 export type HTTPValidationError = {
   detail?: Array<ValidationError>
 }
@@ -41,27 +39,31 @@ export type PartiesPublic = {
 }
 
 export type PartyCreate = {
+  name?: string | null
+  description?: string | null
   status?: PartyStatus
+  is_private?: boolean
   chat_channel_id?: string | null
   quest_id: string
 }
 
 export type PartyMemberCreate = {
-  role?: string | null
-  is_leader?: boolean
+  role?: PartyMemberRole
+  status?: string
   user_id: string
 }
 
 export type PartyMemberPublic = {
-  role?: string | null
-  is_leader?: boolean
+  role?: PartyMemberRole
+  status?: string
   id: string
   party_id: string
   user_id: string
   joined_at: string
   left_at: string | null
-  is_active: boolean
 }
+
+export type PartyMemberRole = "OWNER" | "MODERATOR" | "MEMBER"
 
 export type PartyMembersPublic = {
   data: Array<PartyMemberPublic>
@@ -69,23 +71,53 @@ export type PartyMembersPublic = {
 }
 
 export type PartyMemberUpdate = {
-  role?: string | null
-  is_leader?: boolean | null
+  role?: PartyMemberRole | null
+  status?: string | null
 }
 
 export type PartyPublic = {
+  name?: string | null
+  description?: string | null
   status?: PartyStatus
+  is_private?: boolean
   chat_channel_id?: string | null
   id: string
   quest_id: string
   formed_at: string
-  disbanded_at: string | null
+  archived_at: string | null
 }
 
-export type PartyStatus = "FORMING" | "ACTIVE" | "COMPLETED" | "DISBANDED"
+/**
+ * Model for creating quests from party context
+ */
+export type PartyQuestCreate = {
+  title: string
+  description: string
+  objective: string
+  category: QuestCategory
+  quest_type: QuestType
+  assigned_member_ids?: Array<string> | null
+  internal_slots?: number
+  party_size_min?: number | null
+  party_size_max?: number | null
+  public_slots?: number
+  required_commitment: CommitmentLevel
+  location_type: LocationType
+  location_detail?: string | null
+  starts_at?: string | null
+  deadline?: string | null
+  estimated_duration?: string | null
+  auto_approve?: boolean
+  visibility?: QuestVisibility
+}
+
+export type PartyStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED"
 
 export type PartyUpdate = {
+  name?: string | null
+  description?: string | null
   status?: PartyStatus | null
+  is_private?: boolean | null
   chat_channel_id?: string | null
 }
 
@@ -96,19 +128,29 @@ export type PrivateUserCreate = {
   is_verified?: boolean
 }
 
+export type ProficiencyLevel =
+  | "BEGINNER"
+  | "INTERMEDIATE"
+  | "ADVANCED"
+  | "EXPERT"
+
 export type QuestApplicationCreate = {
   message: string
   proposed_role?: string | null
+  relevant_skills?: string | null
 }
 
 export type QuestApplicationPublic = {
   message: string
   proposed_role?: string | null
+  relevant_skills?: string | null
   id: string
   quest_id: string
   applicant_id: string
   status: ApplicationStatus
+  created_at: string
   applied_at: string
+  updated_at: string
   reviewed_at: string | null
   reviewer_feedback: string | null
 }
@@ -121,6 +163,7 @@ export type QuestApplicationsPublic = {
 export type QuestApplicationUpdate = {
   message?: string | null
   proposed_role?: string | null
+  relevant_skills?: string | null
   status?: ApplicationStatus | null
   reviewer_feedback?: string | null
 }
@@ -137,6 +180,7 @@ export type QuestCategory =
 export type QuestCreate = {
   title: string
   description: string
+  objective: string
   category: QuestCategory
   party_size_min: number
   party_size_max: number
@@ -146,12 +190,22 @@ export type QuestCreate = {
   starts_at?: string | null
   deadline?: string | null
   estimated_duration?: string | null
+  auto_approve?: boolean
   visibility?: QuestVisibility
+  quest_type?: QuestType
+}
+
+/**
+ * Request to assign/unassign members to internal quest
+ */
+export type QuestMemberAssignmentRequest = {
+  assigned_member_ids: Array<string>
 }
 
 export type QuestPublic = {
   title: string
   description: string
+  objective: string
   category: QuestCategory
   party_size_min: number
   party_size_max: number
@@ -161,11 +215,28 @@ export type QuestPublic = {
   starts_at?: string | null
   deadline?: string | null
   estimated_duration?: string | null
+  auto_approve?: boolean
   visibility?: QuestVisibility
+  quest_type?: QuestType
   id: string
   creator_id: string
   status: QuestStatus
   created_at: string
+  party_id?: string | null
+  parent_party_id?: string | null
+  internal_slots?: number
+  public_slots?: number
+  assigned_member_ids?: string | null
+  is_publicized?: boolean
+  publicized_at?: string | null
+}
+
+/**
+ * Request to publicize an internal/hybrid quest
+ */
+export type QuestPublicizeRequest = {
+  public_slots: number
+  visibility?: QuestVisibility
 }
 
 export type QuestsPublic = {
@@ -180,9 +251,42 @@ export type QuestStatus =
   | "CANCELLED"
   | "EXPIRED"
 
+export type QuestTagCreate = {
+  is_required?: boolean
+  min_proficiency?: ProficiencyLevel | null
+  tag_id: string
+}
+
+export type QuestTagPublic = {
+  is_required?: boolean
+  min_proficiency?: ProficiencyLevel | null
+  id: string
+  quest_id: string
+  tag_id: string
+  created_at: string
+  tag: TagPublic
+}
+
+export type QuestTagsPublic = {
+  data: Array<QuestTagPublic>
+  count: number
+}
+
+export type QuestTagUpdate = {
+  is_required?: boolean | null
+  min_proficiency?: ProficiencyLevel | null
+}
+
+export type QuestType =
+  | "INDIVIDUAL"
+  | "PARTY_INTERNAL"
+  | "PARTY_EXPANSION"
+  | "PARTY_HYBRID"
+
 export type QuestUpdate = {
   title?: string | null
   description?: string | null
+  objective?: string | null
   category?: QuestCategory | null
   party_size_min?: number | null
   party_size_max?: number | null
@@ -192,11 +296,169 @@ export type QuestUpdate = {
   starts_at?: string | null
   deadline?: string | null
   estimated_duration?: string | null
+  auto_approve?: boolean | null
   visibility?: QuestVisibility | null
   status?: QuestStatus | null
+  quest_type?: QuestType | null
+  internal_slots?: number | null
+  public_slots?: number | null
+  assigned_member_ids?: string | null
+  is_publicized?: boolean | null
 }
 
 export type QuestVisibility = "PUBLIC" | "UNLISTED" | "PRIVATE"
+
+export type RatingCreate = {
+  /**
+   * Overall rating (1-5 stars)
+   */
+  overall_rating: number
+  /**
+   * Collaboration skill rating (1-5 stars)
+   */
+  collaboration_rating: number
+  /**
+   * Communication skill rating (1-5 stars)
+   */
+  communication_rating: number
+  /**
+   * Reliability rating (1-5 stars)
+   */
+  reliability_rating: number
+  /**
+   * Technical/domain skill rating (1-5 stars)
+   */
+  skill_rating: number
+  /**
+   * Optional written review
+   */
+  review_text?: string | null
+  /**
+   * Would collaborate with this person again
+   */
+  would_collaborate_again?: boolean
+  party_id: string
+  rated_user_id: string
+}
+
+export type RatingPublic = {
+  /**
+   * Overall rating (1-5 stars)
+   */
+  overall_rating: number
+  /**
+   * Collaboration skill rating (1-5 stars)
+   */
+  collaboration_rating: number
+  /**
+   * Communication skill rating (1-5 stars)
+   */
+  communication_rating: number
+  /**
+   * Reliability rating (1-5 stars)
+   */
+  reliability_rating: number
+  /**
+   * Technical/domain skill rating (1-5 stars)
+   */
+  skill_rating: number
+  /**
+   * Optional written review
+   */
+  review_text?: string | null
+  /**
+   * Would collaborate with this person again
+   */
+  would_collaborate_again?: boolean
+  id: string
+  party_id: string
+  rater_id: string
+  rated_user_id: string
+  created_at: string
+  updated_at: string
+}
+
+export type RatingsPublic = {
+  data: Array<RatingPublic>
+  count: number
+}
+
+export type RatingUpdate = {
+  overall_rating?: number | null
+  collaboration_rating?: number | null
+  communication_rating?: number | null
+  reliability_rating?: number | null
+  skill_rating?: number | null
+  review_text?: string | null
+  would_collaborate_again?: boolean | null
+}
+
+export type TagCategory =
+  | "PROGRAMMING"
+  | "FRAMEWORK"
+  | "TOOL"
+  | "GAME"
+  | "GAME_GENRE"
+  | "ART"
+  | "MUSIC"
+  | "MEDIA"
+  | "SPORT"
+  | "FITNESS"
+  | "LANGUAGE"
+  | "SUBJECT"
+  | "SKILL"
+  | "HOBBY"
+  | "LOCATION"
+  | "STYLE"
+
+export type TagCreate = {
+  name: string
+  slug: string
+  category: TagCategory
+  description?: string | null
+  status?: TagStatus
+  suggested_by?: string | null
+}
+
+export type TagDetail = {
+  name: string
+  slug: string
+  category: TagCategory
+  description?: string | null
+  id: string
+  status: TagStatus
+  usage_count: number
+  created_at: string
+  suggested_by: string | null
+  updated_at: string
+}
+
+export type TagPublic = {
+  name: string
+  slug: string
+  category: TagCategory
+  description?: string | null
+  id: string
+  status: TagStatus
+  usage_count: number
+  created_at: string
+}
+
+export type TagsPublic = {
+  data: Array<TagPublic>
+  count: number
+}
+
+export type TagStatus = "SYSTEM" | "APPROVED" | "PENDING" | "REJECTED"
+
+export type TagUpdate = {
+  name?: string | null
+  slug?: string | null
+  category?: TagCategory | null
+  description?: string | null
+  status?: TagStatus | null
+  suggested_by?: string | null
+}
 
 export type Token = {
   access_token: string
@@ -208,6 +470,22 @@ export type UpdatePassword = {
   new_password: string
 }
 
+export type User = {
+  email: string
+  is_active?: boolean
+  is_superuser?: boolean
+  full_name?: string | null
+  bio?: string | null
+  location?: string | null
+  timezone?: string | null
+  id?: string
+  hashed_password: string
+  created_at?: string
+  last_active?: string | null
+  reputation_score?: string
+  total_completed_quests?: number
+}
+
 export type UserCreate = {
   email: string
   is_active?: boolean
@@ -216,10 +494,6 @@ export type UserCreate = {
   bio?: string | null
   location?: string | null
   timezone?: string | null
-  preferred_party_size_min?: number
-  preferred_party_size_max?: number
-  preferred_commitment_level?: CommitmentLevel
-  communication_style?: CommunicationStyle
   password: string
 }
 
@@ -231,14 +505,21 @@ export type UserPublic = {
   bio?: string | null
   location?: string | null
   timezone?: string | null
-  preferred_party_size_min?: number
-  preferred_party_size_max?: number
-  preferred_commitment_level?: CommitmentLevel
-  communication_style?: CommunicationStyle
   id: string
   created_at: string
   reputation_score: string
   total_completed_quests: number
+}
+
+export type UserRatingSummary = {
+  user_id: string
+  total_ratings: number
+  average_overall: number
+  average_collaboration: number
+  average_communication: number
+  average_reliability: number
+  average_skill: number
+  positive_feedback_percentage: number
 }
 
 export type UserRegister = {
@@ -252,6 +533,32 @@ export type UsersPublic = {
   count: number
 }
 
+export type UserTagCreate = {
+  proficiency_level?: ProficiencyLevel | null
+  is_primary?: boolean
+  tag_id: string
+}
+
+export type UserTagPublic = {
+  proficiency_level?: ProficiencyLevel | null
+  is_primary?: boolean
+  id: string
+  user_id: string
+  tag_id: string
+  created_at: string
+  tag: TagPublic
+}
+
+export type UserTagsPublic = {
+  data: Array<UserTagPublic>
+  count: number
+}
+
+export type UserTagUpdate = {
+  proficiency_level?: ProficiencyLevel | null
+  is_primary?: boolean | null
+}
+
 export type UserUpdate = {
   email?: string | null
   is_active?: boolean
@@ -260,10 +567,6 @@ export type UserUpdate = {
   bio?: string | null
   location?: string | null
   timezone?: string | null
-  preferred_party_size_min?: number | null
-  preferred_party_size_max?: number | null
-  preferred_commitment_level?: CommitmentLevel | null
-  communication_style?: CommunicationStyle | null
   password?: string | null
 }
 
@@ -273,10 +576,6 @@ export type UserUpdateMe = {
   bio?: string | null
   location?: string | null
   timezone?: string | null
-  preferred_party_size_min?: number | null
-  preferred_party_size_max?: number | null
-  preferred_commitment_level?: CommitmentLevel | null
-  communication_style?: CommunicationStyle | null
 }
 
 export type ValidationError = {
@@ -360,6 +659,20 @@ export type PartiesRemovePartyMemberData = {
 }
 
 export type PartiesRemovePartyMemberResponse = Message
+
+export type PartiesCreatePartyQuestData = {
+  partyId: string
+  requestBody: PartyQuestCreate
+}
+
+export type PartiesCreatePartyQuestResponse = QuestPublic
+
+export type PartiesGetPartyQuestsData = {
+  partyId: string
+  questType?: QuestType | null
+}
+
+export type PartiesGetPartyQuestsResponse = Array<QuestPublic>
 
 export type PrivateCreateUserData = {
   requestBody: PrivateUserCreate
@@ -448,6 +761,212 @@ export type QuestsDeleteQuestData = {
 }
 
 export type QuestsDeleteQuestResponse = Message
+
+export type QuestsPublicizeQuestData = {
+  questId: string
+  requestBody: QuestPublicizeRequest
+}
+
+export type QuestsPublicizeQuestResponse = QuestPublic
+
+export type QuestsAssignQuestMembersData = {
+  questId: string
+  requestBody: QuestMemberAssignmentRequest
+}
+
+export type QuestsAssignQuestMembersResponse = QuestPublic
+
+export type QuestsCloseQuestData = {
+  questId: string
+}
+
+export type QuestsCloseQuestResponse = QuestPublic
+
+export type RatingsCreateRatingData = {
+  requestBody: RatingCreate
+}
+
+export type RatingsCreateRatingResponse = RatingPublic
+
+export type RatingsReadRatingData = {
+  ratingId: string
+}
+
+export type RatingsReadRatingResponse = RatingPublic
+
+export type RatingsUpdateRatingData = {
+  ratingId: string
+  requestBody: RatingUpdate
+}
+
+export type RatingsUpdateRatingResponse = RatingPublic
+
+export type RatingsDeleteRatingData = {
+  ratingId: string
+}
+
+export type RatingsDeleteRatingResponse = Message
+
+export type RatingsReadPartyRatingsData = {
+  partyId: string
+}
+
+export type RatingsReadPartyRatingsResponse = RatingsPublic
+
+export type RatingsReadMyReceivedRatingsResponse = RatingsPublic
+
+export type RatingsReadMyGivenRatingsResponse = RatingsPublic
+
+export type RatingsReadUserReceivedRatingsData = {
+  userId: string
+}
+
+export type RatingsReadUserReceivedRatingsResponse = RatingsPublic
+
+export type RatingsReadUserRatingSummaryData = {
+  userId: string
+}
+
+export type RatingsReadUserRatingSummaryResponse = UserRatingSummary
+
+export type RatingsGetRatableUsersForPartyData = {
+  partyId: string
+}
+
+export type RatingsGetRatableUsersForPartyResponse = Array<User>
+
+export type RatingsCheckCanRatePartyData = {
+  partyId: string
+}
+
+export type RatingsCheckCanRatePartyResponse = {
+  [key: string]: boolean
+}
+
+export type RatingsGetMyRatingForUserInPartyData = {
+  partyId: string
+  ratedUserId: string
+}
+
+export type RatingsGetMyRatingForUserInPartyResponse = RatingPublic | null
+
+export type TagsReadTagsData = {
+  category?: TagCategory | null
+  limit?: number
+  search?: string | null
+  skip?: number
+  status?: TagStatus | null
+}
+
+export type TagsReadTagsResponse = TagsPublic
+
+export type TagsCreateTagData = {
+  requestBody: TagCreate
+}
+
+export type TagsCreateTagResponse = TagPublic
+
+export type TagsReadPopularTagsData = {
+  category?: TagCategory | null
+  limit?: number
+}
+
+export type TagsReadPopularTagsResponse = TagsPublic
+
+export type TagsGetTagSuggestionsData = {
+  category?: TagCategory | null
+  limit?: number
+  /**
+   * Search query for tag suggestions
+   */
+  q: string
+}
+
+export type TagsGetTagSuggestionsResponse = TagsPublic
+
+export type TagsGetTagCategoriesWithCountsResponse = {
+  [key: string]: number
+}
+
+export type TagsReadTagData = {
+  tagId: string
+}
+
+export type TagsReadTagResponse = TagDetail
+
+export type TagsUpdateTagData = {
+  requestBody: TagUpdate
+  tagId: string
+}
+
+export type TagsUpdateTagResponse = TagPublic
+
+export type TagsDeleteTagData = {
+  tagId: string
+}
+
+export type TagsDeleteTagResponse = Message
+
+export type TagsReadTagBySlugData = {
+  slug: string
+}
+
+export type TagsReadTagBySlugResponse = TagPublic
+
+export type TagsReadMyUserTagsResponse = UserTagsPublic
+
+export type TagsCreateMyUserTagData = {
+  requestBody: UserTagCreate
+}
+
+export type TagsCreateMyUserTagResponse = UserTagPublic
+
+export type TagsUpdateMyUserTagData = {
+  requestBody: UserTagUpdate
+  tagId: string
+}
+
+export type TagsUpdateMyUserTagResponse = UserTagPublic
+
+export type TagsDeleteMyUserTagData = {
+  tagId: string
+}
+
+export type TagsDeleteMyUserTagResponse = Message
+
+export type TagsReadUserTagsData = {
+  userId: string
+}
+
+export type TagsReadUserTagsResponse = UserTagsPublic
+
+export type TagsReadQuestTagsData = {
+  questId: string
+}
+
+export type TagsReadQuestTagsResponse = QuestTagsPublic
+
+export type TagsCreateQuestTagData = {
+  questId: string
+  requestBody: QuestTagCreate
+}
+
+export type TagsCreateQuestTagResponse = QuestTagPublic
+
+export type TagsUpdateQuestTagData = {
+  questId: string
+  requestBody: QuestTagUpdate
+  tagId: string
+}
+
+export type TagsUpdateQuestTagResponse = QuestTagPublic
+
+export type TagsDeleteQuestTagData = {
+  questId: string
+  tagId: string
+}
+
+export type TagsDeleteQuestTagResponse = Message
 
 export type UsersReadUsersData = {
   limit?: number

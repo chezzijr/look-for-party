@@ -28,6 +28,10 @@ import type {
   PartiesUpdatePartyMemberResponse,
   PartiesRemovePartyMemberData,
   PartiesRemovePartyMemberResponse,
+  PartiesCreatePartyQuestData,
+  PartiesCreatePartyQuestResponse,
+  PartiesGetPartyQuestsData,
+  PartiesGetPartyQuestsResponse,
   PrivateCreateUserData,
   PrivateCreateUserResponse,
   QuestApplicationsApplyToQuestData,
@@ -54,6 +58,68 @@ import type {
   QuestsUpdateQuestResponse,
   QuestsDeleteQuestData,
   QuestsDeleteQuestResponse,
+  QuestsPublicizeQuestData,
+  QuestsPublicizeQuestResponse,
+  QuestsAssignQuestMembersData,
+  QuestsAssignQuestMembersResponse,
+  QuestsCloseQuestData,
+  QuestsCloseQuestResponse,
+  RatingsCreateRatingData,
+  RatingsCreateRatingResponse,
+  RatingsReadRatingData,
+  RatingsReadRatingResponse,
+  RatingsUpdateRatingData,
+  RatingsUpdateRatingResponse,
+  RatingsDeleteRatingData,
+  RatingsDeleteRatingResponse,
+  RatingsReadPartyRatingsData,
+  RatingsReadPartyRatingsResponse,
+  RatingsReadMyReceivedRatingsResponse,
+  RatingsReadMyGivenRatingsResponse,
+  RatingsReadUserReceivedRatingsData,
+  RatingsReadUserReceivedRatingsResponse,
+  RatingsReadUserRatingSummaryData,
+  RatingsReadUserRatingSummaryResponse,
+  RatingsGetRatableUsersForPartyData,
+  RatingsGetRatableUsersForPartyResponse,
+  RatingsCheckCanRatePartyData,
+  RatingsCheckCanRatePartyResponse,
+  RatingsGetMyRatingForUserInPartyData,
+  RatingsGetMyRatingForUserInPartyResponse,
+  TagsReadTagsData,
+  TagsReadTagsResponse,
+  TagsCreateTagData,
+  TagsCreateTagResponse,
+  TagsReadPopularTagsData,
+  TagsReadPopularTagsResponse,
+  TagsGetTagSuggestionsData,
+  TagsGetTagSuggestionsResponse,
+  TagsGetTagCategoriesWithCountsResponse,
+  TagsReadTagData,
+  TagsReadTagResponse,
+  TagsUpdateTagData,
+  TagsUpdateTagResponse,
+  TagsDeleteTagData,
+  TagsDeleteTagResponse,
+  TagsReadTagBySlugData,
+  TagsReadTagBySlugResponse,
+  TagsReadMyUserTagsResponse,
+  TagsCreateMyUserTagData,
+  TagsCreateMyUserTagResponse,
+  TagsUpdateMyUserTagData,
+  TagsUpdateMyUserTagResponse,
+  TagsDeleteMyUserTagData,
+  TagsDeleteMyUserTagResponse,
+  TagsReadUserTagsData,
+  TagsReadUserTagsResponse,
+  TagsReadQuestTagsData,
+  TagsReadQuestTagsResponse,
+  TagsCreateQuestTagData,
+  TagsCreateQuestTagResponse,
+  TagsUpdateQuestTagData,
+  TagsUpdateQuestTagResponse,
+  TagsDeleteQuestTagData,
+  TagsDeleteQuestTagResponse,
   UsersReadUsersData,
   UsersReadUsersResponse,
   UsersCreateUserData,
@@ -366,6 +432,61 @@ export class PartiesService {
       path: {
         party_id: data.partyId,
         member_id: data.memberId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Create Party Quest
+   * Create a quest from party context (internal, expansion, or hybrid).
+   * Only party owners and moderators can create quests.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.requestBody
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static createPartyQuest(
+    data: PartiesCreatePartyQuestData,
+  ): CancelablePromise<PartiesCreatePartyQuestResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/parties/{party_id}/quests",
+      path: {
+        party_id: data.partyId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Party Quests
+   * Get all quests created by or for this party.
+   * Only party members can view party quests.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.questType
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static getPartyQuests(
+    data: PartiesGetPartyQuestsData,
+  ): CancelablePromise<PartiesGetPartyQuestsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/parties/{party_id}/quests",
+      path: {
+        party_id: data.partyId,
+      },
+      query: {
+        quest_type: data.questType,
       },
       errors: {
         422: "Validation Error",
@@ -690,6 +811,770 @@ export class QuestsService {
       url: "/api/v1/quests/{quest_id}",
       path: {
         quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Publicize Quest
+   * Publicize an internal or hybrid quest to allow external applications.
+   * Only party owners/moderators can publicize party quests.
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.requestBody
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static publicizeQuest(
+    data: QuestsPublicizeQuestData,
+  ): CancelablePromise<QuestsPublicizeQuestResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/quests/{quest_id}/publicize",
+      path: {
+        quest_id: data.questId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Assign Quest Members
+   * Assign members to an internal party quest.
+   * Only party owners/moderators can assign members.
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.requestBody
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static assignQuestMembers(
+    data: QuestsAssignQuestMembersData,
+  ): CancelablePromise<QuestsAssignQuestMembersResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/quests/{quest_id}/assign-members",
+      path: {
+        quest_id: data.questId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Close Quest
+   * Close a quest and handle party formation based on quest type.
+   * Only quest creators or party owners/moderators can close quests.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static closeQuest(
+    data: QuestsCloseQuestData,
+  ): CancelablePromise<QuestsCloseQuestResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/quests/{quest_id}/close",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class RatingsService {
+  /**
+   * Create Rating
+   * Create a new rating for a party member.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns RatingPublic Successful Response
+   * @throws ApiError
+   */
+  public static createRating(
+    data: RatingsCreateRatingData,
+  ): CancelablePromise<RatingsCreateRatingResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/ratings/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Rating
+   * Get rating by ID.
+   * @param data The data for the request.
+   * @param data.ratingId
+   * @returns RatingPublic Successful Response
+   * @throws ApiError
+   */
+  public static readRating(
+    data: RatingsReadRatingData,
+  ): CancelablePromise<RatingsReadRatingResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/{rating_id}",
+      path: {
+        rating_id: data.ratingId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Rating
+   * Update a rating (only by the rater).
+   * @param data The data for the request.
+   * @param data.ratingId
+   * @param data.requestBody
+   * @returns RatingPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateRating(
+    data: RatingsUpdateRatingData,
+  ): CancelablePromise<RatingsUpdateRatingResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/ratings/{rating_id}",
+      path: {
+        rating_id: data.ratingId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Rating
+   * Delete a rating (only by the rater).
+   * @param data The data for the request.
+   * @param data.ratingId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static deleteRating(
+    data: RatingsDeleteRatingData,
+  ): CancelablePromise<RatingsDeleteRatingResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/ratings/{rating_id}",
+      path: {
+        rating_id: data.ratingId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Party Ratings
+   * Get all ratings for a party.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @returns RatingsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readPartyRatings(
+    data: RatingsReadPartyRatingsData,
+  ): CancelablePromise<RatingsReadPartyRatingsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/party/{party_id}",
+      path: {
+        party_id: data.partyId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read My Received Ratings
+   * Get all ratings I have received.
+   * @returns RatingsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMyReceivedRatings(): CancelablePromise<RatingsReadMyReceivedRatingsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/users/me/received",
+    })
+  }
+
+  /**
+   * Read My Given Ratings
+   * Get all ratings I have given.
+   * @returns RatingsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMyGivenRatings(): CancelablePromise<RatingsReadMyGivenRatingsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/users/me/given",
+    })
+  }
+
+  /**
+   * Read User Received Ratings
+   * Get all ratings received by a user (public view).
+   * @param data The data for the request.
+   * @param data.userId
+   * @returns RatingsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readUserReceivedRatings(
+    data: RatingsReadUserReceivedRatingsData,
+  ): CancelablePromise<RatingsReadUserReceivedRatingsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/users/{user_id}/received",
+      path: {
+        user_id: data.userId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read User Rating Summary
+   * Get user's rating statistics and summary.
+   * @param data The data for the request.
+   * @param data.userId
+   * @returns UserRatingSummary Successful Response
+   * @throws ApiError
+   */
+  public static readUserRatingSummary(
+    data: RatingsReadUserRatingSummaryData,
+  ): CancelablePromise<RatingsReadUserRatingSummaryResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/users/{user_id}/summary",
+      path: {
+        user_id: data.userId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Ratable Users For Party
+   * Get users that the current user can rate in a given party.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @returns User Successful Response
+   * @throws ApiError
+   */
+  public static getRatableUsersForParty(
+    data: RatingsGetRatableUsersForPartyData,
+  ): CancelablePromise<RatingsGetRatableUsersForPartyResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/party/{party_id}/ratable-users",
+      path: {
+        party_id: data.partyId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Check Can Rate Party
+   * Check if current user can rate members in a party.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @returns boolean Successful Response
+   * @throws ApiError
+   */
+  public static checkCanRateParty(
+    data: RatingsCheckCanRatePartyData,
+  ): CancelablePromise<RatingsCheckCanRatePartyResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/party/{party_id}/can-rate",
+      path: {
+        party_id: data.partyId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get My Rating For User In Party
+   * Get my rating for a specific user in a specific party.
+   * @param data The data for the request.
+   * @param data.partyId
+   * @param data.ratedUserId
+   * @returns unknown Successful Response
+   * @throws ApiError
+   */
+  public static getMyRatingForUserInParty(
+    data: RatingsGetMyRatingForUserInPartyData,
+  ): CancelablePromise<RatingsGetMyRatingForUserInPartyResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/ratings/party/{party_id}/between/{rated_user_id}",
+      path: {
+        party_id: data.partyId,
+        rated_user_id: data.ratedUserId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class TagsService {
+  /**
+   * Read Tags
+   * Retrieve tags with optional filtering.
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @param data.category
+   * @param data.status
+   * @param data.search
+   * @returns TagsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readTags(
+    data: TagsReadTagsData = {},
+  ): CancelablePromise<TagsReadTagsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+        category: data.category,
+        status: data.status,
+        search: data.search,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Create Tag
+   * Create new tag (admin only).
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns TagPublic Successful Response
+   * @throws ApiError
+   */
+  public static createTag(
+    data: TagsCreateTagData,
+  ): CancelablePromise<TagsCreateTagResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/tags/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Popular Tags
+   * Retrieve most popular tags (highest usage count).
+   * @param data The data for the request.
+   * @param data.limit
+   * @param data.category
+   * @returns TagsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readPopularTags(
+    data: TagsReadPopularTagsData = {},
+  ): CancelablePromise<TagsReadPopularTagsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/popular",
+      query: {
+        limit: data.limit,
+        category: data.category,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Tag Suggestions
+   * Get tag suggestions for autocomplete.
+   * @param data The data for the request.
+   * @param data.q Search query for tag suggestions
+   * @param data.category
+   * @param data.limit
+   * @returns TagsPublic Successful Response
+   * @throws ApiError
+   */
+  public static getTagSuggestions(
+    data: TagsGetTagSuggestionsData,
+  ): CancelablePromise<TagsGetTagSuggestionsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/suggestions",
+      query: {
+        q: data.q,
+        category: data.category,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Tag Categories With Counts
+   * Get tag categories with their counts.
+   * @returns number Successful Response
+   * @throws ApiError
+   */
+  public static getTagCategoriesWithCounts(): CancelablePromise<TagsGetTagCategoriesWithCountsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/categories",
+    })
+  }
+
+  /**
+   * Read Tag
+   * Get tag by ID.
+   * @param data The data for the request.
+   * @param data.tagId
+   * @returns TagDetail Successful Response
+   * @throws ApiError
+   */
+  public static readTag(
+    data: TagsReadTagData,
+  ): CancelablePromise<TagsReadTagResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/{tag_id}",
+      path: {
+        tag_id: data.tagId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Tag
+   * Update tag (admin only).
+   * @param data The data for the request.
+   * @param data.tagId
+   * @param data.requestBody
+   * @returns TagPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateTag(
+    data: TagsUpdateTagData,
+  ): CancelablePromise<TagsUpdateTagResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/tags/{tag_id}",
+      path: {
+        tag_id: data.tagId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Tag
+   * Delete tag (admin only).
+   * @param data The data for the request.
+   * @param data.tagId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static deleteTag(
+    data: TagsDeleteTagData,
+  ): CancelablePromise<TagsDeleteTagResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/tags/{tag_id}",
+      path: {
+        tag_id: data.tagId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Tag By Slug
+   * Get tag by slug.
+   * @param data The data for the request.
+   * @param data.slug
+   * @returns TagPublic Successful Response
+   * @throws ApiError
+   */
+  public static readTagBySlug(
+    data: TagsReadTagBySlugData,
+  ): CancelablePromise<TagsReadTagBySlugResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/slug/{slug}",
+      path: {
+        slug: data.slug,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read My User Tags
+   * Get current user's tags.
+   * @returns UserTagsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMyUserTags(): CancelablePromise<TagsReadMyUserTagsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/users/me",
+    })
+  }
+
+  /**
+   * Create My User Tag
+   * Add a tag to current user's profile.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns UserTagPublic Successful Response
+   * @throws ApiError
+   */
+  public static createMyUserTag(
+    data: TagsCreateMyUserTagData,
+  ): CancelablePromise<TagsCreateMyUserTagResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/tags/users/me",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update My User Tag
+   * Update current user's tag relationship.
+   * @param data The data for the request.
+   * @param data.tagId
+   * @param data.requestBody
+   * @returns UserTagPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateMyUserTag(
+    data: TagsUpdateMyUserTagData,
+  ): CancelablePromise<TagsUpdateMyUserTagResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/tags/users/me/{tag_id}",
+      path: {
+        tag_id: data.tagId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete My User Tag
+   * Remove a tag from current user's profile.
+   * @param data The data for the request.
+   * @param data.tagId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static deleteMyUserTag(
+    data: TagsDeleteMyUserTagData,
+  ): CancelablePromise<TagsDeleteMyUserTagResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/tags/users/me/{tag_id}",
+      path: {
+        tag_id: data.tagId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read User Tags
+   * Get user's tags (public view).
+   * @param data The data for the request.
+   * @param data.userId
+   * @returns UserTagsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readUserTags(
+    data: TagsReadUserTagsData,
+  ): CancelablePromise<TagsReadUserTagsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/users/{user_id}",
+      path: {
+        user_id: data.userId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Quest Tags
+   * Get quest's tags.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns QuestTagsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readQuestTags(
+    data: TagsReadQuestTagsData,
+  ): CancelablePromise<TagsReadQuestTagsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/tags/quests/{quest_id}",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Create Quest Tag
+   * Add a tag to a quest (quest creator only).
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.requestBody
+   * @returns QuestTagPublic Successful Response
+   * @throws ApiError
+   */
+  public static createQuestTag(
+    data: TagsCreateQuestTagData,
+  ): CancelablePromise<TagsCreateQuestTagResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/tags/quests/{quest_id}",
+      path: {
+        quest_id: data.questId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Quest Tag
+   * Update quest's tag relationship (quest creator only).
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.tagId
+   * @param data.requestBody
+   * @returns QuestTagPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateQuestTag(
+    data: TagsUpdateQuestTagData,
+  ): CancelablePromise<TagsUpdateQuestTagResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/tags/quests/{quest_id}/{tag_id}",
+      path: {
+        quest_id: data.questId,
+        tag_id: data.tagId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Quest Tag
+   * Remove a tag from a quest (quest creator only).
+   * @param data The data for the request.
+   * @param data.questId
+   * @param data.tagId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static deleteQuestTag(
+    data: TagsDeleteQuestTagData,
+  ): CancelablePromise<TagsDeleteQuestTagResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/tags/quests/{quest_id}/{tag_id}",
+      path: {
+        quest_id: data.questId,
+        tag_id: data.tagId,
       },
       errors: {
         422: "Validation Error",
