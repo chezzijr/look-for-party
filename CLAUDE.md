@@ -82,14 +82,15 @@ This workflow ensures project documentation always reflects current reality and 
 ## LFP Platform Architecture
 
 ### Current Implementation Status
-**Latest Update**: Comprehensive Tag System Implementation completed (September 15, 2025)
+**Latest Update**: Rating System Implementation completed (September 15, 2025)
 - ✅ **User Model**: Streamlined by removing search preferences (preferred_commitment_level, communication_style)
 - ✅ **Quest Model**: Simplified by removing complexity fields (difficulty_level, time_commitment, is_urgent)
 - ✅ **Party Model**: Enhanced with role-based permissions, removed FORMING status, renamed DISBANDED to ARCHIVED with clear semantics
 - ✅ **PartyMember Model**: Updated roles (OWNER/MODERATOR/MEMBER) with implicit permissions
 - ✅ **Application Model**: Complete quest application system with enhanced fields (relevant_skills, created_at, updated_at), moved to dedicated application.py file
 - ✅ **Tag System**: Comprehensive tag infrastructure with Tag, UserTag, QuestTag models, 16 balanced categories, 300 system tags seeded
-- ✅ **Database Migrations**: Successfully applied all migrations (latest: 66bf83a82320) with 135+ backend tests passing
+- ✅ **Rating System**: Complete party-based peer review system with multi-dimensional ratings (overall, collaboration, communication, reliability, skill), automatic reputation updates, comprehensive validation (prevents self-rating, duplicate ratings, non-member ratings)
+- ✅ **Database Migrations**: Successfully applied all migrations with 165+ backend tests passing
 
 ### Current Frontend Routes (Post-Refactor)
 The frontend uses TanStack Router with file-based routing:
@@ -160,11 +161,12 @@ The frontend uses TanStack Router with file-based routing:
 - `reset-password.spec.ts` - Password recovery flow ✅
 - `auth.setup.ts` - Test authentication utilities ✅
 
-**Backend Tests** - 135+ tests passing:
+**Backend Tests** - 165+ tests passing:
 - User authentication and management tests ✅
 - Quest CRUD operations tests ✅
 - Party and application system tests ✅
 - **Tag system tests** - Complete CRUD and API route tests ✅
+- **Rating system tests** - Complete CRUD and API route tests with comprehensive validation ✅
 - Database migration and cleanup tests ✅
 
 ## Key Implementation Principles

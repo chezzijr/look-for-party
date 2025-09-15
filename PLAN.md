@@ -11,16 +11,18 @@ This document outlines the complete development strategy for transforming the cu
 ### ✅ Implemented Infrastructure (Updated September 15, 2025)
 - **Backend**: FastAPI + SQLModel + PostgreSQL with streamlined, production-ready models
 - **Authentication**: JWT-based auth system with user registration/login
-- **Database**: Complete core models (User, Quest, Party, PartyMember, QuestApplication) with Alembic migrations
+- **Database**: Complete core models (User, Quest, Party, PartyMember, QuestApplication, Rating) with Alembic migrations
 - **Tag System**: Comprehensive tag infrastructure with 300 system tags across 16 categories
+- **Rating System**: Complete party-based peer review system with multi-dimensional ratings and reputation management
 - **Frontend**: React + TanStack Router + Chakra UI v3 with authentication flows
-- **Testing**: Playwright for E2E, 135+ backend tests passing
+- **Testing**: Playwright for E2E, 165+ backend tests passing
 - **Development**: Docker Compose development environment with hot reload
 
 ### ✅ Features Completed
 - ✅ Generic "Item" model → Replaced with comprehensive Quest system
-- ✅ Core models: User, Quest, Party, PartyMember, QuestApplication
+- ✅ Core models: User, Quest, Party, PartyMember, QuestApplication, Rating
 - ✅ Comprehensive tag system with Tag, UserTag, QuestTag models
+- ✅ Party-based rating system with multi-dimensional peer reviews and reputation management
 - ✅ User authentication system enhanced
 - ✅ Settings/profile management implemented
 - ✅ Landing page implemented
@@ -227,34 +229,46 @@ class Application(ApplicationBase, table=True):
     applicant: "User" = Relationship(back_populates="applications")
 ```
 
-### 6. Rating Model (Post-Quest Feedback)
+### ✅ 6. Rating Model (Party-Based Peer Reviews) - IMPLEMENTED
 ```python
 class Rating(RatingBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False)
+    party_id: uuid.UUID = Field(foreign_key="party.id", nullable=False)
     rater_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     rated_user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+
+    # Multi-dimensional ratings (1-5 scale)
+    overall_rating: int = Field(ge=1, le=5, description="Overall rating (1-5 stars)")
+    collaboration_rating: int = Field(ge=1, le=5, description="Collaboration skill rating")
+    communication_rating: int = Field(ge=1, le=5, description="Communication skill rating")
+    reliability_rating: int = Field(ge=1, le=5, description="Reliability rating")
+    skill_rating: int = Field(ge=1, le=5, description="Technical/domain skill rating")
     
-    # Ratings (1-5 scale)
-    overall_rating: int = Field(ge=1, le=5)
-    reliability: int = Field(ge=1, le=5)
-    skill_level: int = Field(ge=1, le=5)
-    communication: int = Field(ge=1, le=5)
-    teamwork: int = Field(ge=1, le=5)
-    
-    # Feedback
-    positive_feedback: str | None = Field(default=None, max_length=500)
-    constructive_feedback: str | None = Field(default=None, max_length=500)
-    would_work_again: bool = Field(default=True)
+    # Feedback and collaboration intent
+    review_text: str | None = Field(default=None, max_length=1000, description="Optional written review")
+    would_collaborate_again: bool = Field(default=True, description="Would collaborate again")
     
     # Metadata
-    is_public: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Unique constraint: each user can rate another user only once per party
+    __table_args__ = (UniqueConstraint("party_id", "rater_id", "rated_user_id"),)
     
     # Relationships
+    party: "Party" = Relationship(back_populates="ratings")
     rater: "User" = Relationship(back_populates="given_ratings", sa_relationship_kwargs={"foreign_keys": "[Rating.rater_id]"})
     rated_user: "User" = Relationship(back_populates="received_ratings", sa_relationship_kwargs={"foreign_keys": "[Rating.rated_user_id]"})
 ```
+
+**Key Features:**
+- **Party-based ratings**: Ratings are linked to specific parties, not quests
+- **Peer review system**: Members can rate each other when party status is COMPLETED or ARCHIVED
+- **Multi-dimensional evaluation**: 5 different rating categories for comprehensive feedback
+- **Duplicate prevention**: Unique constraint ensures one rating per user pair per party
+- **Self-rating prevention**: Validation prevents users from rating themselves
+- **Reputation integration**: User reputation scores automatically update when ratings change
+- **Comprehensive validation**: Only party members can rate, only in completed parties
 
 ### ✅ 7. Tag System (Skills & Interests) - IMPLEMENTED
 ```python
