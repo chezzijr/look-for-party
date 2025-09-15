@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .application import QuestApplication
     from .party import PartyMember
     from .quest import Quest
+    from .rating import Rating
     from .tag import Tag, UserTag
 
 
@@ -85,6 +86,14 @@ class User(UserBase, table=True):
     suggested_tags: list["Tag"] = Relationship(
         back_populates="suggested_by_user", cascade_delete=True,
         sa_relationship_kwargs={"foreign_keys": "[Tag.suggested_by]"}
+    )
+    given_ratings: list["Rating"] = Relationship(
+        back_populates="rater", cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "[Rating.rater_id]"}
+    )
+    received_ratings: list["Rating"] = Relationship(
+        back_populates="rated_user", cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "[Rating.rated_user_id]"}
     )
 
 

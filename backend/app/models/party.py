@@ -7,6 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .quest import Quest
+    from .rating import Rating
     from .user import User
 
 
@@ -60,6 +61,9 @@ class Party(PartyBase, table=True):
     # Relationships
     quest: "Quest" = Relationship(back_populates="party")
     members: list["PartyMember"] = Relationship(
+        back_populates="party", cascade_delete=True
+    )
+    ratings: list["Rating"] = Relationship(
         back_populates="party", cascade_delete=True
     )
 
