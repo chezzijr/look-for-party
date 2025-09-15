@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from .application import QuestApplication
     from .party import Party
+    from .tag import QuestTag
     from .user import User
 
 
@@ -124,6 +125,9 @@ class Quest(QuestBase, table=True):
         back_populates="quest", cascade_delete=True
     )
     party: Optional["Party"] = Relationship(back_populates="quest", cascade_delete=True)
+    quest_tags: list["QuestTag"] = Relationship(
+        back_populates="quest", cascade_delete=True
+    )
 
 
 # Properties to return via API

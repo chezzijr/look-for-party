@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .application import QuestApplication
     from .party import PartyMember
     from .quest import Quest
+    from .tag import Tag, UserTag
 
 
 # Shared properties
@@ -77,6 +78,13 @@ class User(UserBase, table=True):
     )
     party_memberships: list["PartyMember"] = Relationship(
         back_populates="user", cascade_delete=True
+    )
+    user_tags: list["UserTag"] = Relationship(
+        back_populates="user", cascade_delete=True
+    )
+    suggested_tags: list["Tag"] = Relationship(
+        back_populates="suggested_by_user", cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "[Tag.suggested_by]"}
     )
 
 

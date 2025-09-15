@@ -3,6 +3,7 @@ from sqlmodel import Session, create_engine, select
 from app import crud
 from app.core.config import settings
 from app.models import User, UserCreate
+from app.seed_data.tags import create_system_tags
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
@@ -31,3 +32,8 @@ def init_db(session: Session) -> None:
             is_superuser=True,
         )
         user = crud.create_user(session=session, user_create=user_in)
+    
+    # Create system tags if they don't exist
+    created_tags = create_system_tags(session)
+    if created_tags > 0:
+        print(f"Created {created_tags} system tags")

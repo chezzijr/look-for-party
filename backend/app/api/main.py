@@ -6,6 +6,7 @@ from app.api.routes import (
     private,
     quest_applications,
     quests,
+    tags,
     users,
     utils,
 )
@@ -18,6 +19,7 @@ api_router.include_router(utils.router)
 api_router.include_router(quests.router)
 api_router.include_router(quest_applications.router)
 api_router.include_router(parties.router)
+api_router.include_router(tags.router)
 
 
 if settings.ENVIRONMENT == "local":

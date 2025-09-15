@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.db import engine, init_db
 from app.main import app
 from app.models import Party, PartyMember, Quest, QuestApplication, User
+from app.models.tag import Tag, UserTag, QuestTag
 from app.tests.utils.party import PartyFactory
 from app.tests.utils.quest import QuestApplicationFactory, QuestFactory
 from app.tests.utils.user import authentication_token_from_email
@@ -26,7 +27,13 @@ def db() -> Generator[Session, None, None]:
         session.execute(statement)
         statement = delete(QuestApplication)
         session.execute(statement)
+        statement = delete(UserTag)
+        session.execute(statement)
+        statement = delete(QuestTag)
+        session.execute(statement)
         statement = delete(Quest)
+        session.execute(statement)
+        statement = delete(Tag)
         session.execute(statement)
         statement = delete(User)
         session.execute(statement)
