@@ -82,13 +82,14 @@ This workflow ensures project documentation always reflects current reality and 
 ## LFP Platform Architecture
 
 ### Current Implementation Status
-**Latest Update**: Application model enhancement completed (September 14, 2025)
+**Latest Update**: Comprehensive Tag System Implementation completed (September 15, 2025)
 - ✅ **User Model**: Streamlined by removing search preferences (preferred_commitment_level, communication_style)
 - ✅ **Quest Model**: Simplified by removing complexity fields (difficulty_level, time_commitment, is_urgent)
 - ✅ **Party Model**: Enhanced with role-based permissions, removed FORMING status, renamed DISBANDED to ARCHIVED with clear semantics
 - ✅ **PartyMember Model**: Updated roles (OWNER/MODERATOR/MEMBER) with implicit permissions
 - ✅ **Application Model**: Complete quest application system with enhanced fields (relevant_skills, created_at, updated_at), moved to dedicated application.py file
-- ✅ **Database Migrations**: Successfully applied all migrations (latest: f32093191d49) with 90/90 backend tests passing
+- ✅ **Tag System**: Comprehensive tag infrastructure with Tag, UserTag, QuestTag models, 16 balanced categories, 300 system tags seeded
+- ✅ **Database Migrations**: Successfully applied all migrations (latest: 66bf83a82320) with 135+ backend tests passing
 
 ### Current Frontend Routes (Post-Refactor)
 The frontend uses TanStack Router with file-based routing:
@@ -109,14 +110,14 @@ The frontend uses TanStack Router with file-based routing:
   - Danger zone (delete account) - hidden for superusers
 
 **Future LFP Routes (To Be Implemented):**
-- `/quests` - Quest board with MMO-style interface
-- `/quests/create` - Quest creation wizard
-- `/quests/{id}` - Individual quest details and application
+- `/quests` - Quest board with MMO-style interface and tag-based filtering
+- `/quests/create` - Quest creation wizard with skill tag requirements
+- `/quests/{id}` - Individual quest details and application with skill matching
 - `/my-quests` - User's created and joined quests
 - `/my-applications` - Application status tracking
 - `/parties/{id}` - Party management and communication
-- `/profile` - Enhanced user profile with skills and reputation
-- `/discover` - AI-powered quest recommendations
+- `/profile` - Enhanced user profile with skills and reputation via tag system
+- `/discover` - AI-powered quest recommendations with tag-based compatibility
 
 ### Tech Stack
 **Frontend:**
@@ -152,12 +153,19 @@ The frontend uses TanStack Router with file-based routing:
 - `just exec backend pytest` - Run backend tests
 
 ### Current Testing Coverage
-Located in `/frontend/tests/`:
+**Frontend Tests** - Located in `/frontend/tests/`:
 - `login.spec.ts` - Authentication flow testing ✅
 - `user-settings.spec.ts` - Profile and settings management ✅
 - `sign-up.spec.ts` - User registration flow ✅
 - `reset-password.spec.ts` - Password recovery flow ✅
 - `auth.setup.ts` - Test authentication utilities ✅
+
+**Backend Tests** - 135+ tests passing:
+- User authentication and management tests ✅
+- Quest CRUD operations tests ✅
+- Party and application system tests ✅
+- **Tag system tests** - Complete CRUD and API route tests ✅
+- Database migration and cleanup tests ✅
 
 ## Key Implementation Principles
 
@@ -167,6 +175,7 @@ Located in `/frontend/tests/`:
 - **Migration Strategy**: Alembic migrations with proper rollback testing
 - **Indexing**: Strategic indexes for query performance
 - **Enum Fields**: For enum fields with default values, always include `sa_column_kwargs={"server_default": EnumValue.DEFAULT.value}` to ensure PostgreSQL database-level defaults match SQLModel defaults
+- **Forward References**: When using string annotations for forward references with Optional types, use `Optional["ModelName"]` instead of `"ModelName" | None` to avoid TypeError in Python < 3.10
 
 ### API Design Standards
 - **REST Conventions**: Consistent endpoint naming and HTTP methods
