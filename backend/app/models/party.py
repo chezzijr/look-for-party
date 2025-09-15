@@ -52,19 +52,31 @@ class PartyUpdate(SQLModel):
 # Database model
 class Party(PartyBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False, unique=True)
+    quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False, unique=True, ondelete="CASCADE")
     formed_at: datetime = Field(default_factory=datetime.utcnow)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     completed_at: datetime | None = Field(default=None)
     archived_at: datetime | None = Field(default=None)
 
     # Relationships
-    quest: "Quest" = Relationship(back_populates="party")
+    quest: "Quest" = Relationship(
+        back_populates="party",
+        sa_relationship_kwargs={"foreign_keys": "Party.quest_id"}
+    )
     members: list["PartyMember"] = Relationship(
         back_populates="party", cascade_delete=True
     )
     ratings: list["Rating"] = Relationship(
         back_populates="party", cascade_delete=True
+    )
+    # Enhanced quest system relationships
+    created_quests: list["Quest"] = Relationship(
+        back_populates="creating_party",
+        sa_relationship_kwargs={"foreign_keys": "Quest.party_id"}
+    )
+    expansion_quests: list["Quest"] = Relationship(
+        back_populates="parent_party",
+        sa_relationship_kwargs={"foreign_keys": "Quest.parent_party_id"}
     )
 
 

@@ -2,19 +2,27 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
+from sqlmodel import select
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
     Message,
     PartiesPublic,
+    Party,
     PartyCreate,
+    PartyMember,
     PartyMemberCreate,
     PartyMemberPublic,
     PartyMembersPublic,
+    PartyMemberRole,
     PartyMemberUpdate,
     PartyPublic,
+    PartyQuestCreate,
     PartyUpdate,
+    Quest,
+    QuestPublic,
+    QuestType,
 )
 
 router = APIRouter(prefix="/parties", tags=["parties"])
@@ -276,3 +284,149 @@ def remove_party_member(
 
     crud.remove_party_member(session=session, member_id=member_id)
     return Message(message="Party member removed successfully")
+
+
+@router.post("/{party_id}/quests", response_model=QuestPublic)
+def create_party_quest(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    party_id: uuid.UUID,
+    quest_in: PartyQuestCreate,
+) -> Any:
+    """
+    Create a quest from party context (internal, expansion, or hybrid).
+    Only party owners and moderators can create quests.
+    """
+    # Check if party exists
+    party = crud.get_party(session=session, party_id=party_id)
+    if not party:
+        raise HTTPException(status_code=404, detail="Party not found")
+
+    # Check if user is a party member with proper role
+    party_member = session.exec(
+        select(PartyMember).where(
+            PartyMember.party_id == party_id,
+            PartyMember.user_id == current_user.id,
+            PartyMember.status == "active"
+        )
+    ).first()
+
+    if not party_member:
+        raise HTTPException(
+            status_code=403, detail="You are not a member of this party"
+        )
+
+    if party_member.role not in [PartyMemberRole.OWNER, PartyMemberRole.MODERATOR]:
+        raise HTTPException(
+            status_code=403, 
+            detail="Only party owners and moderators can create quests"
+        )
+
+    # Validate quest type specific requirements
+    if quest_in.quest_type == QuestType.PARTY_INTERNAL:
+        if quest_in.assigned_member_ids:
+            # Validate assigned members are party members
+            party_member_ids = session.exec(
+                select(PartyMember.user_id).where(
+                    PartyMember.party_id == party_id,
+                    PartyMember.status == "active"
+                )
+            ).all()
+            
+            invalid_members = set(quest_in.assigned_member_ids) - set(party_member_ids)
+            if invalid_members:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Members {invalid_members} are not active party members"
+                )
+
+    elif quest_in.quest_type in [QuestType.PARTY_EXPANSION, QuestType.PARTY_HYBRID]:
+        if not quest_in.party_size_min or not quest_in.party_size_max:
+            raise HTTPException(
+                status_code=400,
+                detail="party_size_min and party_size_max are required for expansion/hybrid quests"
+            )
+        
+        if quest_in.party_size_min > quest_in.party_size_max:
+            raise HTTPException(
+                status_code=400,
+                detail="Minimum party size cannot be greater than maximum party size"
+            )
+
+    # Create the quest
+    import json
+    from datetime import datetime
+    
+    quest_data = Quest(
+        title=quest_in.title,
+        description=quest_in.description,
+        objective=quest_in.objective,
+        category=quest_in.category,
+        quest_type=quest_in.quest_type,
+        party_size_min=quest_in.party_size_min or 1,
+        party_size_max=quest_in.party_size_max or 1,
+        required_commitment=quest_in.required_commitment,
+        location_type=quest_in.location_type,
+        location_detail=quest_in.location_detail,
+        starts_at=quest_in.starts_at,
+        deadline=quest_in.deadline,
+        estimated_duration=quest_in.estimated_duration,
+        auto_approve=quest_in.auto_approve,
+        visibility=quest_in.visibility,
+        creator_id=current_user.id,
+        party_id=party_id,  # Party that created this quest
+        parent_party_id=party_id,  # Party this quest belongs to
+        internal_slots=quest_in.internal_slots,
+        public_slots=quest_in.public_slots,
+        assigned_member_ids=json.dumps([str(uid) for uid in quest_in.assigned_member_ids]) if quest_in.assigned_member_ids else None,
+    )
+
+    session.add(quest_data)
+    session.commit()
+    session.refresh(quest_data)
+
+    return quest_data
+
+
+@router.get("/{party_id}/quests", response_model=list[QuestPublic])
+def get_party_quests(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    party_id: uuid.UUID,
+    quest_type: QuestType | None = Query(default=None),
+) -> Any:
+    """
+    Get all quests created by or for this party.
+    Only party members can view party quests.
+    """
+    # Check if party exists
+    party = crud.get_party(session=session, party_id=party_id)
+    if not party:
+        raise HTTPException(status_code=404, detail="Party not found")
+
+    # Check if user is a party member
+    party_member = session.exec(
+        select(PartyMember).where(
+            PartyMember.party_id == party_id,
+            PartyMember.user_id == current_user.id,
+            PartyMember.status == "active"
+        )
+    ).first()
+
+    if not party_member and not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403, detail="Only party members can view party quests"
+        )
+
+    # Get quests created by or for this party
+    query = select(Quest).where(
+        (Quest.party_id == party_id) | (Quest.parent_party_id == party_id)
+    )
+    
+    if quest_type:
+        query = query.where(Quest.quest_type == quest_type)
+    
+    quests = session.exec(query).all()
+    return quests

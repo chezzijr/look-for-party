@@ -8,12 +8,18 @@ from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
     Message,
+    Party,
+    PartyMember,
+    PartyMemberRole,
     Quest,
     QuestCategory,
     QuestCreate,
+    QuestMemberAssignmentRequest,
     QuestPublic,
+    QuestPublicizeRequest,
     QuestsPublic,
     QuestStatus,
+    QuestType,
     QuestUpdate,
 )
 
@@ -172,3 +178,276 @@ def delete_quest(
 
     crud.delete_quest(session=session, quest_id=quest_id)
     return Message(message="Quest deleted successfully")
+
+
+@router.post("/{quest_id}/publicize", response_model=QuestPublic)
+def publicize_quest(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    quest_id: uuid.UUID,
+    publicize_request: QuestPublicizeRequest,
+) -> Any:
+    """
+    Publicize an internal or hybrid quest to allow external applications.
+    Only party owners/moderators can publicize party quests.
+    """
+    quest = crud.get_quest(session=session, quest_id=quest_id)
+    if not quest:
+        raise HTTPException(status_code=404, detail="Quest not found")
+
+    # Check if quest can be publicized
+    if quest.quest_type not in [QuestType.PARTY_INTERNAL, QuestType.PARTY_HYBRID]:
+        raise HTTPException(
+            status_code=400,
+            detail="Only internal or hybrid party quests can be publicized",
+        )
+
+    if quest.is_publicized:
+        raise HTTPException(status_code=400, detail="Quest is already publicized")
+
+    # Check permissions - user must be party owner/moderator or quest creator
+    if quest.parent_party_id:
+        party_member = session.exec(
+            select(PartyMember).where(
+                PartyMember.party_id == quest.parent_party_id,
+                PartyMember.user_id == current_user.id,
+                PartyMember.status == "active",
+            )
+        ).first()
+
+        if not party_member or party_member.role not in [
+            PartyMemberRole.OWNER,
+            PartyMemberRole.MODERATOR,
+        ]:
+            if quest.creator_id != current_user.id and not current_user.is_superuser:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Only party owners/moderators can publicize party quests",
+                )
+
+    # Update quest to publicize
+    from datetime import datetime
+
+    quest.public_slots = publicize_request.public_slots
+    quest.visibility = publicize_request.visibility
+    quest.is_publicized = True
+    quest.publicized_at = datetime.utcnow()
+    quest.updated_at = datetime.utcnow()
+
+    session.add(quest)
+    session.commit()
+    session.refresh(quest)
+
+    return quest
+
+
+@router.post("/{quest_id}/assign-members", response_model=QuestPublic)
+def assign_quest_members(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    quest_id: uuid.UUID,
+    assignment_request: QuestMemberAssignmentRequest,
+) -> Any:
+    """
+    Assign members to an internal party quest.
+    Only party owners/moderators can assign members.
+    """
+    quest = crud.get_quest(session=session, quest_id=quest_id)
+    if not quest:
+        raise HTTPException(status_code=404, detail="Quest not found")
+
+    # Check if quest is internal type
+    if quest.quest_type != QuestType.PARTY_INTERNAL:
+        raise HTTPException(
+            status_code=400, detail="Can only assign members to internal party quests"
+        )
+
+    # Check permissions
+    if quest.parent_party_id:
+        party_member = session.exec(
+            select(PartyMember).where(
+                PartyMember.party_id == quest.parent_party_id,
+                PartyMember.user_id == current_user.id,
+                PartyMember.status == "active",
+            )
+        ).first()
+
+        if not party_member or party_member.role not in [
+            PartyMemberRole.OWNER,
+            PartyMemberRole.MODERATOR,
+        ]:
+            if quest.creator_id != current_user.id and not current_user.is_superuser:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Only party owners/moderators can assign quest members",
+                )
+
+    # Validate that all assigned members are actually party members
+    if quest.parent_party_id:
+        party_member_ids = session.exec(
+            select(PartyMember.user_id).where(
+                PartyMember.party_id == quest.parent_party_id,
+                PartyMember.status == "active",
+            )
+        ).all()
+
+        invalid_members = set(assignment_request.assigned_member_ids) - set(
+            party_member_ids
+        )
+        if invalid_members:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Members {invalid_members} are not active party members",
+            )
+
+    # Update quest with assigned members
+    import json
+    from datetime import datetime
+
+    quest.assigned_member_ids = json.dumps([
+        str(uid) for uid in assignment_request.assigned_member_ids
+    ])
+    quest.updated_at = datetime.utcnow()
+
+    session.add(quest)
+    session.commit()
+    session.refresh(quest)
+
+    return quest
+
+
+@router.post("/{quest_id}/close", response_model=QuestPublic)
+def close_quest(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    quest_id: uuid.UUID,
+) -> Any:
+    """
+    Close a quest and handle party formation based on quest type.
+    Only quest creators or party owners/moderators can close quests.
+    """
+    quest = crud.get_quest(session=session, quest_id=quest_id)
+    if not quest:
+        raise HTTPException(status_code=404, detail="Quest not found")
+
+    # Check if quest can be closed
+    if quest.status != QuestStatus.RECRUITING:
+        raise HTTPException(
+            status_code=400, detail="Only recruiting quests can be closed"
+        )
+
+    # Check permissions
+    can_close = False
+
+    # Quest creator can always close
+    if quest.creator_id == current_user.id or current_user.is_superuser:
+        can_close = True
+
+    # Party owners/moderators can close party quests
+    elif quest.parent_party_id:
+        party_member = session.exec(
+            select(PartyMember).where(
+                PartyMember.party_id == quest.parent_party_id,
+                PartyMember.user_id == current_user.id,
+                PartyMember.status == "active",
+            )
+        ).first()
+
+        if party_member and party_member.role in [
+            PartyMemberRole.OWNER,
+            PartyMemberRole.MODERATOR,
+        ]:
+            can_close = True
+
+    if not can_close:
+        raise HTTPException(
+            status_code=403,
+            detail="Only quest creators or party owners/moderators can close quests",
+        )
+
+    # Handle quest closure based on type
+    from datetime import datetime
+
+    if quest.quest_type == QuestType.INDIVIDUAL:
+        # Create new party for individual quest
+        party_data = Party(
+            name=f"Party for {quest.title}",
+            description=f"Party formed from quest: {quest.objective}",
+            quest_id=quest.id,
+        )
+        session.add(party_data)
+        session.flush()  # Get the party ID
+
+        # Add quest creator as party owner
+        creator_member = PartyMember(
+            party_id=party_data.id,
+            user_id=quest.creator_id,
+            role=PartyMemberRole.OWNER,
+        )
+        session.add(creator_member)
+
+        # Add all approved applicants as party members
+        from app.models import QuestApplication, ApplicationStatus
+
+        approved_applications = session.exec(
+            select(QuestApplication).where(
+                QuestApplication.quest_id == quest.id,
+                QuestApplication.status == ApplicationStatus.APPROVED,
+            )
+        ).all()
+
+        for app in approved_applications:
+            member = PartyMember(
+                party_id=party_data.id,
+                user_id=app.applicant_id,
+                role=PartyMemberRole.MEMBER,
+            )
+            session.add(member)
+
+    elif quest.quest_type == QuestType.PARTY_EXPANSION:
+        # Add approved applicants to existing party
+        if quest.parent_party_id:
+            from app.models import QuestApplication, ApplicationStatus
+
+            approved_applications = session.exec(
+                select(QuestApplication).where(
+                    QuestApplication.quest_id == quest.id,
+                    QuestApplication.status == ApplicationStatus.APPROVED,
+                )
+            ).all()
+
+            for app in approved_applications:
+                # Check if user is not already a party member
+                existing_member = session.exec(
+                    select(PartyMember).where(
+                        PartyMember.party_id == quest.parent_party_id,
+                        PartyMember.user_id == app.applicant_id,
+                    )
+                ).first()
+
+                if not existing_member:
+                    member = PartyMember(
+                        party_id=quest.parent_party_id,
+                        user_id=app.applicant_id,
+                        role=PartyMemberRole.MEMBER,
+                        status="active",
+                    )
+                    session.add(member)
+
+    # elif quest.quest_type == QuestType.PARTY_INTERNAL:
+    #     # Internal quests don't create or modify parties
+    #     pass
+
+    # Update quest status
+    quest.status = QuestStatus.COMPLETED
+    quest.completed_at = datetime.utcnow()
+    quest.updated_at = datetime.utcnow()
+
+    session.add(quest)
+    session.commit()
+    session.refresh(quest)
+
+    return quest
