@@ -82,14 +82,15 @@ This workflow ensures project documentation always reflects current reality and 
 ## LFP Platform Architecture
 
 ### Current Implementation Status
-**Latest Update**: Rating System Implementation completed (September 15, 2025)
+**Latest Update**: Enhanced Quest System Implementation completed (September 15, 2025)
 - ✅ **User Model**: Streamlined by removing search preferences (preferred_commitment_level, communication_style)
-- ✅ **Quest Model**: Simplified by removing complexity fields (difficulty_level, time_commitment, is_urgent)
-- ✅ **Party Model**: Enhanced with role-based permissions, removed FORMING status, renamed DISBANDED to ARCHIVED with clear semantics
-- ✅ **PartyMember Model**: Updated roles (OWNER/MODERATOR/MEMBER) with implicit permissions
+- ✅ **Enhanced Quest Model**: Dual-mode recruitment platform supporting individual and party-created quests with QuestType enum (INDIVIDUAL, PARTY_INTERNAL, PARTY_EXPANSION, PARTY_HYBRID), party integration fields, and quest closure logic
+- ✅ **Enhanced Party Model**: Expanded with quest creation relationships, supports party quest management and member assignment workflows
+- ✅ **PartyMember Model**: Updated roles (OWNER/MODERATOR/MEMBER) with implicit permissions for quest creation
 - ✅ **Application Model**: Complete quest application system with enhanced fields (relevant_skills, created_at, updated_at), moved to dedicated application.py file
 - ✅ **Tag System**: Comprehensive tag infrastructure with Tag, UserTag, QuestTag models, 16 balanced categories, 300 system tags seeded
 - ✅ **Rating System**: Complete party-based peer review system with multi-dimensional ratings (overall, collaboration, communication, reliability, skill), automatic reputation updates, comprehensive validation (prevents self-rating, duplicate ratings, non-member ratings)
+- ✅ **Enhanced Quest API**: Party quest creation, quest publicizing, member assignment, and automatic party formation endpoints
 - ✅ **Database Migrations**: Successfully applied all migrations with 165+ backend tests passing
 
 ### Current Frontend Routes (Post-Refactor)
@@ -161,10 +162,11 @@ The frontend uses TanStack Router with file-based routing:
 - `reset-password.spec.ts` - Password recovery flow ✅
 - `auth.setup.ts` - Test authentication utilities ✅
 
-**Backend Tests** - 165+ tests passing:
+**Backend Tests** - 178+ tests passing:
 - User authentication and management tests ✅
 - Quest CRUD operations tests ✅
 - Party and application system tests ✅
+- **Enhanced Quest System flow tests** - Complete FLOWS.md implementation coverage ✅
 - **Tag system tests** - Complete CRUD and API route tests ✅
 - **Rating system tests** - Complete CRUD and API route tests with comprehensive validation ✅
 - Database migration and cleanup tests ✅

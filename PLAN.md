@@ -15,7 +15,7 @@ This document outlines the complete development strategy for transforming the cu
 - **Tag System**: Comprehensive tag infrastructure with 300 system tags across 16 categories
 - **Rating System**: Complete party-based peer review system with multi-dimensional ratings and reputation management
 - **Frontend**: React + TanStack Router + Chakra UI v3 with authentication flows
-- **Testing**: Playwright for E2E, 165+ backend tests passing
+- **Testing**: Playwright for E2E, 178+ backend tests passing (includes comprehensive Enhanced Quest System flow tests)
 - **Development**: Docker Compose development environment with hot reload
 
 ### ✅ Features Completed
@@ -23,6 +23,9 @@ This document outlines the complete development strategy for transforming the cu
 - ✅ Core models: User, Quest, Party, PartyMember, QuestApplication, Rating
 - ✅ Comprehensive tag system with Tag, UserTag, QuestTag models
 - ✅ Party-based rating system with multi-dimensional peer reviews and reputation management
+- ✅ **Enhanced Quest System**: Dual-mode recruitment platform supporting individual and party-created quests
+- ✅ **Party Quest Management**: Internal assignments, team expansion, and hybrid recruitment workflows
+- ✅ **Quest Closure Logic**: Automatic party formation and member integration based on quest type
 - ✅ User authentication system enhanced
 - ✅ Settings/profile management implemented
 - ✅ Landing page implemented
@@ -90,65 +93,85 @@ class User(UserBase, table=True):
     notifications: list["Notification"] = Relationship(back_populates="user")
 ```
 
-### 2. Quest Model (Core Entity)
+### ✅ 2. Enhanced Quest Model (Dual-Mode System) - IMPLEMENTED
 ```python
 class Quest(QuestBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     creator_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     
     # Basic Info
-    title: str = Field(min_length=1, max_length=255)
-    description: str = Field(min_length=1, max_length=2000)
-    objective: str = Field(min_length=1, max_length=500)
+    title: str = Field(min_length=5, max_length=200)
+    description: str = Field(min_length=20, max_length=2000)
+    objective: str = Field(min_length=10, max_length=500)
+    category: QuestCategory  # Gaming, Professional, Creative, etc.
+    
+    # Enhanced Quest System: Dual-Mode Support
+    quest_type: QuestType = Field(default=QuestType.INDIVIDUAL)  # INDIVIDUAL, PARTY_INTERNAL, PARTY_EXPANSION, PARTY_HYBRID
     
     # Party Requirements
     party_size_min: int = Field(ge=1, le=50)
     party_size_max: int = Field(ge=1, le=50)
     current_party_size: int = Field(default=1, ge=1)  # Creator counts as 1
     
+    # Party Integration Fields
+    party_id: uuid.UUID | None = Field(default=None, foreign_key="party.id", nullable=True)  # Party that created this quest
+    parent_party_id: uuid.UUID | None = Field(default=None, foreign_key="party.id", nullable=True)  # Party this quest belongs to
+    internal_slots: int = Field(default=0, ge=0)  # Number of slots for internal assignments
+    public_slots: int = Field(default=0, ge=0)  # Number of slots for public recruitment
+    assigned_member_ids: str | None = Field(default=None, max_length=1000)  # JSON array of assigned member UUIDs
+    is_publicized: bool = Field(default=False)  # Whether internal/hybrid quest has been publicized
+    
     # Quest Details
-    location_type: str = Field(default="remote")  # 'remote', 'in_person', 'hybrid'
-    location: str | None = Field(default=None, max_length=255)
+    required_commitment: CommitmentLevel
+    location_type: LocationType  # REMOTE, IN_PERSON, HYBRID
+    location_detail: str | None = Field(default=None, max_length=255)
     
     # Timing
-    start_date: datetime | None = Field(default=None)
-    end_date: datetime | None = Field(default=None)
+    starts_at: datetime | None = Field(default=None)
     deadline: datetime | None = Field(default=None)
-    is_flexible_timing: bool = Field(default=True)
+    estimated_duration: str | None = Field(default=None, max_length=100)
     
     # Quest State
-    status: str = Field(default="draft")  # 'draft', 'active', 'in_progress', 'completed', 'cancelled', 'archived'
-    visibility: str = Field(default="public")  # 'public', 'private', 'invite_only'
+    status: QuestStatus = Field(default=QuestStatus.RECRUITING)  # RECRUITING, IN_PROGRESS, COMPLETED, CANCELLED, EXPIRED
+    visibility: QuestVisibility = Field(default=QuestVisibility.PUBLIC)  # PUBLIC, UNLISTED, PRIVATE
     auto_approve: bool = Field(default=False)
     
     # Matching & Discovery
     embedding_vector: str | None = Field(default=None, max_length=10000)  # JSON string of vector
     search_keywords: str | None = Field(default=None, max_length=1000)
-    category: str | None = Field(default=None, max_length=100)
     
     # Metadata
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+    activated_at: datetime | None = Field(default=None)
     completed_at: datetime | None = Field(default=None)
+    publicized_at: datetime | None = Field(default=None)  # When quest was publicized
     
     # Analytics
-    view_count: int = Field(default=0)
-    application_count: int = Field(default=0)
+    view_count: int = Field(default=0, ge=0)
+    application_count: int = Field(default=0, ge=0)
     
     # Relationships
     creator: "User" = Relationship(back_populates="created_quests")
-    party: "Party" | None = Relationship(back_populates="quest")
-    applications: list["Application"] = Relationship(back_populates="quest", cascade_delete=True)
+    party: Optional["Party"] = Relationship(back_populates="quest", cascade_delete=True)
+    applications: list["QuestApplication"] = Relationship(back_populates="quest", cascade_delete=True)
     quest_tags: list["QuestTag"] = Relationship(back_populates="quest", cascade_delete=True)  # ✅ Tag System
-    merged_from: list["QuestMerge"] = Relationship(back_populates="target_quest", sa_relationship_kwargs={"foreign_keys": "[QuestMerge.target_quest_id]"})
-    merged_into: list["QuestMerge"] = Relationship(back_populates="source_quest", sa_relationship_kwargs={"foreign_keys": "[QuestMerge.source_quest_id]"})
+    # Enhanced party relationships
+    creating_party: Optional["Party"] = Relationship(back_populates="created_quests")
+    parent_party: Optional["Party"] = Relationship(back_populates="expansion_quests")
 ```
 
-### 3. Party Model (Formed Groups)
+**Quest Types Supported:**
+- **INDIVIDUAL**: Regular user-created quest → Creates new party on closure
+- **PARTY_INTERNAL**: Internal task assignment within existing party → No party changes
+- **PARTY_EXPANSION**: Public recruitment to expand existing party → Adds members to existing party
+- **PARTY_HYBRID**: Starts internal, can be publicized later → Flexible recruitment approach
+
+### ✅ 3. Enhanced Party Model (Quest-Integrated) - IMPLEMENTED
 ```python
 class Party(PartyBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False)
+    quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False, unique=True)
     
     # Party Info
     name: str | None = Field(default=None, max_length=255)
@@ -157,6 +180,7 @@ class Party(PartyBase, table=True):
     # Status
     status: PartyStatus = Field(default=PartyStatus.ACTIVE)  # ACTIVE, COMPLETED, ARCHIVED
     is_private: bool = Field(default=False)
+    chat_channel_id: str | None = Field(default=None, max_length=255)
     
     # Timestamps
     formed_at: datetime = Field(default_factory=datetime.utcnow)
@@ -165,9 +189,13 @@ class Party(PartyBase, table=True):
     archived_at: datetime | None = Field(default=None)
     
     # Relationships
-    quest: "Quest" = Relationship(back_populates="party")
+    quest: "Quest" = Relationship(back_populates="party")  # Original quest that formed this party
     members: list["PartyMember"] = Relationship(back_populates="party", cascade_delete=True)
-    messages: list["Message"] = Relationship(back_populates="party", cascade_delete=True)
+    ratings: list["Rating"] = Relationship(back_populates="party", cascade_delete=True)
+    
+    # Enhanced Quest System Relationships
+    created_quests: list["Quest"] = Relationship(back_populates="creating_party")  # Quests this party created
+    expansion_quests: list["Quest"] = Relationship(back_populates="parent_party")  # Quests for expanding this party
 ```
 
 #### Party Status Semantics
@@ -475,21 +503,30 @@ class Achievement(AchievementBase, table=True):
 
 ## 🔗 API Endpoints Design
 
-### Quest Management API
+### ✅ Enhanced Quest Management API - IMPLEMENTED
 ```
-POST   /api/v1/quests                      # Create new quest
+# Core Quest Operations
+POST   /api/v1/quests                      # Create new individual quest
 GET    /api/v1/quests                      # Browse quest board with dynamic filters
        # Query params: party_size_min, party_size_max, location_radius, 
-       # commitment_level, difficulty, location_type, category, urgent_only
+       # commitment_level, location_type, category, status, quest_type
+GET    /api/v1/quests/{quest_id}           # Get quest details
+PUT    /api/v1/quests/{quest_id}           # Update quest (creator only)
+DELETE /api/v1/quests/{quest_id}           # Delete quest (creator only)
+GET    /api/v1/quests/my                   # Get current user's created quests
+
+# Enhanced Quest System - Party Integration
+POST   /api/v1/quests/{quest_id}/publicize # ✅ Publicize internal/hybrid quest
+       # Body: { "public_slots": 2, "visibility": "PUBLIC" }
+POST   /api/v1/quests/{quest_id}/assign-members # ✅ Assign members to internal quest
+       # Body: { "assigned_member_ids": ["uuid1", "uuid2"] }
+POST   /api/v1/quests/{quest_id}/close     # ✅ Close quest & handle party formation
+
+# Future Quest Features
 GET    /api/v1/quests/search               # Semantic search with preferences
        # Body: { "query": "text", "preferences": { filters } }
 GET    /api/v1/quests/recommendations      # Personalized recommendations with preferences
        # Query params: available_now, party_size_min, party_size_max, etc.
-GET    /api/v1/quests/{quest_id}           # Get quest details
-PUT    /api/v1/quests/{quest_id}           # Update quest (creator only)
-DELETE /api/v1/quests/{quest_id}           # Delete quest (creator only)
-POST   /api/v1/quests/{quest_id}/activate  # Activate quest for discovery
-POST   /api/v1/quests/{quest_id}/complete  # Mark quest as completed
 POST   /api/v1/quests/merge                # Merge similar quests
 ```
 
@@ -504,12 +541,21 @@ POST   /api/v1/applications/{application_id}/reject     # Reject application
 DELETE /api/v1/applications/{application_id}       # Withdraw application
 ```
 
-### Party Management API
+### ✅ Enhanced Party Management API - IMPLEMENTED
 ```
+# Core Party Operations
 GET    /api/v1/parties/{party_id}                  # Get party details
 PUT    /api/v1/parties/{party_id}                  # Update party settings
 POST   /api/v1/parties/{party_id}/members          # Add member (invite)
 DELETE /api/v1/parties/{party_id}/members/{user_id} # Remove member
+
+# Party Quest System - IMPLEMENTED
+POST   /api/v1/parties/{party_id}/quests           # ✅ Create party quest (internal/expansion/hybrid)
+       # Body: PartyQuestCreate with quest_type, assigned_member_ids, etc.
+GET    /api/v1/parties/{party_id}/quests           # ✅ Get all party quests
+       # Query params: quest_type (filter by INTERNAL, EXPANSION, HYBRID)
+
+# Future Party Features
 GET    /api/v1/parties/{party_id}/messages         # Get party messages
 POST   /api/v1/parties/{party_id}/messages         # Send message
 PUT    /api/v1/parties/{party_id}/messages/{msg_id} # Edit message
