@@ -97,6 +97,17 @@ def create_quest(
         )
 
     # Validate timeline if provided
+    from datetime import datetime
+    
+    # Check if starts_at is in the past
+    if quest_in.starts_at:
+        if quest_in.starts_at < datetime.utcnow():
+            raise HTTPException(
+                status_code=400, 
+                detail="Start date cannot be in the past"
+            )
+    
+    # Check if deadline is after start date
     if quest_in.starts_at and quest_in.deadline:
         if quest_in.deadline <= quest_in.starts_at:
             raise HTTPException(
@@ -368,6 +379,23 @@ def close_quest(
             detail="Only quest creators or party owners/moderators can close quests",
         )
 
+    # Check minimum party size requirement before closing
+    from app.models import QuestApplication, ApplicationStatus
+    
+    approved_count = session.exec(
+        select(func.count()).select_from(QuestApplication).where(
+            QuestApplication.quest_id == quest.id,
+            QuestApplication.status == ApplicationStatus.APPROVED
+        )
+    ).one()
+    
+    total_party_size = approved_count + 1  # +1 for creator
+    if total_party_size < quest.party_size_min:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot close quest: minimum party size of {quest.party_size_min} not met (current: {total_party_size})"
+        )
+
     # Handle quest closure based on type
     from datetime import datetime
 
@@ -441,9 +469,136 @@ def close_quest(
     #     # Internal quests don't create or modify parties
     #     pass
 
+    # Update quest status - quest moves to IN_PROGRESS when recruitment closes
+    quest.status = QuestStatus.IN_PROGRESS
+    quest.updated_at = datetime.utcnow()
+
+    session.add(quest)
+    session.commit()
+    session.refresh(quest)
+
+    return quest
+
+
+@router.post("/{quest_id}/complete", response_model=QuestPublic)
+def complete_quest(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    quest_id: uuid.UUID,
+) -> Any:
+    """
+    Mark a quest as completed.
+    Only quest creators or party owners/moderators can complete quests.
+    """
+    quest = crud.get_quest(session=session, quest_id=quest_id)
+    if not quest:
+        raise HTTPException(status_code=404, detail="Quest not found")
+
+    # Check if quest can be completed
+    if quest.status != QuestStatus.IN_PROGRESS:
+        raise HTTPException(
+            status_code=400, detail="Only in-progress quests can be completed"
+        )
+
+    # Check permissions
+    can_complete = False
+
+    # Quest creator can always complete
+    if quest.creator_id == current_user.id or current_user.is_superuser:
+        can_complete = True
+
+    # Party owners/moderators can complete party quests
+    elif quest.parent_party_id:
+        party_member = session.exec(
+            select(PartyMember).where(
+                PartyMember.party_id == quest.parent_party_id,
+                PartyMember.user_id == current_user.id,
+                PartyMember.status == "active",
+            )
+        ).first()
+
+        if party_member and party_member.role in [
+            PartyMemberRole.OWNER,
+            PartyMemberRole.MODERATOR,
+        ]:
+            can_complete = True
+
+    if not can_complete:
+        raise HTTPException(
+            status_code=403,
+            detail="Only quest creators or party owners/moderators can complete quests",
+        )
+
     # Update quest status
+    from datetime import datetime
+    
     quest.status = QuestStatus.COMPLETED
     quest.completed_at = datetime.utcnow()
+    quest.updated_at = datetime.utcnow()
+
+    session.add(quest)
+    session.commit()
+    session.refresh(quest)
+
+    return quest
+
+
+@router.post("/{quest_id}/cancel", response_model=QuestPublic)
+def cancel_quest(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    quest_id: uuid.UUID,
+) -> Any:
+    """
+    Cancel a quest.
+    Only quest creators or party owners/moderators can cancel quests.
+    Cancellation is allowed for RECRUITING or IN_PROGRESS quests.
+    """
+    quest = crud.get_quest(session=session, quest_id=quest_id)
+    if not quest:
+        raise HTTPException(status_code=404, detail="Quest not found")
+
+    # Check if quest can be cancelled
+    if quest.status not in [QuestStatus.RECRUITING, QuestStatus.IN_PROGRESS]:
+        raise HTTPException(
+            status_code=400, detail="Only recruiting or in-progress quests can be cancelled"
+        )
+
+    # Check permissions
+    can_cancel = False
+
+    # Quest creator can always cancel
+    if quest.creator_id == current_user.id or current_user.is_superuser:
+        can_cancel = True
+
+    # Party owners/moderators can cancel party quests
+    elif quest.parent_party_id:
+        party_member = session.exec(
+            select(PartyMember).where(
+                PartyMember.party_id == quest.parent_party_id,
+                PartyMember.user_id == current_user.id,
+                PartyMember.status == "active",
+            )
+        ).first()
+
+        if party_member and party_member.role in [
+            PartyMemberRole.OWNER,
+            PartyMemberRole.MODERATOR,
+        ]:
+            can_cancel = True
+
+    if not can_cancel:
+        raise HTTPException(
+            status_code=403,
+            detail="Only quest creators or party owners/moderators can cancel quests",
+        )
+
+    # Update quest status
+    from datetime import datetime
+    
+    quest.status = QuestStatus.CANCELLED
     quest.updated_at = datetime.utcnow()
 
     session.add(quest)

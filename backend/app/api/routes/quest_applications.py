@@ -13,6 +13,7 @@ from app.models import (
     QuestApplicationsPublic,
     QuestApplicationUpdate,
     QuestStatus,
+    QuestVisibility,
 )
 
 router = APIRouter(prefix="/quest-applications", tags=["quest-applications"])
@@ -38,6 +39,13 @@ def apply_to_quest(
     if quest.status != QuestStatus.RECRUITING:
         raise HTTPException(
             status_code=400, detail="Quest is not accepting applications"
+        )
+
+    # Check if quest is private
+    if quest.visibility == QuestVisibility.PRIVATE:
+        raise HTTPException(
+            status_code=403,
+            detail="Cannot apply to private quests without invitation"
         )
 
     # Check if user is not the creator
