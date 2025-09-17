@@ -173,6 +173,8 @@ class QuestPublic(QuestBase):
     creator_id: uuid.UUID
     status: QuestStatus
     created_at: datetime
+    updated_at: datetime | None = None
+    completed_at: datetime | None = None
     party_id: uuid.UUID | None = None
     parent_party_id: uuid.UUID | None = None
     internal_slots: int = 0
