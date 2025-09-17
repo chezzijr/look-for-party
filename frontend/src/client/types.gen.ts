@@ -222,6 +222,8 @@ export type QuestPublic = {
   creator_id: string
   status: QuestStatus
   created_at: string
+  updated_at?: string | null
+  completed_at?: string | null
   party_id?: string | null
   parent_party_id?: string | null
   internal_slots?: number
@@ -781,6 +783,18 @@ export type QuestsCloseQuestData = {
 }
 
 export type QuestsCloseQuestResponse = QuestPublic
+
+export type QuestsCompleteQuestData = {
+  questId: string
+}
+
+export type QuestsCompleteQuestResponse = QuestPublic
+
+export type QuestsCancelQuestData = {
+  questId: string
+}
+
+export type QuestsCancelQuestResponse = QuestPublic
 
 export type RatingsCreateRatingData = {
   requestBody: RatingCreate

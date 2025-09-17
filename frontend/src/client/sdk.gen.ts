@@ -64,6 +64,10 @@ import type {
   QuestsAssignQuestMembersResponse,
   QuestsCloseQuestData,
   QuestsCloseQuestResponse,
+  QuestsCompleteQuestData,
+  QuestsCompleteQuestResponse,
+  QuestsCancelQuestData,
+  QuestsCancelQuestResponse,
   RatingsCreateRatingData,
   RatingsCreateRatingResponse,
   RatingsReadRatingData,
@@ -887,6 +891,55 @@ export class QuestsService {
     return __request(OpenAPI, {
       method: "POST",
       url: "/api/v1/quests/{quest_id}/close",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Complete Quest
+   * Mark a quest as completed.
+   * Only quest creators or party owners/moderators can complete quests.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static completeQuest(
+    data: QuestsCompleteQuestData,
+  ): CancelablePromise<QuestsCompleteQuestResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/quests/{quest_id}/complete",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Cancel Quest
+   * Cancel a quest.
+   * Only quest creators or party owners/moderators can cancel quests.
+   * Cancellation is allowed for RECRUITING or IN_PROGRESS quests.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns QuestPublic Successful Response
+   * @throws ApiError
+   */
+  public static cancelQuest(
+    data: QuestsCancelQuestData,
+  ): CancelablePromise<QuestsCancelQuestResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/quests/{quest_id}/cancel",
       path: {
         quest_id: data.questId,
       },
