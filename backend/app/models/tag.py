@@ -211,4 +211,3 @@ class QuestTagPublic(QuestTagBase):
 class QuestTagsPublic(SQLModel):
     data: list[QuestTagPublic]
     count: int
-

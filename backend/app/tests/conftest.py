@@ -9,7 +9,7 @@ from app.core.db import engine, init_db
 from app.main import app
 from app.models import Party, PartyMember, Quest, QuestApplication, User
 from app.models.rating import Rating
-from app.models.tag import Tag, UserTag, QuestTag
+from app.models.tag import QuestTag, Tag, UserTag
 from app.tests.utils.party import PartyFactory
 from app.tests.utils.quest import QuestApplicationFactory, QuestFactory
 from app.tests.utils.user import authentication_token_from_email

@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
 from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
@@ -84,16 +83,19 @@ class User(UserBase, table=True):
         back_populates="user", cascade_delete=True
     )
     suggested_tags: list["Tag"] = Relationship(
-        back_populates="suggested_by_user", cascade_delete=True,
-        sa_relationship_kwargs={"foreign_keys": "[Tag.suggested_by]"}
+        back_populates="suggested_by_user",
+        cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "[Tag.suggested_by]"},
     )
     given_ratings: list["Rating"] = Relationship(
-        back_populates="rater", cascade_delete=True,
-        sa_relationship_kwargs={"foreign_keys": "[Rating.rater_id]"}
+        back_populates="rater",
+        cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "[Rating.rater_id]"},
     )
     received_ratings: list["Rating"] = Relationship(
-        back_populates="rated_user", cascade_delete=True,
-        sa_relationship_kwargs={"foreign_keys": "[Rating.rated_user_id]"}
+        back_populates="rated_user",
+        cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "[Rating.rated_user_id]"},
     )
 
 

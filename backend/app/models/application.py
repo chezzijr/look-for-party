@@ -46,13 +46,15 @@ class QuestApplication(QuestApplicationBase, table=True):
         default=ApplicationStatus.PENDING,
         sa_column_kwargs={"server_default": ApplicationStatus.PENDING.value},
     )
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    applied_at: datetime = Field(default_factory=datetime.utcnow)  # Keep for backward compatibility
+    applied_at: datetime = Field(
+        default_factory=datetime.utcnow
+    )  # Keep for backward compatibility
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     reviewed_at: datetime | None = Field(default=None)
-    
+
     # Review feedback
     reviewer_feedback: str | None = Field(default=None, max_length=500)
 

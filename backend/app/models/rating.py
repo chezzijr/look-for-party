@@ -12,12 +12,24 @@ if TYPE_CHECKING:
 # Shared properties
 class RatingBase(SQLModel):
     overall_rating: int = Field(ge=1, le=5, description="Overall rating (1-5 stars)")
-    collaboration_rating: int = Field(ge=1, le=5, description="Collaboration skill rating (1-5 stars)")
-    communication_rating: int = Field(ge=1, le=5, description="Communication skill rating (1-5 stars)")
-    reliability_rating: int = Field(ge=1, le=5, description="Reliability rating (1-5 stars)")
-    skill_rating: int = Field(ge=1, le=5, description="Technical/domain skill rating (1-5 stars)")
-    review_text: str | None = Field(default=None, max_length=1000, description="Optional written review")
-    would_collaborate_again: bool = Field(default=True, description="Would collaborate with this person again")
+    collaboration_rating: int = Field(
+        ge=1, le=5, description="Collaboration skill rating (1-5 stars)"
+    )
+    communication_rating: int = Field(
+        ge=1, le=5, description="Communication skill rating (1-5 stars)"
+    )
+    reliability_rating: int = Field(
+        ge=1, le=5, description="Reliability rating (1-5 stars)"
+    )
+    skill_rating: int = Field(
+        ge=1, le=5, description="Technical/domain skill rating (1-5 stars)"
+    )
+    review_text: str | None = Field(
+        default=None, max_length=1000, description="Optional written review"
+    )
+    would_collaborate_again: bool = Field(
+        default=True, description="Would collaborate with this person again"
+    )
 
 
 # Properties to receive on rating creation
@@ -51,11 +63,11 @@ class Rating(RatingBase, table=True):
     party: "Party" = Relationship(back_populates="ratings")
     rater: "User" = Relationship(
         back_populates="given_ratings",
-        sa_relationship_kwargs={"foreign_keys": "[Rating.rater_id]"}
+        sa_relationship_kwargs={"foreign_keys": "[Rating.rater_id]"},
     )
     rated_user: "User" = Relationship(
         back_populates="received_ratings",
-        sa_relationship_kwargs={"foreign_keys": "[Rating.rated_user_id]"}
+        sa_relationship_kwargs={"foreign_keys": "[Rating.rated_user_id]"},
     )
 
     # Unique constraint: each user can rate another user only once per party

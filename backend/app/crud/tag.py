@@ -1,20 +1,19 @@
 import uuid
-from typing import Any
 
-from sqlmodel import Session, select, func
+from sqlmodel import Session, func, select
 
 from app.models import (
-    Tag,
-    TagCreate,
-    TagUpdate,
-    TagCategory,
-    TagStatus,
-    UserTag,
-    UserTagCreate,
-    UserTagUpdate,
     QuestTag,
     QuestTagCreate,
     QuestTagUpdate,
+    Tag,
+    TagCategory,
+    TagCreate,
+    TagStatus,
+    TagUpdate,
+    UserTag,
+    UserTagCreate,
+    UserTagUpdate,
 )
 
 
@@ -57,27 +56,29 @@ def get_tags(
 ) -> list[Tag]:
     """Get tags with optional filtering."""
     statement = select(Tag)
-    
+
     # Filter by status (default to approved tags)
     if status:
         statement = statement.where(Tag.status == status)
     else:
-        statement = statement.where(Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED]))
-    
+        statement = statement.where(
+            Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED])
+        )
+
     # Filter by category
     if category:
         statement = statement.where(Tag.category == category)
-    
+
     # Search by name
     if search:
         statement = statement.where(Tag.name.ilike(f"%{search}%"))
-    
+
     # Order by usage count (most popular first), then by name
     statement = statement.order_by(Tag.usage_count.desc(), Tag.name)
-    
+
     # Apply pagination
     statement = statement.offset(skip).limit(limit)
-    
+
     return list(session.exec(statement).all())
 
 
@@ -89,46 +90,45 @@ def get_popular_tags(
 ) -> list[Tag]:
     """Get most popular tags (highest usage count)."""
     statement = select(Tag).where(
-        Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED]),
-        Tag.usage_count > 0
+        Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED]), Tag.usage_count > 0
     )
-    
+
     if category:
         statement = statement.where(Tag.category == category)
-    
+
     statement = statement.order_by(Tag.usage_count.desc()).limit(limit)
-    
+
     return list(session.exec(statement).all())
 
 
 def get_tag_suggestions(
-    *, 
-    session: Session, 
-    query: str, 
+    *,
+    session: Session,
+    query: str,
     category: TagCategory | None = None,
-    limit: int = 10
+    limit: int = 10,
 ) -> list[Tag]:
     """Get tag suggestions for autocomplete."""
     statement = select(Tag).where(
         Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED]),
-        Tag.name.ilike(f"{query}%")
+        Tag.name.ilike(f"{query}%"),
     )
-    
+
     if category:
         statement = statement.where(Tag.category == category)
-    
+
     statement = statement.order_by(Tag.usage_count.desc(), Tag.name).limit(limit)
-    
+
     return list(session.exec(statement).all())
 
 
 def update_tag(*, session: Session, db_tag: Tag, tag_in: TagUpdate) -> Tag:
     """Update a tag."""
     from datetime import datetime
-    
+
     tag_data = tag_in.model_dump(exclude_unset=True)
     tag_data["updated_at"] = datetime.utcnow()
-    
+
     db_tag.sqlmodel_update(tag_data)
     session.add(db_tag)
     session.commit()
@@ -159,16 +159,14 @@ def create_user_tag(
     *, session: Session, user_tag_in: UserTagCreate, user_id: uuid.UUID
 ) -> UserTag:
     """Add a tag to a user's profile."""
-    db_user_tag = UserTag.model_validate(
-        user_tag_in, update={"user_id": user_id}
-    )
+    db_user_tag = UserTag.model_validate(user_tag_in, update={"user_id": user_id})
     session.add(db_user_tag)
     session.commit()
     session.refresh(db_user_tag)
-    
+
     # Increment tag usage count
     increment_tag_usage(session=session, tag_id=user_tag_in.tag_id)
-    
+
     return db_user_tag
 
 
@@ -177,17 +175,20 @@ def get_user_tag(
 ) -> UserTag | None:
     """Get a specific user-tag relationship."""
     statement = select(UserTag).where(
-        UserTag.user_id == user_id,
-        UserTag.tag_id == tag_id
+        UserTag.user_id == user_id, UserTag.tag_id == tag_id
     )
     return session.exec(statement).first()
 
 
 def get_user_tags(*, session: Session, user_id: uuid.UUID) -> list[UserTag]:
     """Get all tags for a user."""
-    statement = select(UserTag).where(UserTag.user_id == user_id).order_by(
-        UserTag.is_primary.desc(),  # Primary tags first
-        UserTag.created_at.desc()
+    statement = (
+        select(UserTag)
+        .where(UserTag.user_id == user_id)
+        .order_by(
+            UserTag.is_primary.desc(),  # Primary tags first
+            UserTag.created_at.desc(),
+        )
     )
     return list(session.exec(statement).all())
 
@@ -204,7 +205,9 @@ def update_user_tag(
     return db_user_tag
 
 
-def delete_user_tag(*, session: Session, user_id: uuid.UUID, tag_id: uuid.UUID) -> UserTag | None:
+def delete_user_tag(
+    *, session: Session, user_id: uuid.UUID, tag_id: uuid.UUID
+) -> UserTag | None:
     """Remove a tag from a user's profile."""
     user_tag = get_user_tag(session=session, user_id=user_id, tag_id=tag_id)
     if user_tag:
@@ -218,16 +221,14 @@ def create_quest_tag(
     *, session: Session, quest_tag_in: QuestTagCreate, quest_id: uuid.UUID
 ) -> QuestTag:
     """Add a tag to a quest."""
-    db_quest_tag = QuestTag.model_validate(
-        quest_tag_in, update={"quest_id": quest_id}
-    )
+    db_quest_tag = QuestTag.model_validate(quest_tag_in, update={"quest_id": quest_id})
     session.add(db_quest_tag)
     session.commit()
     session.refresh(db_quest_tag)
-    
+
     # Increment tag usage count
     increment_tag_usage(session=session, tag_id=quest_tag_in.tag_id)
-    
+
     return db_quest_tag
 
 
@@ -236,17 +237,20 @@ def get_quest_tag(
 ) -> QuestTag | None:
     """Get a specific quest-tag relationship."""
     statement = select(QuestTag).where(
-        QuestTag.quest_id == quest_id,
-        QuestTag.tag_id == tag_id
+        QuestTag.quest_id == quest_id, QuestTag.tag_id == tag_id
     )
     return session.exec(statement).first()
 
 
 def get_quest_tags(*, session: Session, quest_id: uuid.UUID) -> list[QuestTag]:
     """Get all tags for a quest."""
-    statement = select(QuestTag).where(QuestTag.quest_id == quest_id).order_by(
-        QuestTag.is_required.desc(),  # Required tags first
-        QuestTag.created_at
+    statement = (
+        select(QuestTag)
+        .where(QuestTag.quest_id == quest_id)
+        .order_by(
+            QuestTag.is_required.desc(),  # Required tags first
+            QuestTag.created_at,
+        )
     )
     return list(session.exec(statement).all())
 
@@ -263,7 +267,9 @@ def update_quest_tag(
     return db_quest_tag
 
 
-def delete_quest_tag(*, session: Session, quest_id: uuid.UUID, tag_id: uuid.UUID) -> QuestTag | None:
+def delete_quest_tag(
+    *, session: Session, quest_id: uuid.UUID, tag_id: uuid.UUID
+) -> QuestTag | None:
     """Remove a tag from a quest."""
     quest_tag = get_quest_tag(session=session, quest_id=quest_id, tag_id=tag_id)
     if quest_tag:
@@ -274,12 +280,11 @@ def delete_quest_tag(*, session: Session, quest_id: uuid.UUID, tag_id: uuid.UUID
 
 def get_tag_categories_with_counts(*, session: Session) -> dict[str, int]:
     """Get tag categories with their counts."""
-    statement = select(
-        Tag.category, 
-        func.count(Tag.id).label("count")
-    ).where(
-        Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED])
-    ).group_by(Tag.category)
-    
+    statement = (
+        select(Tag.category, func.count(Tag.id).label("count"))
+        .where(Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED]))
+        .group_by(Tag.category)
+    )
+
     result = session.exec(statement).all()
-    return {category: count for category, count in result}
+    return dict(result)

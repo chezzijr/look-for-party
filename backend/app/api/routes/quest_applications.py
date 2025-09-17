@@ -44,8 +44,7 @@ def apply_to_quest(
     # Check if quest is private
     if quest.visibility == QuestVisibility.PRIVATE:
         raise HTTPException(
-            status_code=403,
-            detail="Cannot apply to private quests without invitation"
+            status_code=403, detail="Cannot apply to private quests without invitation"
         )
 
     # Check if user is not the creator

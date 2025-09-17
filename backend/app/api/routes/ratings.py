@@ -1,20 +1,18 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
-    Rating,
+    Message,
     RatingCreate,
-    RatingDetail,
     RatingPublic,
     RatingsPublic,
     RatingUpdate,
-    UserRatingSummary,
-    Message,
     User,
+    UserRatingSummary,
 )
 
 router = APIRouter(prefix="/ratings", tags=["ratings"])
@@ -123,7 +121,7 @@ def update_rating(
     session: SessionDep,
     current_user: CurrentUser,
     rating_id: uuid.UUID,
-    rating_in: RatingUpdate
+    rating_in: RatingUpdate,
 ) -> Any:
     """
     Update a rating (only by the rater).
@@ -131,14 +129,13 @@ def update_rating(
     rating = crud.get_rating(session=session, rating_id=rating_id)
     if not rating:
         raise HTTPException(status_code=404, detail="Rating not found")
-    
+
     # Only allow the rater to update their own rating
     if rating.rater_id != current_user.id:
         raise HTTPException(
-            status_code=403, 
-            detail="You can only update your own ratings"
+            status_code=403, detail="You can only update your own ratings"
         )
-    
+
     updated_rating = crud.update_rating(
         session=session, db_rating=rating, rating_in=rating_in
     )
@@ -155,25 +152,26 @@ def delete_rating(
     rating = crud.get_rating(session=session, rating_id=rating_id)
     if not rating:
         raise HTTPException(status_code=404, detail="Rating not found")
-    
+
     # Only allow the rater to delete their own rating
     if rating.rater_id != current_user.id:
         raise HTTPException(
-            status_code=403, 
-            detail="You can only delete your own ratings"
+            status_code=403, detail="You can only delete your own ratings"
         )
-    
+
     crud.delete_rating(session=session, rating_id=rating_id)
     return Message(message="Rating deleted successfully")
 
 
-@router.get("/party/{party_id}/between/{rated_user_id}", response_model=RatingPublic | None)
+@router.get(
+    "/party/{party_id}/between/{rated_user_id}", response_model=RatingPublic | None
+)
 def get_my_rating_for_user_in_party(
     *,
     session: SessionDep,
     current_user: CurrentUser,
     party_id: uuid.UUID,
-    rated_user_id: uuid.UUID
+    rated_user_id: uuid.UUID,
 ) -> Any:
     """
     Get my rating for a specific user in a specific party.
@@ -182,6 +180,6 @@ def get_my_rating_for_user_in_party(
         session=session,
         party_id=party_id,
         rater_id=current_user.id,
-        rated_user_id=rated_user_id
+        rated_user_id=rated_user_id,
     )
     return rating

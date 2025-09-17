@@ -8,14 +8,12 @@ This module tests the dual-mode recruitment platform supporting:
 4. Member Assignment for Internal Quests
 5. Quest Closure and Party Formation Logic
 """
-import uuid
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app import crud
 from app.core.config import settings
 from app.models import (
     ApplicationStatus,
@@ -29,7 +27,7 @@ from app.models import (
     QuestVisibility,
     User,
 )
-from app.tests.utils.user import create_random_user, authentication_token_from_email
+from app.tests.utils.user import authentication_token_from_email, create_random_user
 from app.tests.utils.utils import random_email
 
 
@@ -43,20 +41,22 @@ class TestIndividualQuestFlow:
         quest_data: dict[str, Any],
     ) -> None:
         """Test: User Idea → Create Quest → Set Requirements → Publish → Review Applications → Approve Members → Quest Closes → New Party Created"""
-        
+
         # Step 1: Create quest creator with proper authentication
         creator_email = random_email()
         creator_headers = authentication_token_from_email(
             client=client, email=creator_email, db=db
         )
-        
+
         # Step 2: Create Individual Quest
-        quest_data.update({
-            "quest_type": QuestType.INDIVIDUAL,
-            "party_size_min": 2,
-            "party_size_max": 4,
-        })
-        
+        quest_data.update(
+            {
+                "quest_type": QuestType.INDIVIDUAL,
+                "party_size_min": 2,
+                "party_size_max": 4,
+            }
+        )
+
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
             headers=creator_headers,
@@ -71,17 +71,17 @@ class TestIndividualQuestFlow:
         # Get creator user ID from the created quest
         quest_db = db.exec(select(Quest).where(Quest.id == quest_id)).first()
         creator_id = quest_db.creator_id
-        
+
         # Step 3: Create applicants and applications
         applicant_emails = [random_email() for _ in range(3)]
         applicant_users = []
-        
+
         for email in applicant_emails:
             # Create user through authentication (simulates registration)
             authentication_token_from_email(client=client, email=email, db=db)
             user = db.exec(select(User).where(User.email == email)).first()
             applicant_users.append(user)
-        
+
         # Create applications
         for applicant in applicant_users:
             application = QuestApplication(
@@ -94,7 +94,9 @@ class TestIndividualQuestFlow:
         db.commit()
 
         # Step 4: Approve 2 out of 3 applications (quest creator action)
-        applications = db.exec(select(QuestApplication).where(QuestApplication.quest_id == quest_id)).all()
+        applications = db.exec(
+            select(QuestApplication).where(QuestApplication.quest_id == quest_id)
+        ).all()
         applications[0].status = ApplicationStatus.APPROVED
         applications[1].status = ApplicationStatus.APPROVED
         # applications[2] remains PENDING
@@ -118,17 +120,26 @@ class TestIndividualQuestFlow:
         assert party.name == f"Party for {quest_data['title']}"
 
         # Step 7: Verify party members
-        party_members = db.exec(select(PartyMember).where(PartyMember.party_id == party.id)).all()
+        party_members = db.exec(
+            select(PartyMember).where(PartyMember.party_id == party.id)
+        ).all()
         assert len(party_members) == 3  # Creator + 2 approved applicants
-        
+
         # Creator should be OWNER
-        creator_member = next((m for m in party_members if m.user_id == creator_id), None)
+        creator_member = next(
+            (m for m in party_members if m.user_id == creator_id), None
+        )
         assert creator_member is not None
         assert creator_member.role == PartyMemberRole.OWNER
 
         # Approved applicants should be MEMBERS
-        approved_member_ids = {applications[0].applicant_id, applications[1].applicant_id}
-        approved_members = [m for m in party_members if m.user_id in approved_member_ids]
+        approved_member_ids = {
+            applications[0].applicant_id,
+            applications[1].applicant_id,
+        }
+        approved_members = [
+            m for m in party_members if m.user_id in approved_member_ids
+        ]
         assert len(approved_members) == 2
         for member in approved_members:
             assert member.role == PartyMemberRole.MEMBER
@@ -170,27 +181,27 @@ class TestPartyQuestCreation:
             user_id=creator.id,
             role=PartyMemberRole.OWNER,
         )
-        
+
         member1 = create_random_user(db)
         member2 = create_random_user(db)
-        
+
         regular_member1 = PartyMember(
             party_id=party.id,
             user_id=member1.id,
             role=PartyMemberRole.MEMBER,
         )
-        
+
         regular_member2 = PartyMember(
             party_id=party.id,
             user_id=member2.id,
             role=PartyMemberRole.MEMBER,
         )
-        
+
         members = [owner_member, regular_member1, regular_member2]
         for member in members:
             db.add(member)
         db.commit()
-        
+
         return party, members
 
     def test_party_internal_quest_creation(
@@ -202,10 +213,12 @@ class TestPartyQuestCreation:
         """Test: Existing Party → Identify Need → Create Internal Quest → Assign Members"""
         party, members = existing_party
         owner = members[0]  # First member is owner
-        
+
         # Get proper JWT token for owner
         from sqlmodel import select
+
         from app.models import User
+
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
@@ -247,10 +260,12 @@ class TestPartyQuestCreation:
         """Test: Existing Party → Create Public Expansion Quest → Add New Members"""
         party, members = existing_party
         owner = members[0]
-        
+
         # Get proper JWT token for owner
         from sqlmodel import select
+
         from app.models import User
+
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
@@ -293,10 +308,12 @@ class TestPartyQuestCreation:
         """Test: Party → Create Hybrid Quest → Start Internal → Option to Publicize Later"""
         party, members = existing_party
         owner = members[0]
-        
+
         # Get proper JWT token for owner
         from sqlmodel import select
+
         from app.models import User
+
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
@@ -307,7 +324,7 @@ class TestPartyQuestCreation:
             "title": "Need backend dev - check with team first",
             "description": "Backend development task, try internal first then go public",
             "objective": "Implement backend API endpoints",
-            "category": "PROFESSIONAL", 
+            "category": "PROFESSIONAL",
             "quest_type": QuestType.PARTY_HYBRID,
             "party_size_min": 1,
             "party_size_max": 1,
@@ -329,7 +346,7 @@ class TestPartyQuestCreation:
         assert quest["visibility"] == QuestVisibility.PRIVATE
         assert quest["internal_slots"] == 1
         assert quest["public_slots"] == 0
-        assert quest["is_publicized"] == False
+        assert quest["is_publicized"] is False
 
 
 class TestQuestPublicizingFlow:
@@ -340,7 +357,7 @@ class TestQuestPublicizingFlow:
         """Create hybrid quest and party owner for testing publicizing"""
         # Create party owner
         owner = create_random_user(db)
-        
+
         # Create original quest and party
         original_quest = Quest(
             title="Original Quest",
@@ -404,11 +421,15 @@ class TestQuestPublicizingFlow:
     ) -> None:
         """Test: Internal/Hybrid Quest → Emergency Publicizing → "publicize 2 slots" """
         quest, owner_member = hybrid_quest_setup
-        
+
         # Get proper JWT token for owner
         from sqlmodel import select
+
         from app.models import User
-        owner_user = db.exec(select(User).where(User.id == owner_member.user_id)).first()
+
+        owner_user = db.exec(
+            select(User).where(User.id == owner_member.user_id)
+        ).first()
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
@@ -426,8 +447,8 @@ class TestQuestPublicizingFlow:
         )
         assert response.status_code == 200
         publicized_quest = response.json()
-        
-        assert publicized_quest["is_publicized"] == True
+
+        assert publicized_quest["is_publicized"] is True
         assert publicized_quest["public_slots"] == 2
         assert publicized_quest["visibility"] == QuestVisibility.PUBLIC
         assert publicized_quest["publicized_at"] is not None
@@ -469,7 +490,10 @@ class TestQuestPublicizingFlow:
             json=publicize_request,
         )
         assert response.status_code == 400
-        assert "Only internal or hybrid party quests can be publicized" in response.json()["detail"]
+        assert (
+            "Only internal or hybrid party quests can be publicized"
+            in response.json()["detail"]
+        )
 
 
 class TestMemberAssignmentFlow:
@@ -482,12 +506,12 @@ class TestMemberAssignmentFlow:
         owner = create_random_user(db)
         member1 = create_random_user(db)
         member2 = create_random_user(db)
-        
+
         # Create original quest and party
         original_quest = Quest(
             title="Original Quest",
             description="Original quest description",
-            objective="Original objective", 
+            objective="Original objective",
             category="PROFESSIONAL",
             party_size_min=3,
             party_size_max=5,
@@ -521,7 +545,7 @@ class TestMemberAssignmentFlow:
             user_id=member2.id,
             role=PartyMemberRole.MEMBER,
         )
-        
+
         members = [owner_member, party_member1, party_member2]
         for member in members:
             db.add(member)
@@ -560,10 +584,12 @@ class TestMemberAssignmentFlow:
         quest, members = internal_quest_setup
         owner = members[0]  # Owner
         assignees = members[1:3]  # Two regular members
-        
+
         # Get proper JWT token for owner
         from sqlmodel import select
+
         from app.models import User
+
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
@@ -581,9 +607,10 @@ class TestMemberAssignmentFlow:
         )
         assert response.status_code == 200
         updated_quest = response.json()
-        
+
         # Verify assignment was saved
         import json
+
         assigned_ids = json.loads(updated_quest["assigned_member_ids"])
         expected_ids = [str(member.user_id) for member in assignees]
         assert set(assigned_ids) == set(expected_ids)
@@ -597,21 +624,21 @@ class TestMemberAssignmentFlow:
         """Test: Cannot assign users who are not party members"""
         quest, members = internal_quest_setup
         owner = members[0]
-        
+
         # Create user who is NOT a party member
         non_member = create_random_user(db)
-        
+
         # Get proper JWT token for owner
         from sqlmodel import select
+
         from app.models import User
+
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
 
-        assignment_request = {
-            "assigned_member_ids": [str(non_member.id)]
-        }
+        assignment_request = {"assigned_member_ids": [str(non_member.id)]}
 
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/assign-members",
@@ -634,12 +661,12 @@ class TestQuestClosureFlow:
         # Create existing party
         owner = create_random_user(db)
         existing_member = create_random_user(db)
-        
+
         original_quest = Quest(
             title="Original Quest",
             description="Quest that formed the original party",
             objective="Original objective",
-            category="PROFESSIONAL", 
+            category="PROFESSIONAL",
             party_size_min=2,
             party_size_max=4,
             required_commitment="MODERATE",
@@ -694,7 +721,7 @@ class TestQuestClosureFlow:
         # Create applicants and approve them
         new_applicant1 = create_random_user(db)
         new_applicant2 = create_random_user(db)
-        
+
         for applicant in [new_applicant1, new_applicant2]:
             application = QuestApplication(
                 quest_id=expansion_quest.id,
@@ -716,7 +743,9 @@ class TestQuestClosureFlow:
         assert response.status_code == 200
 
         # Verify new members were added to existing party
-        all_party_members = db.exec(select(PartyMember).where(PartyMember.party_id == party.id)).all()
+        all_party_members = db.exec(
+            select(PartyMember).where(PartyMember.party_id == party.id)
+        ).all()
         assert len(all_party_members) == 4  # 2 original + 2 new
 
         # Verify new members have correct roles
@@ -735,7 +764,7 @@ class TestQuestClosureFlow:
         """Test: Internal Quest completion → No party changes, just mark complete"""
         # Create party and internal quest
         owner = create_random_user(db)
-        
+
         original_quest = Quest(
             title="Original Quest",
             description="Quest that formed the party",
@@ -786,7 +815,9 @@ class TestQuestClosureFlow:
         db.refresh(internal_quest)
 
         # Get initial party member count
-        initial_members = db.exec(select(PartyMember).where(PartyMember.party_id == party.id)).all()
+        initial_members = db.exec(
+            select(PartyMember).where(PartyMember.party_id == party.id)
+        ).all()
         initial_count = len(initial_members)
 
         # Close internal quest
@@ -804,5 +835,7 @@ class TestQuestClosureFlow:
         assert completed_quest["status"] == QuestStatus.IN_PROGRESS
 
         # Verify no party changes (same member count)
-        final_members = db.exec(select(PartyMember).where(PartyMember.party_id == party.id)).all()
+        final_members = db.exec(
+            select(PartyMember).where(PartyMember.party_id == party.id)
+        ).all()
         assert len(final_members) == initial_count

@@ -9,13 +9,12 @@ from app.api.deps import CurrentUser, SessionDep
 from app.models import (
     Message,
     PartiesPublic,
-    Party,
     PartyCreate,
     PartyMember,
     PartyMemberCreate,
     PartyMemberPublic,
-    PartyMembersPublic,
     PartyMemberRole,
+    PartyMembersPublic,
     PartyMemberUpdate,
     PartyPublic,
     PartyQuestCreate,
@@ -116,7 +115,10 @@ def update_party(
 
     # Check if user is a party leader
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
+    is_leader = any(
+        m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"]
+        for m in members
+    )
 
     if not is_creator and not is_leader and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -165,7 +167,10 @@ def add_party_member(
     is_creator = quest and quest.creator_id == current_user.id
 
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
+    is_leader = any(
+        m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"]
+        for m in members
+    )
 
     if not is_creator and not is_leader and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -215,7 +220,10 @@ def update_party_member(
     is_self = member.user_id == current_user.id
 
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
+    is_leader = any(
+        m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"]
+        for m in members
+    )
 
     # Role changes to leadership roles can only be done by quest creator or existing leaders
     if member_in.role is not None and member_in.role in ["OWNER", "MODERATOR"]:
@@ -266,7 +274,10 @@ def remove_party_member(
     is_self = member.user_id == current_user.id
 
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"] for m in members)
+    is_leader = any(
+        m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"]
+        for m in members
+    )
 
     if (
         not is_creator
@@ -308,7 +319,7 @@ def create_party_quest(
         select(PartyMember).where(
             PartyMember.party_id == party_id,
             PartyMember.user_id == current_user.id,
-            PartyMember.status == "active"
+            PartyMember.status == "active",
         )
     ).first()
 
@@ -319,8 +330,7 @@ def create_party_quest(
 
     if party_member.role not in [PartyMemberRole.OWNER, PartyMemberRole.MODERATOR]:
         raise HTTPException(
-            status_code=403, 
-            detail="Only party owners and moderators can create quests"
+            status_code=403, detail="Only party owners and moderators can create quests"
         )
 
     # Validate quest type specific requirements
@@ -329,35 +339,33 @@ def create_party_quest(
             # Validate assigned members are party members
             party_member_ids = session.exec(
                 select(PartyMember.user_id).where(
-                    PartyMember.party_id == party_id,
-                    PartyMember.status == "active"
+                    PartyMember.party_id == party_id, PartyMember.status == "active"
                 )
             ).all()
-            
+
             invalid_members = set(quest_in.assigned_member_ids) - set(party_member_ids)
             if invalid_members:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Members {invalid_members} are not active party members"
+                    detail=f"Members {invalid_members} are not active party members",
                 )
 
     elif quest_in.quest_type in [QuestType.PARTY_EXPANSION, QuestType.PARTY_HYBRID]:
         if not quest_in.party_size_min or not quest_in.party_size_max:
             raise HTTPException(
                 status_code=400,
-                detail="party_size_min and party_size_max are required for expansion/hybrid quests"
+                detail="party_size_min and party_size_max are required for expansion/hybrid quests",
             )
-        
+
         if quest_in.party_size_min > quest_in.party_size_max:
             raise HTTPException(
                 status_code=400,
-                detail="Minimum party size cannot be greater than maximum party size"
+                detail="Minimum party size cannot be greater than maximum party size",
             )
 
     # Create the quest
     import json
-    from datetime import datetime
-    
+
     quest_data = Quest(
         title=quest_in.title,
         description=quest_in.description,
@@ -379,7 +387,11 @@ def create_party_quest(
         parent_party_id=party_id,  # Party this quest belongs to
         internal_slots=quest_in.internal_slots,
         public_slots=quest_in.public_slots,
-        assigned_member_ids=json.dumps([str(uid) for uid in quest_in.assigned_member_ids]) if quest_in.assigned_member_ids else None,
+        assigned_member_ids=json.dumps(
+            [str(uid) for uid in quest_in.assigned_member_ids]
+        )
+        if quest_in.assigned_member_ids
+        else None,
     )
 
     session.add(quest_data)
@@ -411,7 +423,7 @@ def get_party_quests(
         select(PartyMember).where(
             PartyMember.party_id == party_id,
             PartyMember.user_id == current_user.id,
-            PartyMember.status == "active"
+            PartyMember.status == "active",
         )
     ).first()
 
@@ -424,9 +436,9 @@ def get_party_quests(
     query = select(Quest).where(
         (Quest.party_id == party_id) | (Quest.parent_party_id == party_id)
     )
-    
+
     if quest_type:
         query = query.where(Quest.quest_type == quest_type)
-    
+
     quests = session.exec(query).all()
     return quests

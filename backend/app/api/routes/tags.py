@@ -6,7 +6,12 @@ from sqlmodel import func, select
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
+from app.models import Message
 from app.models.tag import (
+    QuestTagCreate,
+    QuestTagPublic,
+    QuestTagsPublic,
+    QuestTagUpdate,
     Tag,
     TagCategory,
     TagCreate,
@@ -15,18 +20,11 @@ from app.models.tag import (
     TagsPublic,
     TagStatus,
     TagUpdate,
-    UserTag,
     UserTagCreate,
     UserTagPublic,
     UserTagsPublic,
     UserTagUpdate,
-    QuestTag,
-    QuestTagCreate,
-    QuestTagPublic,
-    QuestTagsPublic,
-    QuestTagUpdate,
 )
-from app.models import Message
 
 router = APIRouter(prefix="/tags", tags=["tags"])
 
@@ -51,19 +49,21 @@ def read_tags(
         status=status,
         search=search,
     )
-    
+
     count_statement = select(func.count()).select_from(Tag)
     if status:
         count_statement = count_statement.where(Tag.status == status)
     else:
-        count_statement = count_statement.where(Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED]))
+        count_statement = count_statement.where(
+            Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED])
+        )
     if category:
         count_statement = count_statement.where(Tag.category == category)
     if search:
         count_statement = count_statement.where(Tag.name.ilike(f"%{search}%"))
-    
+
     count = session.exec(count_statement).one()
-    
+
     return TagsPublic(data=tags, count=count)
 
 
@@ -126,7 +126,9 @@ def read_tag_by_slug(session: SessionDep, slug: str) -> Any:
     return tag
 
 
-@router.post("/", dependencies=[Depends(get_current_active_superuser)], response_model=TagPublic)
+@router.post(
+    "/", dependencies=[Depends(get_current_active_superuser)], response_model=TagPublic
+)
 def create_tag(*, session: SessionDep, tag_in: TagCreate) -> Any:
     """
     Create new tag (admin only).
@@ -135,16 +137,20 @@ def create_tag(*, session: SessionDep, tag_in: TagCreate) -> Any:
     existing_name = crud.get_tag_by_name(session=session, name=tag_in.name)
     if existing_name:
         raise HTTPException(status_code=400, detail="Tag with this name already exists")
-    
+
     existing_slug = crud.get_tag_by_slug(session=session, slug=tag_in.slug)
     if existing_slug:
         raise HTTPException(status_code=400, detail="Tag with this slug already exists")
-    
+
     tag = crud.create_tag(session=session, tag_in=tag_in)
     return tag
 
 
-@router.put("/{tag_id}", dependencies=[Depends(get_current_active_superuser)], response_model=TagPublic)
+@router.put(
+    "/{tag_id}",
+    dependencies=[Depends(get_current_active_superuser)],
+    response_model=TagPublic,
+)
 def update_tag(*, session: SessionDep, tag_id: uuid.UUID, tag_in: TagUpdate) -> Any:
     """
     Update tag (admin only).
@@ -152,18 +158,22 @@ def update_tag(*, session: SessionDep, tag_id: uuid.UUID, tag_in: TagUpdate) -> 
     tag = crud.get_tag(session=session, tag_id=tag_id)
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
-    
+
     # Check for name/slug conflicts if they're being updated
     if tag_in.name and tag_in.name != tag.name:
         existing_name = crud.get_tag_by_name(session=session, name=tag_in.name)
         if existing_name and existing_name.id != tag_id:
-            raise HTTPException(status_code=400, detail="Tag with this name already exists")
-    
+            raise HTTPException(
+                status_code=400, detail="Tag with this name already exists"
+            )
+
     if tag_in.slug and tag_in.slug != tag.slug:
         existing_slug = crud.get_tag_by_slug(session=session, slug=tag_in.slug)
         if existing_slug and existing_slug.id != tag_id:
-            raise HTTPException(status_code=400, detail="Tag with this slug already exists")
-    
+            raise HTTPException(
+                status_code=400, detail="Tag with this slug already exists"
+            )
+
     updated_tag = crud.update_tag(session=session, db_tag=tag, tag_in=tag_in)
     return updated_tag
 
@@ -176,7 +186,7 @@ def delete_tag(session: SessionDep, tag_id: uuid.UUID) -> Message:
     tag = crud.get_tag(session=session, tag_id=tag_id)
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
-    
+
     crud.delete_tag(session=session, tag_id=tag_id)
     return Message(message="Tag deleted successfully")
 
@@ -202,14 +212,14 @@ def create_my_user_tag(
     tag = crud.get_tag(session=session, tag_id=user_tag_in.tag_id)
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
-    
+
     # Check if user already has this tag
     existing = crud.get_user_tag(
         session=session, user_id=current_user.id, tag_id=user_tag_in.tag_id
     )
     if existing:
         raise HTTPException(status_code=400, detail="User already has this tag")
-    
+
     user_tag = crud.create_user_tag(
         session=session, user_tag_in=user_tag_in, user_id=current_user.id
     )
@@ -222,7 +232,7 @@ def update_my_user_tag(
     session: SessionDep,
     current_user: CurrentUser,
     tag_id: uuid.UUID,
-    user_tag_in: UserTagUpdate
+    user_tag_in: UserTagUpdate,
 ) -> Any:
     """
     Update current user's tag relationship.
@@ -232,7 +242,7 @@ def update_my_user_tag(
     )
     if not user_tag:
         raise HTTPException(status_code=404, detail="User tag not found")
-    
+
     updated_user_tag = crud.update_user_tag(
         session=session, db_user_tag=user_tag, user_tag_in=user_tag_in
     )
@@ -251,10 +261,8 @@ def delete_my_user_tag(
     )
     if not user_tag:
         raise HTTPException(status_code=404, detail="User tag not found")
-    
-    crud.delete_user_tag(
-        session=session, user_id=current_user.id, tag_id=tag_id
-    )
+
+    crud.delete_user_tag(session=session, user_id=current_user.id, tag_id=tag_id)
     return Message(message="Tag removed from user profile")
 
 
@@ -283,32 +291,35 @@ def create_quest_tag(
     session: SessionDep,
     current_user: CurrentUser,
     quest_id: uuid.UUID,
-    quest_tag_in: QuestTagCreate
+    quest_tag_in: QuestTagCreate,
 ) -> Any:
     """
     Add a tag to a quest (quest creator only).
     """
     # Check if quest exists and user owns it
     from app.models.quest import Quest
+
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
-    
+
     if quest.creator_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only quest creator can manage quest tags")
-    
+        raise HTTPException(
+            status_code=403, detail="Only quest creator can manage quest tags"
+        )
+
     # Check if tag exists
     tag = crud.get_tag(session=session, tag_id=quest_tag_in.tag_id)
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
-    
+
     # Check if quest already has this tag
     existing = crud.get_quest_tag(
         session=session, quest_id=quest_id, tag_id=quest_tag_in.tag_id
     )
     if existing:
         raise HTTPException(status_code=400, detail="Quest already has this tag")
-    
+
     quest_tag = crud.create_quest_tag(
         session=session, quest_tag_in=quest_tag_in, quest_id=quest_id
     )
@@ -322,26 +333,27 @@ def update_quest_tag(
     current_user: CurrentUser,
     quest_id: uuid.UUID,
     tag_id: uuid.UUID,
-    quest_tag_in: QuestTagUpdate
+    quest_tag_in: QuestTagUpdate,
 ) -> Any:
     """
     Update quest's tag relationship (quest creator only).
     """
     # Check if quest exists and user owns it
     from app.models.quest import Quest
+
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
-    
+
     if quest.creator_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only quest creator can manage quest tags")
-    
-    quest_tag = crud.get_quest_tag(
-        session=session, quest_id=quest_id, tag_id=tag_id
-    )
+        raise HTTPException(
+            status_code=403, detail="Only quest creator can manage quest tags"
+        )
+
+    quest_tag = crud.get_quest_tag(session=session, quest_id=quest_id, tag_id=tag_id)
     if not quest_tag:
         raise HTTPException(status_code=404, detail="Quest tag not found")
-    
+
     updated_quest_tag = crud.update_quest_tag(
         session=session, db_quest_tag=quest_tag, quest_tag_in=quest_tag_in
     )
@@ -360,20 +372,19 @@ def delete_quest_tag(
     """
     # Check if quest exists and user owns it
     from app.models.quest import Quest
+
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
-    
+
     if quest.creator_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only quest creator can manage quest tags")
-    
-    quest_tag = crud.get_quest_tag(
-        session=session, quest_id=quest_id, tag_id=tag_id
-    )
+        raise HTTPException(
+            status_code=403, detail="Only quest creator can manage quest tags"
+        )
+
+    quest_tag = crud.get_quest_tag(session=session, quest_id=quest_id, tag_id=tag_id)
     if not quest_tag:
         raise HTTPException(status_code=404, detail="Quest tag not found")
-    
-    crud.delete_quest_tag(
-        session=session, quest_id=quest_id, tag_id=tag_id
-    )
+
+    crud.delete_quest_tag(session=session, quest_id=quest_id, tag_id=tag_id)
     return Message(message="Tag removed from quest")

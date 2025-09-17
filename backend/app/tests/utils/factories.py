@@ -6,8 +6,8 @@ from sqlmodel import Session
 
 from app import crud
 from app.models import (
-    LocationType,
     CommitmentLevel,
+    LocationType,
     Party,
     PartyCreate,
     PartyMember,
@@ -80,9 +80,14 @@ class QuestCreateFactory(factory.Factory):
     )
 
 
-def create_quest(db: Session, creator_id: uuid.UUID | None = None, party_id: uuid.UUID | None = None, **kwargs) -> Quest:
+def create_quest(
+    db: Session,
+    creator_id: uuid.UUID | None = None,
+    party_id: uuid.UUID | None = None,
+    **kwargs,
+) -> Quest:
     """Create a quest with factory-generated data.
-    
+
     Args:
         db: Database session
         creator_id: ID of quest creator. If None, creates a new user.
@@ -95,15 +100,15 @@ def create_quest(db: Session, creator_id: uuid.UUID | None = None, party_id: uui
 
     # Set party-specific defaults if party_id is provided
     if party_id is not None:
-        kwargs.setdefault('quest_type', QuestType.PARTY_INTERNAL)
-        kwargs.setdefault('visibility', QuestVisibility.PRIVATE)
+        kwargs.setdefault("quest_type", QuestType.PARTY_INTERNAL)
+        kwargs.setdefault("visibility", QuestVisibility.PRIVATE)
     else:
-        kwargs.setdefault('quest_type', QuestType.INDIVIDUAL)
-        kwargs.setdefault('visibility', QuestVisibility.PUBLIC)
+        kwargs.setdefault("quest_type", QuestType.INDIVIDUAL)
+        kwargs.setdefault("visibility", QuestVisibility.PUBLIC)
 
     quest_in = QuestCreateFactory(**kwargs)
     quest = crud.create_quest(session=db, quest_in=quest_in, creator_id=creator_id)
-    
+
     # Set parent_party_id after creation since it's not in QuestCreate model
     if party_id is not None:
         quest.parent_party_id = party_id
@@ -112,7 +117,7 @@ def create_quest(db: Session, creator_id: uuid.UUID | None = None, party_id: uui
         db.add(quest)
         db.commit()
         db.refresh(quest)
-    
+
     return quest
 
 
@@ -173,9 +178,7 @@ class PartyMemberCreateFactory(factory.Factory):
         model = PartyMemberCreate
 
     user_id = factory.LazyFunction(uuid.uuid4)
-    role = factory.Faker(
-        "random_element", elements=[e.value for e in PartyMemberRole]
-    )
+    role = factory.Faker("random_element", elements=[e.value for e in PartyMemberRole])
     status = "active"
 
 

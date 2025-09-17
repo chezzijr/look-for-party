@@ -21,31 +21,25 @@ from sqlmodel import Session, select
 from app import crud
 from app.core.config import settings
 from app.models import (
+    ApplicationStatus,
+    CommitmentLevel,
+    LocationType,
     Quest,
     QuestCategory,
     QuestStatus,
-    QuestVisibility,
-    QuestCreate,
-    QuestUpdate,
-    LocationType,
-    CommitmentLevel,
     QuestType,
+    QuestVisibility,
     User,
-    QuestApplication,
-    ApplicationStatus,
 )
 from app.models.tag import (
     Tag,
     TagCategory,
     TagCreate,
     TagStatus,
-    QuestTag,
-    QuestTagCreate,
-    ProficiencyLevel,
 )
-from app.tests.utils.user import authentication_token_from_email, create_random_user
-from app.tests.utils.utils import random_email, random_lower_string
 from app.tests.utils.quest import create_random_quest
+from app.tests.utils.user import authentication_token_from_email
+from app.tests.utils.utils import random_email
 
 
 def create_system_tag(db: Session, name: str, category: TagCategory) -> Tag:
@@ -149,7 +143,7 @@ class TestQuestCreationWizard:
         quest = response.json()
         assert quest["title"] == minimal_quest_data["title"]
         assert quest["visibility"] == QuestVisibility.PUBLIC  # Default value
-        assert quest["auto_approve"] == False  # Default value
+        assert quest["auto_approve"] is False  # Default value
 
     def test_quest_creation_with_maximum_complexity(
         self,
@@ -163,14 +157,16 @@ class TestQuestCreationWizard:
         deadline_date = datetime.utcnow() + timedelta(days=30)
 
         complex_quest_data = create_basic_quest_data()
-        complex_quest_data.update({
-            "location_detail": "Virtual meeting room with screen sharing",
-            "starts_at": future_date.isoformat(),
-            "deadline": deadline_date.isoformat(),
-            "estimated_duration": "2-3 weeks, 10 hours per week",
-            "auto_approve": True,
-            "visibility": QuestVisibility.UNLISTED,
-        })
+        complex_quest_data.update(
+            {
+                "location_detail": "Virtual meeting room with screen sharing",
+                "starts_at": future_date.isoformat(),
+                "deadline": deadline_date.isoformat(),
+                "estimated_duration": "2-3 weeks, 10 hours per week",
+                "auto_approve": True,
+                "visibility": QuestVisibility.UNLISTED,
+            }
+        )
 
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -181,7 +177,7 @@ class TestQuestCreationWizard:
 
         quest = response.json()
         assert quest["location_detail"] == complex_quest_data["location_detail"]
-        assert quest["auto_approve"] == True
+        assert quest["auto_approve"] is True
         assert quest["visibility"] == QuestVisibility.UNLISTED
 
     def test_quest_visibility_settings(
@@ -798,9 +794,9 @@ class TestQuestCreationValidationFailures:
             quest_data_copy = quest_data.copy()
             quest_data_copy["party_size_min"] = sizes["min"]
             quest_data_copy["party_size_max"] = sizes["max"]
-            quest_data_copy["title"] = (
-                f"Invalid size test min:{sizes['min']} max:{sizes['max']}"
-            )
+            quest_data_copy[
+                "title"
+            ] = f"Invalid size test min:{sizes['min']} max:{sizes['max']}"
 
             response = client.post(
                 f"{settings.API_V1_STR}/quests/",
@@ -813,9 +809,9 @@ class TestQuestCreationValidationFailures:
             quest_data_copy = quest_data.copy()
             quest_data_copy["party_size_min"] = sizes["min"]
             quest_data_copy["party_size_max"] = sizes["max"]
-            quest_data_copy["title"] = (
-                f"Logically invalid size test min:{sizes['min']} max:{sizes['max']}"
-            )
+            quest_data_copy[
+                "title"
+            ] = f"Logically invalid size test min:{sizes['min']} max:{sizes['max']}"
 
             response = client.post(
                 f"{settings.API_V1_STR}/quests/",
@@ -823,7 +819,6 @@ class TestQuestCreationValidationFailures:
                 json=quest_data_copy,
             )
             assert response.status_code == 400  # Validation error
-
 
     def test_quest_creation_invalid_timeline(
         self,
@@ -1263,10 +1258,10 @@ class TestQuestCompletion:
         """Create a quest in IN_PROGRESS status"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         quest_data["party_size_min"] = 1  # Allow single person quest
-        
+
         # Create quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1275,7 +1270,7 @@ class TestQuestCompletion:
         )
         assert response.status_code == 200
         quest_id = response.json()["id"]
-        
+
         # Close quest to move it to IN_PROGRESS
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/close",
@@ -1283,7 +1278,7 @@ class TestQuestCompletion:
         )
         assert response.status_code == 200
         assert response.json()["status"] == QuestStatus.IN_PROGRESS
-        
+
         return quest_id, headers
 
     def test_complete_quest_by_creator(
@@ -1323,9 +1318,10 @@ class TestQuestCompletion:
 
         quest_data = response.json()
         assert quest_data["completed_at"] is not None
-        
-        # Verify timestamp is recent (within last minute)  
+
+        # Verify timestamp is recent (within last minute)
         from datetime import datetime
+
         # Parse the timestamp - API returns datetime without Z suffix
         completed_time = datetime.fromisoformat(quest_data["completed_at"])
         now = datetime.utcnow()
@@ -1340,29 +1336,33 @@ class TestQuestCompletion:
         """Test: Party owner can complete party quest"""
         # Create party owner
         owner_email = random_email()
-        owner_headers = authentication_token_from_email(client=client, email=owner_email, db=db)
+        owner_headers = authentication_token_from_email(
+            client=client, email=owner_email, db=db
+        )
         owner_user = db.exec(select(User).where(User.email == owner_email)).first()
-        
+
         # Create party
-        from app.tests.utils.factories import create_party, create_party_member
         from app.models import PartyMemberRole
-        
+        from app.tests.utils.factories import create_party, create_party_member
+
         party = create_party(db)
-        create_party_member(db, party_id=party.id, user_id=owner_user.id, role=PartyMemberRole.OWNER)
-        
+        create_party_member(
+            db, party_id=party.id, user_id=owner_user.id, role=PartyMemberRole.OWNER
+        )
+
         # Create party quest that's IN_PROGRESS
         quest = create_random_quest(db, creator_id=owner_user.id, party_id=party.id)
         quest.status = QuestStatus.IN_PROGRESS
         quest.updated_at = datetime.utcnow()
         db.add(quest)
         db.commit()
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/complete",
             headers=owner_headers,
         )
         assert response.status_code == 200
-        
+
         completed_quest = response.json()
         assert completed_quest["status"] == QuestStatus.COMPLETED
 
@@ -1374,29 +1374,38 @@ class TestQuestCompletion:
         """Test: Party moderator can complete party quest"""
         # Create party moderator
         moderator_email = random_email()
-        moderator_headers = authentication_token_from_email(client=client, email=moderator_email, db=db)
-        moderator_user = db.exec(select(User).where(User.email == moderator_email)).first()
-        
+        moderator_headers = authentication_token_from_email(
+            client=client, email=moderator_email, db=db
+        )
+        moderator_user = db.exec(
+            select(User).where(User.email == moderator_email)
+        ).first()
+
         # Create party with moderator
-        from app.tests.utils.factories import create_party, create_party_member
         from app.models import PartyMemberRole
-        
+        from app.tests.utils.factories import create_party, create_party_member
+
         party = create_party(db)
-        create_party_member(db, party_id=party.id, user_id=moderator_user.id, role=PartyMemberRole.MODERATOR)
-        
+        create_party_member(
+            db,
+            party_id=party.id,
+            user_id=moderator_user.id,
+            role=PartyMemberRole.MODERATOR,
+        )
+
         # Create party quest that's IN_PROGRESS
         quest = create_random_quest(db, party_id=party.id)
         quest.status = QuestStatus.IN_PROGRESS
         quest.updated_at = datetime.utcnow()
         db.add(quest)
         db.commit()
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/complete",
             headers=moderator_headers,
         )
         assert response.status_code == 200
-        
+
         completed_quest = response.json()
         assert completed_quest["status"] == QuestStatus.COMPLETED
 
@@ -1412,7 +1421,7 @@ class TestQuestCancellation:
         """Test: Creator can cancel quest during RECRUITING status"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1420,14 +1429,14 @@ class TestQuestCancellation:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         # Cancel the recruiting quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/cancel",
             headers=headers,
         )
         assert response.status_code == 200
-        
+
         cancelled_quest = response.json()
         assert cancelled_quest["status"] == QuestStatus.CANCELLED
         assert cancelled_quest["updated_at"] is not None
@@ -1440,10 +1449,10 @@ class TestQuestCancellation:
         """Test: Creator can cancel quest during IN_PROGRESS status"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         quest_data["party_size_min"] = 1  # Allow single person quest
-        
+
         # Create and close quest to get IN_PROGRESS status
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1451,17 +1460,17 @@ class TestQuestCancellation:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         # Move to IN_PROGRESS
         client.post(f"{settings.API_V1_STR}/quests/{quest_id}/close", headers=headers)
-        
+
         # Cancel the in-progress quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/cancel",
             headers=headers,
         )
         assert response.status_code == 200
-        
+
         cancelled_quest = response.json()
         assert cancelled_quest["status"] == QuestStatus.CANCELLED
 
@@ -1473,25 +1482,29 @@ class TestQuestCancellation:
         """Test: Party owner can cancel party quest"""
         # Create party owner
         owner_email = random_email()
-        owner_headers = authentication_token_from_email(client=client, email=owner_email, db=db)
+        owner_headers = authentication_token_from_email(
+            client=client, email=owner_email, db=db
+        )
         owner_user = db.exec(select(User).where(User.email == owner_email)).first()
-        
+
         # Create party
-        from app.tests.utils.factories import create_party, create_party_member
         from app.models import PartyMemberRole
-        
+        from app.tests.utils.factories import create_party, create_party_member
+
         party = create_party(db)
-        create_party_member(db, party_id=party.id, user_id=owner_user.id, role=PartyMemberRole.OWNER)
-        
+        create_party_member(
+            db, party_id=party.id, user_id=owner_user.id, role=PartyMemberRole.OWNER
+        )
+
         # Create party quest
         quest = create_random_quest(db, creator_id=owner_user.id, party_id=party.id)
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/cancel",
             headers=owner_headers,
         )
         assert response.status_code == 200
-        
+
         cancelled_quest = response.json()
         assert cancelled_quest["status"] == QuestStatus.CANCELLED
 
@@ -1503,25 +1516,34 @@ class TestQuestCancellation:
         """Test: Party moderator can cancel party quest"""
         # Create party moderator
         moderator_email = random_email()
-        moderator_headers = authentication_token_from_email(client=client, email=moderator_email, db=db)
-        moderator_user = db.exec(select(User).where(User.email == moderator_email)).first()
-        
+        moderator_headers = authentication_token_from_email(
+            client=client, email=moderator_email, db=db
+        )
+        moderator_user = db.exec(
+            select(User).where(User.email == moderator_email)
+        ).first()
+
         # Create party with moderator
-        from app.tests.utils.factories import create_party, create_party_member
         from app.models import PartyMemberRole
-        
+        from app.tests.utils.factories import create_party, create_party_member
+
         party = create_party(db)
-        create_party_member(db, party_id=party.id, user_id=moderator_user.id, role=PartyMemberRole.MODERATOR)
-        
+        create_party_member(
+            db,
+            party_id=party.id,
+            user_id=moderator_user.id,
+            role=PartyMemberRole.MODERATOR,
+        )
+
         # Create party quest
         quest = create_random_quest(db, party_id=party.id)
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/cancel",
             headers=moderator_headers,
         )
         assert response.status_code == 200
-        
+
         cancelled_quest = response.json()
         assert cancelled_quest["status"] == QuestStatus.CANCELLED
 
@@ -1537,9 +1559,9 @@ class TestQuestCompletionFailures:
         """Test: Completing non-existent quest returns 404"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         fake_quest_id = str(uuid.uuid4())
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/quests/{fake_quest_id}/complete",
             headers=headers,
@@ -1555,7 +1577,7 @@ class TestQuestCompletionFailures:
         """Test: Cannot complete RECRUITING quest"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1563,14 +1585,17 @@ class TestQuestCompletionFailures:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         # Try to complete recruiting quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/complete",
             headers=headers,
         )
         assert response.status_code == 400
-        assert "only in-progress quests can be completed" in response.json()["detail"].lower()
+        assert (
+            "only in-progress quests can be completed"
+            in response.json()["detail"].lower()
+        )
 
     def test_complete_already_completed_quest_fails(
         self,
@@ -1580,10 +1605,10 @@ class TestQuestCompletionFailures:
         """Test: Cannot complete already COMPLETED quest"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         quest_data["party_size_min"] = 1
-        
+
         # Create and close quest to get IN_PROGRESS
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1591,23 +1616,26 @@ class TestQuestCompletionFailures:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         client.post(f"{settings.API_V1_STR}/quests/{quest_id}/close", headers=headers)
-        
+
         # Complete quest once
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/complete",
             headers=headers,
         )
         assert response.status_code == 200
-        
+
         # Try to complete again
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/complete",
             headers=headers,
         )
         assert response.status_code == 400
-        assert "only in-progress quests can be completed" in response.json()["detail"].lower()
+        assert (
+            "only in-progress quests can be completed"
+            in response.json()["detail"].lower()
+        )
 
     def test_complete_cancelled_quest_fails(
         self,
@@ -1617,7 +1645,7 @@ class TestQuestCompletionFailures:
         """Test: Cannot complete CANCELLED quest"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1625,17 +1653,20 @@ class TestQuestCompletionFailures:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         # Cancel quest first
         client.post(f"{settings.API_V1_STR}/quests/{quest_id}/cancel", headers=headers)
-        
+
         # Try to complete cancelled quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/complete",
             headers=headers,
         )
         assert response.status_code == 400
-        assert "only in-progress quests can be completed" in response.json()["detail"].lower()
+        assert (
+            "only in-progress quests can be completed"
+            in response.json()["detail"].lower()
+        )
 
     def test_non_owner_cannot_complete_quest(
         self,
@@ -1645,11 +1676,13 @@ class TestQuestCompletionFailures:
         """Test: Non-owner cannot complete quest"""
         # Create quest owner
         owner_email = random_email()
-        owner_headers = authentication_token_from_email(client=client, email=owner_email, db=db)
-        
+        owner_headers = authentication_token_from_email(
+            client=client, email=owner_email, db=db
+        )
+
         quest_data = create_basic_quest_data()
         quest_data["party_size_min"] = 1
-        
+
         # Create and close quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1657,19 +1690,26 @@ class TestQuestCompletionFailures:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        client.post(f"{settings.API_V1_STR}/quests/{quest_id}/close", headers=owner_headers)
-        
+        client.post(
+            f"{settings.API_V1_STR}/quests/{quest_id}/close", headers=owner_headers
+        )
+
         # Create different user
         other_email = random_email()
-        other_headers = authentication_token_from_email(client=client, email=other_email, db=db)
-        
+        other_headers = authentication_token_from_email(
+            client=client, email=other_email, db=db
+        )
+
         # Try to complete as non-owner
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/complete",
             headers=other_headers,
         )
         assert response.status_code == 403
-        assert "only quest creators or party owners/moderators can complete quests" in response.json()["detail"].lower()
+        assert (
+            "only quest creators or party owners/moderators can complete quests"
+            in response.json()["detail"].lower()
+        )
 
     def test_party_member_cannot_complete_quest(
         self,
@@ -1679,30 +1719,37 @@ class TestQuestCompletionFailures:
         """Test: Regular party member cannot complete quest"""
         # Create party member (not owner/moderator)
         member_email = random_email()
-        member_headers = authentication_token_from_email(client=client, email=member_email, db=db)
+        member_headers = authentication_token_from_email(
+            client=client, email=member_email, db=db
+        )
         member_user = db.exec(select(User).where(User.email == member_email)).first()
-        
+
         # Create party with regular member
-        from app.tests.utils.factories import create_party, create_party_member
         from app.models import PartyMemberRole
-        
+        from app.tests.utils.factories import create_party, create_party_member
+
         party = create_party(db)
-        create_party_member(db, party_id=party.id, user_id=member_user.id, role=PartyMemberRole.MEMBER)
-        
+        create_party_member(
+            db, party_id=party.id, user_id=member_user.id, role=PartyMemberRole.MEMBER
+        )
+
         # Create party quest that's IN_PROGRESS
         quest = create_random_quest(db, party_id=party.id)
         quest.status = QuestStatus.IN_PROGRESS
         quest.updated_at = datetime.utcnow()
         db.add(quest)
         db.commit()
-        
+
         # Try to complete as regular member
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/complete",
             headers=member_headers,
         )
         assert response.status_code == 403
-        assert "only quest creators or party owners/moderators can complete quests" in response.json()["detail"].lower()
+        assert (
+            "only quest creators or party owners/moderators can complete quests"
+            in response.json()["detail"].lower()
+        )
 
 
 class TestQuestCancellationFailures:
@@ -1716,9 +1763,9 @@ class TestQuestCancellationFailures:
         """Test: Cancelling non-existent quest returns 404"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         fake_quest_id = str(uuid.uuid4())
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/quests/{fake_quest_id}/cancel",
             headers=headers,
@@ -1734,10 +1781,10 @@ class TestQuestCancellationFailures:
         """Test: Cannot cancel COMPLETED quest"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         quest_data["party_size_min"] = 1
-        
+
         # Create, close, and complete quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1745,17 +1792,22 @@ class TestQuestCancellationFailures:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         client.post(f"{settings.API_V1_STR}/quests/{quest_id}/close", headers=headers)
-        client.post(f"{settings.API_V1_STR}/quests/{quest_id}/complete", headers=headers)
-        
+        client.post(
+            f"{settings.API_V1_STR}/quests/{quest_id}/complete", headers=headers
+        )
+
         # Try to cancel completed quest
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/cancel",
             headers=headers,
         )
         assert response.status_code == 400
-        assert "only recruiting or in-progress quests can be cancelled" in response.json()["detail"].lower()
+        assert (
+            "only recruiting or in-progress quests can be cancelled"
+            in response.json()["detail"].lower()
+        )
 
     def test_cancel_already_cancelled_quest_fails(
         self,
@@ -1765,7 +1817,7 @@ class TestQuestCancellationFailures:
         """Test: Cannot cancel already CANCELLED quest"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         quest_data = create_basic_quest_data()
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1773,21 +1825,24 @@ class TestQuestCancellationFailures:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         # Cancel quest once
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/cancel",
             headers=headers,
         )
         assert response.status_code == 200
-        
+
         # Try to cancel again
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/cancel",
             headers=headers,
         )
         assert response.status_code == 400
-        assert "only recruiting or in-progress quests can be cancelled" in response.json()["detail"].lower()
+        assert (
+            "only recruiting or in-progress quests can be cancelled"
+            in response.json()["detail"].lower()
+        )
 
     def test_non_owner_cannot_cancel_quest(
         self,
@@ -1797,8 +1852,10 @@ class TestQuestCancellationFailures:
         """Test: Non-owner cannot cancel quest"""
         # Create quest owner
         owner_email = random_email()
-        owner_headers = authentication_token_from_email(client=client, email=owner_email, db=db)
-        
+        owner_headers = authentication_token_from_email(
+            client=client, email=owner_email, db=db
+        )
+
         quest_data = create_basic_quest_data()
         response = client.post(
             f"{settings.API_V1_STR}/quests/",
@@ -1806,18 +1863,23 @@ class TestQuestCancellationFailures:
             json=quest_data,
         )
         quest_id = response.json()["id"]
-        
+
         # Create different user
         other_email = random_email()
-        other_headers = authentication_token_from_email(client=client, email=other_email, db=db)
-        
+        other_headers = authentication_token_from_email(
+            client=client, email=other_email, db=db
+        )
+
         # Try to cancel as non-owner
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest_id}/cancel",
             headers=other_headers,
         )
         assert response.status_code == 403
-        assert "only quest creators or party owners/moderators can cancel quests" in response.json()["detail"].lower()
+        assert (
+            "only quest creators or party owners/moderators can cancel quests"
+            in response.json()["detail"].lower()
+        )
 
     def test_party_member_cannot_cancel_quest(
         self,
@@ -1827,23 +1889,30 @@ class TestQuestCancellationFailures:
         """Test: Regular party member cannot cancel quest"""
         # Create party member (not owner/moderator)
         member_email = random_email()
-        member_headers = authentication_token_from_email(client=client, email=member_email, db=db)
+        member_headers = authentication_token_from_email(
+            client=client, email=member_email, db=db
+        )
         member_user = db.exec(select(User).where(User.email == member_email)).first()
-        
+
         # Create party with regular member
-        from app.tests.utils.factories import create_party, create_party_member
         from app.models import PartyMemberRole
-        
+        from app.tests.utils.factories import create_party, create_party_member
+
         party = create_party(db)
-        create_party_member(db, party_id=party.id, user_id=member_user.id, role=PartyMemberRole.MEMBER)
-        
+        create_party_member(
+            db, party_id=party.id, user_id=member_user.id, role=PartyMemberRole.MEMBER
+        )
+
         # Create party quest
         quest = create_random_quest(db, party_id=party.id)
-        
+
         # Try to cancel as regular member
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/cancel",
             headers=member_headers,
         )
         assert response.status_code == 403
-        assert "only quest creators or party owners/moderators can cancel quests" in response.json()["detail"].lower()
+        assert (
+            "only quest creators or party owners/moderators can cancel quests"
+            in response.json()["detail"].lower()
+        )

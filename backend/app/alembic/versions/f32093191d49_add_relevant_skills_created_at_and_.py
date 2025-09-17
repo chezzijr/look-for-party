@@ -22,11 +22,11 @@ def upgrade():
     op.add_column('questapplication', sa.Column('relevant_skills', sqlmodel.sql.sqltypes.AutoString(length=500), nullable=True))
     op.add_column('questapplication', sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')))
     op.add_column('questapplication', sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')))
-    
+
     # Initialize created_at and updated_at with existing applied_at values
     op.execute("""
-        UPDATE questapplication 
-        SET created_at = applied_at, updated_at = applied_at 
+        UPDATE questapplication
+        SET created_at = applied_at, updated_at = applied_at
         WHERE created_at IS NULL OR updated_at IS NULL
     """)
     # ### end Alembic commands ###

@@ -56,7 +56,6 @@ class QuestType(str, Enum):
     PARTY_HYBRID = "PARTY_HYBRID"  # Starts internal, can be publicized later
 
 
-
 # Shared properties
 class QuestBase(SQLModel):
     title: str = Field(min_length=5, max_length=200)
@@ -119,24 +118,36 @@ class Quest(QuestBase, table=True):
         default=QuestStatus.RECRUITING,
         sa_column_kwargs={"server_default": QuestStatus.RECRUITING.value},
     )
-    
+
     # Party-related fields for enhanced quest system
-    party_id: uuid.UUID | None = Field(default=None, foreign_key="party.id", nullable=True, ondelete="SET NULL")  # Party that created this quest
-    parent_party_id: uuid.UUID | None = Field(default=None, foreign_key="party.id", nullable=True, ondelete="SET NULL")  # Party this quest belongs to (for expansion/internal)
-    internal_slots: int = Field(default=0, ge=0)  # Number of slots for internal assignments
+    party_id: uuid.UUID | None = Field(
+        default=None, foreign_key="party.id", nullable=True, ondelete="SET NULL"
+    )  # Party that created this quest
+    parent_party_id: uuid.UUID | None = Field(
+        default=None, foreign_key="party.id", nullable=True, ondelete="SET NULL"
+    )  # Party this quest belongs to (for expansion/internal)
+    internal_slots: int = Field(
+        default=0, ge=0
+    )  # Number of slots for internal assignments
     public_slots: int = Field(default=0, ge=0)  # Number of slots for public recruitment
-    assigned_member_ids: str | None = Field(default=None, max_length=1000)  # JSON array of assigned member UUIDs
-    is_publicized: bool = Field(default=False)  # Whether internal/hybrid quest has been publicized
-    
+    assigned_member_ids: str | None = Field(
+        default=None, max_length=1000
+    )  # JSON array of assigned member UUIDs
+    is_publicized: bool = Field(
+        default=False
+    )  # Whether internal/hybrid quest has been publicized
+
     # Matching & Discovery fields
-    embedding_vector: str | None = Field(default=None, max_length=10000)  # JSON string of vector
+    embedding_vector: str | None = Field(
+        default=None, max_length=10000
+    )  # JSON string of vector
     search_keywords: str | None = Field(default=None, max_length=1000)
-    
+
     # Analytics & Tracking
     view_count: int = Field(default=0, ge=0)
     application_count: int = Field(default=0, ge=0)
     current_party_size: int = Field(default=1, ge=1)  # Creator counts as 1
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -150,8 +161,9 @@ class Quest(QuestBase, table=True):
         back_populates="quest", cascade_delete=True
     )
     party: Optional["Party"] = Relationship(
-        back_populates="quest", cascade_delete=True,
-        sa_relationship_kwargs={"foreign_keys": "Party.quest_id"}
+        back_populates="quest",
+        cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "Party.quest_id"},
     )
     quest_tags: list["QuestTag"] = Relationship(
         back_populates="quest", cascade_delete=True
@@ -159,11 +171,11 @@ class Quest(QuestBase, table=True):
     # Party relationships for enhanced quest system
     creating_party: Optional["Party"] = Relationship(
         back_populates="created_quests",
-        sa_relationship_kwargs={"foreign_keys": "Quest.party_id"}
+        sa_relationship_kwargs={"foreign_keys": "Quest.party_id"},
     )
     parent_party: Optional["Party"] = Relationship(
-        back_populates="expansion_quests", 
-        sa_relationship_kwargs={"foreign_keys": "Quest.parent_party_id"}
+        back_populates="expansion_quests",
+        sa_relationship_kwargs={"foreign_keys": "Quest.parent_party_id"},
     )
 
 
@@ -201,6 +213,7 @@ class QuestsPublic(SQLModel):
 # Party Quest Creation Models
 class PartyQuestCreate(SQLModel):
     """Model for creating quests from party context"""
+
     title: str = Field(min_length=5, max_length=200)
     description: str = Field(min_length=20, max_length=2000)
     objective: str = Field(min_length=10, max_length=500)
@@ -226,10 +239,12 @@ class PartyQuestCreate(SQLModel):
 
 class QuestPublicizeRequest(SQLModel):
     """Request to publicize an internal/hybrid quest"""
+
     public_slots: int = Field(ge=1, le=50)
     visibility: QuestVisibility = Field(default=QuestVisibility.PUBLIC)
 
 
 class QuestMemberAssignmentRequest(SQLModel):
     """Request to assign/unassign members to internal quest"""
+
     assigned_member_ids: list[uuid.UUID] = Field(min_length=1)

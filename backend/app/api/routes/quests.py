@@ -98,15 +98,14 @@ def create_quest(
 
     # Validate timeline if provided
     from datetime import datetime
-    
+
     # Check if starts_at is in the past
     if quest_in.starts_at:
         if quest_in.starts_at < datetime.utcnow():
             raise HTTPException(
-                status_code=400, 
-                detail="Start date cannot be in the past"
+                status_code=400, detail="Start date cannot be in the past"
             )
-    
+
     # Check if deadline is after start date
     if quest_in.starts_at and quest_in.deadline:
         if quest_in.deadline <= quest_in.starts_at:
@@ -317,9 +316,9 @@ def assign_quest_members(
     import json
     from datetime import datetime
 
-    quest.assigned_member_ids = json.dumps([
-        str(uid) for uid in assignment_request.assigned_member_ids
-    ])
+    quest.assigned_member_ids = json.dumps(
+        [str(uid) for uid in assignment_request.assigned_member_ids]
+    )
     quest.updated_at = datetime.utcnow()
 
     session.add(quest)
@@ -380,20 +379,22 @@ def close_quest(
         )
 
     # Check minimum party size requirement before closing
-    from app.models import QuestApplication, ApplicationStatus
-    
+    from app.models import ApplicationStatus, QuestApplication
+
     approved_count = session.exec(
-        select(func.count()).select_from(QuestApplication).where(
+        select(func.count())
+        .select_from(QuestApplication)
+        .where(
             QuestApplication.quest_id == quest.id,
-            QuestApplication.status == ApplicationStatus.APPROVED
+            QuestApplication.status == ApplicationStatus.APPROVED,
         )
     ).one()
-    
+
     total_party_size = approved_count + 1  # +1 for creator
     if total_party_size < quest.party_size_min:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot close quest: minimum party size of {quest.party_size_min} not met (current: {total_party_size})"
+            detail=f"Cannot close quest: minimum party size of {quest.party_size_min} not met (current: {total_party_size})",
         )
 
     # Handle quest closure based on type
@@ -418,7 +419,7 @@ def close_quest(
         session.add(creator_member)
 
         # Add all approved applicants as party members
-        from app.models import QuestApplication, ApplicationStatus
+        from app.models import ApplicationStatus, QuestApplication
 
         approved_applications = session.exec(
             select(QuestApplication).where(
@@ -438,7 +439,7 @@ def close_quest(
     elif quest.quest_type == QuestType.PARTY_EXPANSION:
         # Add approved applicants to existing party
         if quest.parent_party_id:
-            from app.models import QuestApplication, ApplicationStatus
+            from app.models import ApplicationStatus, QuestApplication
 
             approved_applications = session.exec(
                 select(QuestApplication).where(
@@ -532,7 +533,7 @@ def complete_quest(
 
     # Update quest status
     from datetime import datetime
-    
+
     quest.status = QuestStatus.COMPLETED
     quest.completed_at = datetime.utcnow()
     quest.updated_at = datetime.utcnow()
@@ -563,7 +564,8 @@ def cancel_quest(
     # Check if quest can be cancelled
     if quest.status not in [QuestStatus.RECRUITING, QuestStatus.IN_PROGRESS]:
         raise HTTPException(
-            status_code=400, detail="Only recruiting or in-progress quests can be cancelled"
+            status_code=400,
+            detail="Only recruiting or in-progress quests can be cancelled",
         )
 
     # Check permissions
@@ -597,7 +599,7 @@ def cancel_quest(
 
     # Update quest status
     from datetime import datetime
-    
+
     quest.status = QuestStatus.CANCELLED
     quest.updated_at = datetime.utcnow()
 

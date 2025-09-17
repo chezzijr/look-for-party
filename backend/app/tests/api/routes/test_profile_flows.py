@@ -10,9 +10,7 @@ This module tests the complete profile management system supporting:
 6. Complete Profile Journey
 """
 import uuid
-from datetime import datetime
 from decimal import Decimal
-from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -20,18 +18,15 @@ from sqlmodel import Session, select
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate, UserUpdate, UserUpdateMe
+from app.models import User
 from app.models.tag import (
+    ProficiencyLevel,
     Tag,
     TagCategory,
     TagCreate,
     TagStatus,
-    UserTag,
-    UserTagCreate,
-    ProficiencyLevel,
 )
-from app.models.rating import Rating
-from app.tests.utils.user import authentication_token_from_email, create_random_user
+from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import random_email, random_lower_string
 
 
@@ -58,18 +53,18 @@ class TestUserRegistrationFlow:
         db: Session,
     ) -> None:
         """Test: User → Landing Page → Sign Up → Email Verification → Profile Setup → Dashboard"""
-        
+
         # Step 1: User signup (simulates landing page -> sign up)
         email = random_email()
         password = random_lower_string()
         full_name = "Test User"
-        
+
         signup_data = {
             "email": email,
             "password": password,
             "full_name": full_name,
         }
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/users/signup",
             json=signup_data,
@@ -78,20 +73,22 @@ class TestUserRegistrationFlow:
         user_data = response.json()
         assert user_data["email"] == email
         assert user_data["full_name"] == full_name
-        assert user_data["is_active"] == True  # In test environment, email verification is skipped
+        assert (
+            user_data["is_active"] is True
+        )  # In test environment, email verification is skipped
 
         # Step 2: Verify user in database
         user_db = db.exec(select(User).where(User.email == email)).first()
         assert user_db is not None
         assert user_db.email == email
         assert user_db.full_name == full_name
-        assert user_db.is_active == True
+        assert user_db.is_active is True
         assert user_db.reputation_score == Decimal("0.0")
         assert user_db.total_completed_quests == 0
 
         # Step 3: User can now login and access protected routes (simulates dashboard access)
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         response = client.get(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
@@ -108,14 +105,14 @@ class TestUserRegistrationFlow:
         """Test: Registration with existing email should fail"""
         email = random_email()
         password = random_lower_string()
-        
+
         # Create first user
         signup_data = {
             "email": email,
             "password": password,
             "full_name": "First User",
         }
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/users/signup",
             json=signup_data,
@@ -128,7 +125,7 @@ class TestUserRegistrationFlow:
             "password": random_lower_string(),
             "full_name": "Second User",
         }
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/users/signup",
             json=duplicate_signup_data,
@@ -144,13 +141,13 @@ class TestUserRegistrationFlow:
         """Test: Registration with weak password should fail"""
         email = random_email()
         weak_password = "123"  # Too short
-        
+
         signup_data = {
             "email": email,
             "password": weak_password,
             "full_name": "Test User",
         }
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/users/signup",
             json=signup_data,
@@ -174,7 +171,7 @@ class TestProfileSetupFlow:
         new_user_headers: dict[str, str],
     ) -> None:
         """Test: Required profile setup with basic info and minimum 3 skills"""
-        
+
         # Step 1: Update basic profile information (required fields)
         profile_update = {
             "full_name": "John Doe",
@@ -182,7 +179,7 @@ class TestProfileSetupFlow:
             "location": "San Francisco, CA",
             "timezone": "America/Los_Angeles",
         }
-        
+
         response = client.patch(
             f"{settings.API_V1_STR}/users/me",
             headers=new_user_headers,
@@ -215,7 +212,7 @@ class TestProfileSetupFlow:
         assert response.status_code == 200
         user_tag = response.json()
         assert user_tag["proficiency_level"] == ProficiencyLevel.ADVANCED.value
-        assert user_tag["is_primary"] == True
+        assert user_tag["is_primary"] is True
 
         # Add second skill (React - Intermediate)
         skill_data = {
@@ -251,7 +248,7 @@ class TestProfileSetupFlow:
         assert response.status_code == 200
         user_tags = response.json()
         assert user_tags["count"] == 3
-        
+
         # Verify one primary skill
         primary_skills = [tag for tag in user_tags["data"] if tag["is_primary"]]
         assert len(primary_skills) == 1
@@ -264,12 +261,12 @@ class TestProfileSetupFlow:
         new_user_headers: dict[str, str],
     ) -> None:
         """Test: Profile setup validation for required fields"""
-        
+
         # Test timezone validation (invalid timezone)
         invalid_profile = {
             "timezone": "Invalid/Timezone",
         }
-        
+
         response = client.patch(
             f"{settings.API_V1_STR}/users/me",
             headers=new_user_headers,
@@ -280,12 +277,12 @@ class TestProfileSetupFlow:
 
         # Test adding duplicate skill should fail
         skill_tag = create_system_tag(db, "JavaScript", TagCategory.PROGRAMMING)
-        
+
         skill_data = {
             "tag_id": str(skill_tag.id),
             "proficiency_level": ProficiencyLevel.INTERMEDIATE.value,
         }
-        
+
         # Add skill first time
         response = client.post(
             f"{settings.API_V1_STR}/tags/users/me",
@@ -293,7 +290,7 @@ class TestProfileSetupFlow:
             json=skill_data,
         )
         assert response.status_code == 200
-        
+
         # Try to add same skill again
         response = client.post(
             f"{settings.API_V1_STR}/tags/users/me",
@@ -307,11 +304,13 @@ class TestProfileManagementFlow:
     """Test Profile Management (Ongoing)"""
 
     @pytest.fixture
-    def established_user(self, client: TestClient, db: Session) -> tuple[dict[str, str], User]:
+    def established_user(
+        self, client: TestClient, db: Session
+    ) -> tuple[dict[str, str], User]:
         """Create an established user with profile and skills"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         # Set up basic profile
         profile_data = {
             "full_name": "Established User",
@@ -319,14 +318,14 @@ class TestProfileManagementFlow:
             "location": "New York, NY",
             "timezone": "America/New_York",
         }
-        
+
         response = client.patch(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
             json=profile_data,
         )
         assert response.status_code == 200
-        
+
         user = db.exec(select(User).where(User.email == email)).first()
         return headers, user
 
@@ -338,7 +337,7 @@ class TestProfileManagementFlow:
     ) -> None:
         """Test: Edit profile information"""
         headers, user = established_user
-        
+
         # Update profile information
         updated_profile = {
             "full_name": "Updated Name",
@@ -346,7 +345,7 @@ class TestProfileManagementFlow:
             "location": "Los Angeles, CA",
             "timezone": "America/Los_Angeles",
         }
-        
+
         response = client.patch(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
@@ -374,11 +373,11 @@ class TestProfileManagementFlow:
     ) -> None:
         """Test: Skills Management - Add, Update, Remove skills with proficiency levels"""
         headers, user = established_user
-        
+
         # Step 1: Add new skills with different proficiency levels
         python_tag = create_system_tag(db, "Python", TagCategory.PROGRAMMING)
         docker_tag = create_system_tag(db, "Docker", TagCategory.TOOL)
-        
+
         # Add Python (Expert, Primary)
         python_skill = {
             "tag_id": str(python_tag.id),
@@ -391,7 +390,7 @@ class TestProfileManagementFlow:
             json=python_skill,
         )
         assert response.status_code == 200
-        
+
         # Add Docker (Intermediate, Not Primary)
         docker_skill = {
             "tag_id": str(docker_tag.id),
@@ -450,7 +449,7 @@ class TestProfileManagementFlow:
         )
         assert response.status_code == 200
         user_tags = response.json()
-        
+
         primary_skills = [tag for tag in user_tags["data"] if tag["is_primary"]]
         assert len(primary_skills) == 1
         assert primary_skills[0]["tag"]["name"] == docker_tag.name
@@ -461,7 +460,7 @@ class TestProfileManagementFlow:
             headers=headers,
         )
         assert response.status_code == 200
-        
+
         # Verify skill was removed
         response = client.get(
             f"{settings.API_V1_STR}/tags/users/me",
@@ -479,19 +478,19 @@ class TestProfileManagementFlow:
     ) -> None:
         """Test: Availability Updates (placeholder for future availability system)"""
         headers, user = established_user
-        
+
         # This is a placeholder test for future availability system
         # Currently, availability is not implemented in the user model
         # When implemented, this would test:
         # - Update weekly schedule
         # - Set temporary availability changes
         # - Configure notification preferences
-        
+
         # For now, we just test that profile updates work
         availability_note = {
             "bio": "Available for part-time projects on weekends. Open to remote collaboration.",
         }
-        
+
         response = client.patch(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
@@ -505,11 +504,13 @@ class TestReputationMonitoringFlow:
     """Test Reputation Monitoring"""
 
     @pytest.fixture
-    def user_with_reputation(self, client: TestClient, db: Session) -> tuple[dict[str, str], User]:
+    def user_with_reputation(
+        self, client: TestClient, db: Session
+    ) -> tuple[dict[str, str], User]:
         """Create user with some reputation score"""
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         user = db.exec(select(User).where(User.email == email)).first()
         # Simulate some completed quests and reputation
         user.total_completed_quests = 5
@@ -517,7 +518,7 @@ class TestReputationMonitoringFlow:
         db.add(user)
         db.commit()
         db.refresh(user)
-        
+
         return headers, user
 
     def test_view_reputation_score_breakdown(
@@ -528,7 +529,7 @@ class TestReputationMonitoringFlow:
     ) -> None:
         """Test: View reputation score breakdown"""
         headers, user = user_with_reputation
-        
+
         response = client.get(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
@@ -546,14 +547,14 @@ class TestReputationMonitoringFlow:
     ) -> None:
         """Test: Quest completion history tracking"""
         headers, user = user_with_reputation
-        
+
         initial_quests = user.total_completed_quests
-        
+
         # Simulate completing another quest
         user.total_completed_quests += 1
         db.add(user)
         db.commit()
-        
+
         response = client.get(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
@@ -572,7 +573,7 @@ class TestCompleteProfileJourneyFlow:
         db: Session,
     ) -> None:
         """Test: Complete journey from Registration → Profile Setup → Skills → Updates → Reputation"""
-        
+
         # Step 1: Registration
         email = random_email()
         password = random_lower_string()
@@ -581,16 +582,16 @@ class TestCompleteProfileJourneyFlow:
             "password": password,
             "full_name": "Journey User",
         }
-        
+
         response = client.post(
             f"{settings.API_V1_STR}/users/signup",
             json=signup_data,
         )
         assert response.status_code == 200
-        
+
         # Step 2: Get authentication and verify initial state
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         response = client.get(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
@@ -600,36 +601,40 @@ class TestCompleteProfileJourneyFlow:
         assert initial_user["reputation_score"] == "0.00"
         assert initial_user["total_completed_quests"] == 0
         assert initial_user["bio"] is None
-        
+
         # Step 3: Complete Profile Setup
         profile_setup = {
             "full_name": "Complete Journey User",
             "bio": "Full-stack developer passionate about collaborative projects",
-            "location": "Austin, TX", 
+            "location": "Austin, TX",
             "timezone": "America/Chicago",
         }
-        
+
         response = client.patch(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
             json=profile_setup,
         )
         assert response.status_code == 200
-        
+
         # Step 4: Add Skills (minimum 3)
         # Create system tags
         javascript_tag = create_system_tag(db, "JavaScript", TagCategory.PROGRAMMING)
         node_tag = create_system_tag(db, "Node.js", TagCategory.FRAMEWORK)
         git_tag = create_system_tag(db, "Git", TagCategory.TOOL)
         teamwork_tag = create_system_tag(db, "Teamwork", TagCategory.SKILL)
-        
+
         skills_to_add = [
-            {"tag": javascript_tag, "level": ProficiencyLevel.ADVANCED, "primary": True},
+            {
+                "tag": javascript_tag,
+                "level": ProficiencyLevel.ADVANCED,
+                "primary": True,
+            },
             {"tag": node_tag, "level": ProficiencyLevel.INTERMEDIATE, "primary": False},
             {"tag": git_tag, "level": ProficiencyLevel.EXPERT, "primary": False},
             {"tag": teamwork_tag, "level": ProficiencyLevel.ADVANCED, "primary": False},
         ]
-        
+
         for skill in skills_to_add:
             skill_data = {
                 "tag_id": str(skill["tag"].id),
@@ -642,7 +647,7 @@ class TestCompleteProfileJourneyFlow:
                 json=skill_data,
             )
             assert response.status_code == 200
-            
+
         # Step 5: Verify Skills Added
         response = client.get(
             f"{settings.API_V1_STR}/tags/users/me",
@@ -651,24 +656,24 @@ class TestCompleteProfileJourneyFlow:
         assert response.status_code == 200
         user_tags = response.json()
         assert user_tags["count"] == 4
-        
+
         primary_skills = [tag for tag in user_tags["data"] if tag["is_primary"]]
         assert len(primary_skills) == 1
         assert primary_skills[0]["tag"]["name"] == javascript_tag.name
-        
+
         # Step 6: Update Profile Information
         profile_update = {
             "bio": "Updated: Senior full-stack developer with expertise in JavaScript ecosystem and team leadership",
             "location": "Remote (based in Austin, TX)",
         }
-        
+
         response = client.patch(
             f"{settings.API_V1_STR}/users/me",
             headers=headers,
             json=profile_update,
         )
         assert response.status_code == 200
-        
+
         # Step 7: Check Final Profile State
         response = client.get(
             f"{settings.API_V1_STR}/users/me",
@@ -676,15 +681,17 @@ class TestCompleteProfileJourneyFlow:
         )
         assert response.status_code == 200
         final_user = response.json()
-        
+
         # Verify all profile elements are complete
         assert final_user["full_name"] == "Complete Journey User"
         assert "Updated:" in final_user["bio"]
         assert final_user["location"] == "Remote (based in Austin, TX)"
         assert final_user["timezone"] == "America/Chicago"
-        assert final_user["reputation_score"] == "0.00"  # Still 0 until quest completion
-        assert final_user["is_active"] == True
-        
+        assert (
+            final_user["reputation_score"] == "0.00"
+        )  # Still 0 until quest completion
+        assert final_user["is_active"] is True
+
         # Step 8: Verify Profile Completeness
         # A complete profile should have:
         # - Full name ✓
@@ -693,14 +700,16 @@ class TestCompleteProfileJourneyFlow:
         # - Timezone ✓
         # - At least 3 skills ✓
         # - At least 1 primary skill ✓
-        
-        assert all([
-            final_user["full_name"],
-            final_user["bio"],
-            final_user["location"],
-            final_user["timezone"],
-        ])
-        
+
+        assert all(
+            [
+                final_user["full_name"],
+                final_user["bio"],
+                final_user["location"],
+                final_user["timezone"],
+            ]
+        )
+
         # Verify skills count
         response = client.get(
             f"{settings.API_V1_STR}/tags/users/me",
@@ -708,7 +717,7 @@ class TestCompleteProfileJourneyFlow:
         )
         user_tags = response.json()
         assert user_tags["count"] >= 3
-        
+
         primary_skills = [tag for tag in user_tags["data"] if tag["is_primary"]]
         assert len(primary_skills) >= 1
 
@@ -718,11 +727,11 @@ class TestCompleteProfileJourneyFlow:
         db: Session,
     ) -> None:
         """Test: Profile completeness validation for quest creation readiness"""
-        
+
         # Create user with incomplete profile
         email = random_email()
         headers = authentication_token_from_email(client=client, email=email, db=db)
-        
+
         # User with minimal profile (just from registration)
         response = client.get(
             f"{settings.API_V1_STR}/users/me",
@@ -730,7 +739,7 @@ class TestCompleteProfileJourneyFlow:
         )
         assert response.status_code == 200
         user_data = response.json()
-        
+
         # Check incomplete profile state
         profile_completeness_issues = []
         if not user_data.get("bio"):
@@ -739,7 +748,7 @@ class TestCompleteProfileJourneyFlow:
             profile_completeness_issues.append("missing_location")
         if not user_data.get("timezone"):
             profile_completeness_issues.append("missing_timezone")
-            
+
         # Check skills
         response = client.get(
             f"{settings.API_V1_STR}/tags/users/me",
@@ -748,7 +757,7 @@ class TestCompleteProfileJourneyFlow:
         user_tags = response.json()
         if user_tags["count"] < 3:
             profile_completeness_issues.append("insufficient_skills")
-            
+
         # New users should have incomplete profiles
         assert len(profile_completeness_issues) > 0
         assert "missing_bio" in profile_completeness_issues

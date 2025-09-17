@@ -5,7 +5,9 @@ from sqlmodel import Session
 from app.models import Quest, QuestApplication
 
 
-def create_random_quest(db: Session, creator_id: uuid.UUID | None = None, party_id: uuid.UUID | None = None) -> Quest:
+def create_random_quest(
+    db: Session, creator_id: uuid.UUID | None = None, party_id: uuid.UUID | None = None
+) -> Quest:
     from app.tests.utils.factories import create_quest
 
     return create_quest(db, creator_id=creator_id, party_id=party_id)
