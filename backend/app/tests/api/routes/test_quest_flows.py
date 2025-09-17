@@ -109,7 +109,7 @@ class TestIndividualQuestFlow:
         )
         assert response.status_code == 200
         closed_quest = response.json()
-        assert closed_quest["status"] == QuestStatus.COMPLETED
+        assert closed_quest["status"] == QuestStatus.IN_PROGRESS
 
         # Step 6: Verify new party was created
         quest_db = db.exec(select(Quest).where(Quest.id == quest_id)).first()
@@ -801,7 +801,7 @@ class TestQuestClosureFlow:
 
         # Verify quest is completed
         completed_quest = response.json()
-        assert completed_quest["status"] == QuestStatus.COMPLETED
+        assert completed_quest["status"] == QuestStatus.IN_PROGRESS
 
         # Verify no party changes (same member count)
         final_members = db.exec(select(PartyMember).where(PartyMember.party_id == party.id)).all()

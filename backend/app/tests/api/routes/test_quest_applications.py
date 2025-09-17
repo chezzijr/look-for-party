@@ -132,6 +132,7 @@ def test_read_my_applications(
     assert len(content["data"]) >= 1
 
     application_ids = [app["id"] for app in content["data"]]
+    print(application_ids)
     assert application["id"] in application_ids
 
 

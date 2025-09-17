@@ -19,6 +19,7 @@ from app.models import (
     QuestApplicationCreate,
     QuestCategory,
     QuestCreate,
+    QuestType,
     QuestVisibility,
     User,
     UserCreate,
@@ -79,14 +80,40 @@ class QuestCreateFactory(factory.Factory):
     )
 
 
-def create_quest(db: Session, creator_id: uuid.UUID = None, **kwargs) -> Quest:
-    """Create a quest with factory-generated data."""
+def create_quest(db: Session, creator_id: uuid.UUID | None = None, party_id: uuid.UUID | None = None, **kwargs) -> Quest:
+    """Create a quest with factory-generated data.
+    
+    Args:
+        db: Database session
+        creator_id: ID of quest creator. If None, creates a new user.
+        party_id: ID of party for internal quests. If provided, creates PARTY_INTERNAL quest.
+        **kwargs: Additional quest attributes to override factory defaults
+    """
     if creator_id is None:
         creator = create_user(db)
         creator_id = creator.id
 
+    # Set party-specific defaults if party_id is provided
+    if party_id is not None:
+        kwargs.setdefault('quest_type', QuestType.PARTY_INTERNAL)
+        kwargs.setdefault('visibility', QuestVisibility.PRIVATE)
+    else:
+        kwargs.setdefault('quest_type', QuestType.INDIVIDUAL)
+        kwargs.setdefault('visibility', QuestVisibility.PUBLIC)
+
     quest_in = QuestCreateFactory(**kwargs)
-    return crud.create_quest(session=db, quest_in=quest_in, creator_id=creator_id)
+    quest = crud.create_quest(session=db, quest_in=quest_in, creator_id=creator_id)
+    
+    # Set parent_party_id after creation since it's not in QuestCreate model
+    if party_id is not None:
+        quest.parent_party_id = party_id
+        quest.quest_type = QuestType.PARTY_INTERNAL
+        quest.visibility = QuestVisibility.PRIVATE
+        db.add(quest)
+        db.commit()
+        db.refresh(quest)
+    
+    return quest
 
 
 # Quest Application Factories
