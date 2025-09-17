@@ -21,10 +21,10 @@ LFP addresses the gap in existing social platforms where group discovery require
 5. **Complete & Rate:** Mark quest complete, rate party members for reputation system
 
 ## Quest Examples
-**Gaming:** "Need 2 DPS for mythic raid, Tues/Thurs 8-11pm EST"  
-**Professional:** "Seeking frontend dev for 3-month startup project, part-time"  
-**Social:** "Looking for hiking buddy, weekend trails around Denver"  
-**Learning:** "Form study group for bar exam, twice weekly meetups"  
+**Gaming:** "Need 2 DPS for mythic raid, Tues/Thurs 8-11pm EST"
+**Professional:** "Seeking frontend dev for 3-month startup project, part-time"
+**Social:** "Looking for hiking buddy, weekend trails around Denver"
+**Learning:** "Form study group for bar exam, twice weekly meetups"
 **Creative:** "Need writer for webcomic collaboration, long-term project"
 
 ## Platform Features
@@ -57,7 +57,7 @@ LFP addresses the gap in existing social platforms where group discovery require
 
 ### Quest Board Interface
 - **Visual Quest Log:** MMO-inspired interface displaying available parties as quest cards
-- **Color-Coded Categories:** 
+- **Color-Coded Categories:**
   - **Urgent** (red) - Needs immediate filling or starting soon
   - **Active** (green) - Regular recruiting, good availability
   - **Long-term** (blue) - Future planning, flexible timeline
@@ -152,7 +152,7 @@ Hybrid recommendation system combining multiple techniques for accurate, relevan
 git clone https://github.com/chezzijr/look-for-party.git
 cd look-for-party
 
-# Initialize dependencies 
+# Initialize dependencies
 just init
 
 # Start development environment

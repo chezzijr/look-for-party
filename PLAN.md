@@ -58,29 +58,29 @@ This document outlines the complete development strategy for transforming the cu
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    
+
     # Profile Enhancement
     bio: str | None = Field(default=None, max_length=500)
     location: str | None = Field(default=None, max_length=255)
     timezone: str | None = Field(default=None, max_length=50)
     availability: str | None = Field(default=None, max_length=1000)  # JSON string
-    
+
     # Reputation System
     reputation_score: float = Field(default=0.0)
     quest_completion_rate: float = Field(default=0.0)
     total_quests_completed: int = Field(default=0)
     total_quests_created: int = Field(default=0)
-    
+
     # User Settings (not search preferences)
     email_notifications_enabled: bool = Field(default=True)
     push_notifications_enabled: bool = Field(default=True)
     profile_visibility: str = Field(default="public")  # 'public', 'private', 'friends_only'
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     last_active_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Relationships
     created_quests: list["Quest"] = Relationship(back_populates="creator")
     party_memberships: list["PartyMember"] = Relationship(back_populates="user")
@@ -98,21 +98,21 @@ class User(UserBase, table=True):
 class Quest(QuestBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     creator_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    
+
     # Basic Info
     title: str = Field(min_length=5, max_length=200)
     description: str = Field(min_length=20, max_length=2000)
     objective: str = Field(min_length=10, max_length=500)
     category: QuestCategory  # Gaming, Professional, Creative, etc.
-    
+
     # Enhanced Quest System: Dual-Mode Support
     quest_type: QuestType = Field(default=QuestType.INDIVIDUAL)  # INDIVIDUAL, PARTY_INTERNAL, PARTY_EXPANSION, PARTY_HYBRID
-    
+
     # Party Requirements
     party_size_min: int = Field(ge=1, le=50)
     party_size_max: int = Field(ge=1, le=50)
     current_party_size: int = Field(default=1, ge=1)  # Creator counts as 1
-    
+
     # Party Integration Fields
     party_id: uuid.UUID | None = Field(default=None, foreign_key="party.id", nullable=True)  # Party that created this quest
     parent_party_id: uuid.UUID | None = Field(default=None, foreign_key="party.id", nullable=True)  # Party this quest belongs to
@@ -120,37 +120,37 @@ class Quest(QuestBase, table=True):
     public_slots: int = Field(default=0, ge=0)  # Number of slots for public recruitment
     assigned_member_ids: str | None = Field(default=None, max_length=1000)  # JSON array of assigned member UUIDs
     is_publicized: bool = Field(default=False)  # Whether internal/hybrid quest has been publicized
-    
+
     # Quest Details
     required_commitment: CommitmentLevel
     location_type: LocationType  # REMOTE, IN_PERSON, HYBRID
     location_detail: str | None = Field(default=None, max_length=255)
-    
+
     # Timing
     starts_at: datetime | None = Field(default=None)
     deadline: datetime | None = Field(default=None)
     estimated_duration: str | None = Field(default=None, max_length=100)
-    
+
     # Quest State
     status: QuestStatus = Field(default=QuestStatus.RECRUITING)  # RECRUITING, IN_PROGRESS, COMPLETED, CANCELLED, EXPIRED
     visibility: QuestVisibility = Field(default=QuestVisibility.PUBLIC)  # PUBLIC, UNLISTED, PRIVATE
     auto_approve: bool = Field(default=False)
-    
+
     # Matching & Discovery
     embedding_vector: str | None = Field(default=None, max_length=10000)  # JSON string of vector
     search_keywords: str | None = Field(default=None, max_length=1000)
-    
+
     # Metadata
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     activated_at: datetime | None = Field(default=None)
     completed_at: datetime | None = Field(default=None)
     publicized_at: datetime | None = Field(default=None)  # When quest was publicized
-    
+
     # Analytics
     view_count: int = Field(default=0, ge=0)
     application_count: int = Field(default=0, ge=0)
-    
+
     # Relationships
     creator: "User" = Relationship(back_populates="created_quests")
     party: Optional["Party"] = Relationship(back_populates="quest", cascade_delete=True)
@@ -172,27 +172,27 @@ class Quest(QuestBase, table=True):
 class Party(PartyBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False, unique=True)
-    
+
     # Party Info
     name: str | None = Field(default=None, max_length=255)
     description: str | None = Field(default=None, max_length=1000)
-    
+
     # Status
     status: PartyStatus = Field(default=PartyStatus.ACTIVE)  # ACTIVE, COMPLETED, ARCHIVED
     is_private: bool = Field(default=False)
     chat_channel_id: str | None = Field(default=None, max_length=255)
-    
+
     # Timestamps
     formed_at: datetime = Field(default_factory=datetime.utcnow)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     completed_at: datetime | None = Field(default=None)
     archived_at: datetime | None = Field(default=None)
-    
+
     # Relationships
     quest: "Quest" = Relationship(back_populates="party")  # Original quest that formed this party
     members: list["PartyMember"] = Relationship(back_populates="party", cascade_delete=True)
     ratings: list["Rating"] = Relationship(back_populates="party", cascade_delete=True)
-    
+
     # Enhanced Quest System Relationships
     created_quests: list["Quest"] = Relationship(back_populates="creating_party")  # Quests this party created
     expansion_quests: list["Quest"] = Relationship(back_populates="parent_party")  # Quests for expanding this party
@@ -209,20 +209,20 @@ class PartyMember(PartyMemberBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     party_id: uuid.UUID = Field(foreign_key="party.id", nullable=False)
     user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    
+
     # Role & Status
     role: PartyMemberRole = Field(default=PartyMemberRole.MEMBER)  # OWNER, MODERATOR, MEMBER
     status: str = Field(default="active")  # 'active', 'inactive', 'removed'
-    
+
     # Note: Permissions are now role-based:
     # - OWNER: Can do anything (quest creator)
     # - MODERATOR: Can remove members and modify quest
     # - MEMBER: Basic member privileges
-    
+
     # Timestamps
     joined_at: datetime = Field(default_factory=datetime.utcnow)
     left_at: datetime | None = Field(default=None)
-    
+
     # Relationships
     party: "Party" = Relationship(back_populates="members")
     user: "User" = Relationship(back_populates="party_memberships")
@@ -234,24 +234,24 @@ class Application(ApplicationBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False)
     applicant_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    
+
     # Application Details
     message: str = Field(min_length=1, max_length=1000)
     relevant_skills: str | None = Field(default=None, max_length=500)
     proposed_role: str | None = Field(default=None, max_length=100)  # Additional field for role specification
-    
-    # Status  
+
+    # Status
     status: ApplicationStatus = Field(default=ApplicationStatus.PENDING, sa_column_kwargs={"server_default": ApplicationStatus.PENDING.value})
-    
+
     # Review
     reviewed_at: datetime | None = Field(default=None)
     reviewer_feedback: str | None = Field(default=None, max_length=500)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     applied_at: datetime = Field(default_factory=datetime.utcnow)  # Backward compatibility
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Relationships
     quest: "Quest" = Relationship(back_populates="applications")
     applicant: "User" = Relationship(back_populates="applications")
@@ -271,18 +271,18 @@ class Rating(RatingBase, table=True):
     communication_rating: int = Field(ge=1, le=5, description="Communication skill rating")
     reliability_rating: int = Field(ge=1, le=5, description="Reliability rating")
     skill_rating: int = Field(ge=1, le=5, description="Technical/domain skill rating")
-    
+
     # Feedback and collaboration intent
     review_text: str | None = Field(default=None, max_length=1000, description="Optional written review")
     would_collaborate_again: bool = Field(default=True, description="Would collaborate again")
-    
+
     # Metadata
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Unique constraint: each user can rate another user only once per party
     __table_args__ = (UniqueConstraint("party_id", "rater_id", "rated_user_id"),)
-    
+
     # Relationships
     party: "Party" = Relationship(back_populates="ratings")
     rater: "User" = Relationship(back_populates="given_ratings", sa_relationship_kwargs={"foreign_keys": "[Rating.rater_id]"})
@@ -302,25 +302,25 @@ class Rating(RatingBase, table=True):
 ```python
 class Tag(TagBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    
+
     # Core Fields (unique constraints)
     name: str = Field(unique=True, index=True, max_length=100)
     slug: str = Field(unique=True, index=True, max_length=100)
     category: TagCategory  # Enum with 16 balanced categories
     description: str | None = Field(default=None, max_length=255)
-    
+
     # Moderation & Status
     status: TagStatus = Field(
         default=TagStatus.SYSTEM,
         sa_column_kwargs={"server_default": TagStatus.SYSTEM.value}
     )
     suggested_by: uuid.UUID | None = Field(foreign_key="user.id", nullable=True)
-    
+
     # Analytics
     usage_count: int = Field(default=0, ge=0)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Relationships
     user_tags: list["UserTag"] = Relationship(back_populates="tag", cascade_delete=True)
     quest_tags: list["QuestTag"] = Relationship(back_populates="tag", cascade_delete=True)
@@ -333,17 +333,17 @@ class UserTag(UserTagBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     tag_id: uuid.UUID = Field(foreign_key="tag.id", nullable=False)
-    
+
     # Skill Proficiency
     proficiency_level: ProficiencyLevel | None = Field(default=None)  # BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
     is_primary: bool = Field(default=False)  # Primary skills shown prominently
-    
+
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Relationships
     user: "User" = Relationship(back_populates="user_tags")
     tag: Tag = Relationship(back_populates="user_tags")
-    
+
     # Prevent duplicates
     __table_args__ = (UniqueConstraint("user_id", "tag_id"),)
 
@@ -351,17 +351,17 @@ class QuestTag(QuestTagBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False)
     tag_id: uuid.UUID = Field(foreign_key="tag.id", nullable=False)
-    
+
     # Requirements
     is_required: bool = Field(default=False)  # Required vs nice-to-have
     min_proficiency: ProficiencyLevel | None = Field(default=None)  # Minimum skill level needed
-    
+
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Relationships
     quest: "Quest" = Relationship(back_populates="quest_tags")
     tag: Tag = Relationship(back_populates="quest_tags")
-    
+
     # Prevent duplicates
     __table_args__ = (UniqueConstraint("quest_id", "tag_id"),)
 
@@ -371,24 +371,24 @@ class TagCategory(str, Enum):
     PROGRAMMING = "PROGRAMMING"        # Python, JavaScript, C++, SQL
     FRAMEWORK = "FRAMEWORK"            # React, Django, Unity, TensorFlow
     TOOL = "TOOL"                      # Git, Docker, Photoshop, Excel, Discord
-    
+
     # Gaming
     GAME = "GAME"                      # League of Legends, Chess, D&D, Among Us
     GAME_GENRE = "GAME_GENRE"         # FPS, MOBA, RPG, Strategy, Puzzle
-    
+
     # Creative
     ART = "ART"                        # Drawing, Painting, Digital Art, Sculpture
     MUSIC = "MUSIC"                    # Guitar, Piano, Music Production, Jazz
     MEDIA = "MEDIA"                    # Photography, Video Editing, Streaming, Writing
-    
+
     # Physical Activities
     SPORT = "SPORT"                    # Basketball, Soccer, Tennis, Running
     FITNESS = "FITNESS"                # Yoga, Weightlifting, CrossFit, Pilates
-    
+
     # Knowledge & Learning
     LANGUAGE = "LANGUAGE"              # English, Spanish, Mandarin (natural languages)
     SUBJECT = "SUBJECT"                # Mathematics, Physics, History, Psychology
-    
+
     # General
     SKILL = "SKILL"                    # Leadership, Communication, Problem Solving
     HOBBY = "HOBBY"                    # Cooking, Reading, Gardening, Board Games
@@ -420,22 +420,22 @@ class Message(MessageBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     party_id: uuid.UUID = Field(foreign_key="party.id", nullable=False)
     sender_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    
+
     # Message Content
     content: str = Field(min_length=1, max_length=2000)
     message_type: str = Field(default="text")  # 'text', 'image', 'file', 'system'
-    
+
     # Threading
     reply_to_id: uuid.UUID | None = Field(default=None, foreign_key="message.id")
-    
+
     # Status
     is_edited: bool = Field(default=False)
     is_deleted: bool = Field(default=False)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Relationships
     party: "Party" = Relationship(back_populates="messages")
     sender: "User" = Relationship(back_populates="sent_messages")
@@ -446,28 +446,28 @@ class Message(MessageBase, table=True):
 class Notification(NotificationBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    
+
     # Notification Content
     title: str = Field(max_length=255)
     message: str = Field(max_length=1000)
     notification_type: str = Field(max_length=50)  # 'application', 'quest_match', 'party_invite', 'quest_complete', 'rating_received'
-    
+
     # Related Entities
     related_quest_id: uuid.UUID | None = Field(default=None, foreign_key="quest.id")
     related_application_id: uuid.UUID | None = Field(default=None, foreign_key="application.id")
-    
+
     # Status
     is_read: bool = Field(default=False)
     is_dismissed: bool = Field(default=False)
-    
+
     # Delivery
     sent_via_email: bool = Field(default=False)
     sent_via_push: bool = Field(default=False)
-    
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     read_at: datetime | None = Field(default=None)
-    
+
     # Relationships
     user: "User" = Relationship(back_populates="notifications")
 ```
@@ -478,11 +478,11 @@ class QuestMerge(QuestMergeBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     source_quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False)
     target_quest_id: uuid.UUID = Field(foreign_key="quest.id", nullable=False)
-    
+
     merge_reason: str = Field(max_length=500)
     merged_at: datetime = Field(default_factory=datetime.utcnow)
     merged_by_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    
+
     # Relationships
     source_quest: "Quest" = Relationship(back_populates="merged_into", sa_relationship_kwargs={"foreign_keys": "[QuestMerge.source_quest_id]"})
     target_quest: "Quest" = Relationship(back_populates="merged_from", sa_relationship_kwargs={"foreign_keys": "[QuestMerge.target_quest_id]"})
@@ -490,12 +490,12 @@ class QuestMerge(QuestMergeBase, table=True):
 class Achievement(AchievementBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    
+
     achievement_type: str = Field(max_length=100)  # 'quest_master', 'reliable_teammate', 'domain_expert'
     title: str = Field(max_length=255)
     description: str = Field(max_length=500)
     badge_icon: str | None = Field(default=None, max_length=255)
-    
+
     criteria_met: str = Field(max_length=1000)  # JSON of criteria
     earned_at: datetime = Field(default_factory=datetime.utcnow)
     is_featured: bool = Field(default=False)
@@ -508,7 +508,7 @@ class Achievement(AchievementBase, table=True):
 # Core Quest Operations
 POST   /api/v1/quests                      # Create new individual quest
 GET    /api/v1/quests                      # Browse quest board with dynamic filters
-       # Query params: party_size_min, party_size_max, location_radius, 
+       # Query params: party_size_min, party_size_max, location_radius,
        # commitment_level, location_type, category, status, quest_type
 GET    /api/v1/quests/{quest_id}           # Get quest details
 PUT    /api/v1/quests/{quest_id}           # Update quest (creator only)
@@ -586,7 +586,7 @@ PUT    /api/v1/users/me/notifications/{notif_id}   # Mark notification as read
 ```
 GET    /api/v1/discover/similar-quests             # Find similar quests for merging
 POST   /api/v1/discover/available-now              # "I'm Available Now" mode with preferences
-       # Body: { "preferences": { party_size_min, party_size_max, location_radius, 
+       # Body: { "preferences": { party_size_min, party_size_max, location_radius,
        #         commitment_level, communication_style, available_hours } }
 POST   /api/v1/discover/browse                     # "Browse Opportunities" with advanced filters
        # Body: { "filters": { category, difficulty, location_type, time_commitment } }
@@ -633,38 +633,38 @@ def calculate_quest_match_score(user: User, quest: Quest, search_preferences: di
     """
     Calculate compatibility score between user and quest with dynamic preferences
     Score range: 0.0 - 1.0 (higher is better match)
-    
+
     Args:
         user: User profile with skills and reputation
         quest: Quest details and requirements
         search_preferences: Dynamic preferences from search request
     """
-    
+
     # Skill Matching (40% weight)
     skill_score = calculate_skill_compatibility(user.user_tags, quest.quest_tags)
-    
-    # Availability Matching (25% weight)  
+
+    # Availability Matching (25% weight)
     time_score = calculate_time_compatibility(
-        user.availability, 
-        quest.start_date, 
+        user.availability,
+        quest.start_date,
         quest.end_date,
         search_preferences.get("available_hours", None)
     )
-    
+
     # Location Matching (15% weight)
     location_score = calculate_location_compatibility(
-        user.location, 
-        quest.location, 
+        user.location,
+        quest.location,
         quest.location_type,
         search_preferences.get("location_radius", 50)
     )
-    
+
     # Reputation Matching (10% weight)
     reputation_score = normalize_reputation_score(user.reputation_score)
-    
+
     # Search Preference Matching (10% weight)
     preference_score = calculate_search_preference_compatibility(quest, search_preferences)
-    
+
     # Combine scores with weights
     final_score = (
         skill_score * 0.40 +
@@ -673,37 +673,37 @@ def calculate_quest_match_score(user: User, quest: Quest, search_preferences: di
         reputation_score * 0.10 +
         preference_score * 0.10
     )
-    
+
     return min(final_score, 1.0)
 
 def calculate_search_preference_compatibility(quest: Quest, preferences: dict) -> float:
     """Calculate how well quest matches user's search preferences"""
-    
+
     score = 1.0
-    
+
     # Party size preferences
     if "party_size_min" in preferences and quest.party_size_max < preferences["party_size_min"]:
         score *= 0.5
     if "party_size_max" in preferences and quest.party_size_min > preferences["party_size_max"]:
         score *= 0.5
-    
+
     # Communication style preferences
     if "communication_style" in preferences:
         # Compare with quest's expected communication style or party preferences
         pass
-    
+
     # Commitment level preferences
     if "commitment_level" in preferences:
         commitment_match = calculate_commitment_compatibility(
-            quest.time_commitment, 
+            quest.time_commitment,
             preferences["commitment_level"]
         )
         score *= commitment_match
-    
+
     # Difficulty level preferences
     if "difficulty" in preferences and preferences["difficulty"] != quest.difficulty_level:
         score *= 0.8
-    
+
     return score
 ```
 
@@ -712,7 +712,7 @@ def calculate_search_preference_compatibility(quest: Quest, preferences: dict) -
 def handle_available_now_mode(user: User, preferences: dict) -> List[Quest]:
     """
     "I'm Available Now" - Immediate matching for users ready to join activities
-    
+
     Args:
         preferences: {
             "party_size_min": 2,
@@ -723,24 +723,24 @@ def handle_available_now_mode(user: User, preferences: dict) -> List[Quest]:
             "available_hours": 4
         }
     """
-    
+
     # Filter quests that can start immediately or within next few hours
     immediate_quests = filter_quests_by_timing(hours_ahead=preferences.get("available_hours", 2))
-    
+
     # Score and rank by compatibility
     scored_quests = []
     for quest in immediate_quests:
         score = calculate_quest_match_score(user, quest, preferences)
         if score >= 0.6:  # High threshold for immediate matching
             scored_quests.append((quest, score))
-    
+
     # Return top matches sorted by score
     return sorted(scored_quests, key=lambda x: x[1], reverse=True)[:10]
 
 def handle_browse_opportunities_mode(user: User, filters: dict) -> List[Quest]:
     """
     "Browse Opportunities" - Traditional search and filter through available parties
-    
+
     Args:
         filters: {
             "category": "gaming",
@@ -751,23 +751,23 @@ def handle_browse_opportunities_mode(user: User, filters: dict) -> List[Quest]:
             "urgent_only": false
         }
     """
-    
+
     # Apply hard filters first
     filtered_quests = apply_quest_filters(filters)
-    
+
     # Sort by relevance and activity
     return rank_quests_by_activity_and_match(user, filtered_quests, filters)
 
 def handle_recruit_mode(quest: Quest, target_skills: List[str], preferences: dict) -> List[User]:
     """
     "Recruit for My Quest" - Reverse matching to find suitable people for user's party
-    
+
     Find users who would be good matches for the given quest
     """
-    
+
     # Find users with complementary skills
     potential_users = find_users_by_skills(target_skills)
-    
+
     # Score users based on how well they'd fit the quest
     scored_users = []
     for user in potential_users:
@@ -775,13 +775,13 @@ def handle_recruit_mode(quest: Quest, target_skills: List[str], preferences: dic
         score = calculate_user_quest_fit_score(user, quest, preferences)
         if score >= 0.5:
             scored_users.append((user, score))
-    
+
     return sorted(scored_users, key=lambda x: x[1], reverse=True)[:20]
 
 def handle_serendipity_mode(user: User, preferences: dict) -> List[Quest]:
     """
     "Serendipity Mode" - Algorithm suggests unexpected but compatible opportunities
-    
+
     Args:
         preferences: {
             "expand_interests": true,
@@ -789,26 +789,26 @@ def handle_serendipity_mode(user: User, preferences: dict) -> List[Quest]:
             "base_preferences": { normal preference dict }
         }
     """
-    
+
     surprise_factor = preferences.get("surprise_factor", 0.3)
     base_prefs = preferences.get("base_preferences", {})
-    
+
     # Expand user's interests and skills for broader matching
     expanded_interests = expand_user_interests(user, surprise_factor)
-    
+
     # Find quests in adjacent or related categories
     serendipitous_quests = find_adjacent_category_quests(user, expanded_interests)
-    
+
     # Score with relaxed criteria and serendipity bonus
     scored_quests = []
     for quest in serendipitous_quests:
         base_score = calculate_quest_match_score(user, quest, base_prefs)
         serendipity_bonus = calculate_serendipity_bonus(user, quest, surprise_factor)
         final_score = min(base_score + serendipity_bonus, 1.0)
-        
+
         if final_score >= 0.4:  # Lower threshold for serendipitous matches
             scored_quests.append((quest, final_score))
-    
+
     return sorted(scored_quests, key=lambda x: x[1], reverse=True)[:15]
 ```
 
@@ -818,41 +818,41 @@ def suggest_quest_merge(new_quest: Quest) -> List[Quest]:
     """
     Find similar quests that could be merged with the new quest
     """
-    
+
     # Semantic similarity using embeddings
     similar_quests = find_semantically_similar_quests(
         new_quest.embedding_vector,
         similarity_threshold=0.75
     )
-    
+
     # Filter by additional criteria
     mergeable_quests = []
     for quest in similar_quests:
         if is_mergeable(new_quest, quest):
             mergeable_quests.append(quest)
-    
+
     return mergeable_quests[:5]  # Return top 5 suggestions
 
 def is_mergeable(quest1: Quest, quest2: Quest) -> bool:
     """Check if two quests are compatible for merging"""
-    
+
     # Must be in compatible states
     if quest1.status != "draft" or quest2.status not in ["draft", "active"]:
         return False
-    
+
     # Time compatibility
     if not is_time_compatible(quest1, quest2):
         return False
-    
-    # Location compatibility  
+
+    # Location compatibility
     if not is_location_compatible(quest1, quest2):
         return False
-    
+
     # Party size compatibility
     combined_size = quest1.current_party_size + quest2.current_party_size
     if combined_size > max(quest1.party_size_max, quest2.party_size_max):
         return False
-    
+
     return True
 ```
 
@@ -860,22 +860,22 @@ def is_mergeable(quest1: Quest, quest2: Quest) -> bool:
 ```python
 def update_user_reputation(user: User, new_rating: Rating):
     """Update user's reputation score based on new rating"""
-    
+
     # Get all ratings for this user
     all_ratings = get_user_ratings(user.id)
-    
+
     # Calculate weighted average (recent ratings weighted more)
     weighted_score = calculate_weighted_reputation(all_ratings)
-    
+
     # Apply completion rate bonus
     completion_bonus = user.quest_completion_rate * 0.1
-    
+
     # Apply consistency bonus (for users with many ratings)
     consistency_bonus = min(len(all_ratings) / 100, 0.2)
-    
+
     # Final reputation score
     user.reputation_score = min(weighted_score + completion_bonus + consistency_bonus, 5.0)
-    
+
     # Update completion rate
     user.quest_completion_rate = calculate_completion_rate(user.id)
 ```
@@ -884,7 +884,7 @@ def update_user_reputation(user: User, new_rating: Rating):
 ```python
 def notify_quest_match(user: User, quest: Quest, match_score: float):
     """Send notification about highly matched quest"""
-    
+
     if match_score >= 0.85:  # High match threshold
         notification = Notification(
             user_id=user.id,
@@ -893,10 +893,10 @@ def notify_quest_match(user: User, quest: Quest, match_score: float):
             notification_type="quest_match",
             related_quest_id=quest.id
         )
-        
+
         # Send via WebSocket for real-time
         send_websocket_notification(user.id, notification)
-        
+
         # Send email if user preferences allow
         if user.email_notifications_enabled:
             send_email_notification(user.email, notification)
@@ -907,7 +907,7 @@ def notify_quest_match(user: User, quest: Quest, match_score: float):
 ### ✅ Phase 1: Foundation (Week 1-2) - **100% COMPLETE**
 **Database & Models**
 - ✅ Create all SQLModel classes with proper relationships
-- ✅ Write comprehensive Alembic migrations  
+- ✅ Write comprehensive Alembic migrations
 - ✅ Implement basic CRUD operations for all models
 - ✅ Set up proper foreign key constraints and indexes
 
@@ -1041,6 +1041,64 @@ def notify_quest_match(user: User, quest: Quest, match_score: float):
 4. **Database**: Alembic migrations with proper rollback
 5. **API Documentation**: Auto-generated OpenAPI docs
 
+## ⚠️ Technical Debt & Known Issues
+
+### Test Isolation Problems
+
+**Issue**: Current test configuration uses session-scoped database fixture causing shared state between tests.
+
+**Root Cause**:
+```python
+@pytest.fixture(scope="session", autouse=True)
+def db() -> Generator[Session, None, None]:
+    # Single database session shared across ALL tests
+    # Cleanup only happens at session end
+```
+
+**Specific Problems**:
+1. **Session-Level Database Fixture**: All tests share the same database session for entire test run
+2. **Late Cleanup**: Database cleanup only happens after ALL tests complete, causing data accumulation
+3. **System Tags Persistence**: 300+ system tags created once and persist across all tests
+4. **Module-Scoped Users**: Same test users reused across multiple test modules
+5. **No Transaction Rollback**: Changes persist across tests within the session
+
+**Risk Assessment**:
+- **Current Status**: Tests pass due to unique IDs (UUIDs, random emails) and shared system data design
+- **Fragility**: Tests could become order-dependent or fail with complex interactions
+- **Debugging Difficulty**: Hard to isolate which test caused data pollution issues
+- **Parallel Execution**: Could cause race conditions if tests run in parallel
+
+**Impact Examples**:
+- Profile changes in one test could affect other tests using same user
+- Tag creation with similar names could conflict
+- Reputation score changes could affect multiple test modules
+- Complex party/quest relationships could cause foreign key issues
+
+**Mitigation Strategies**:
+1. **Function-Scoped Fixtures** (Safest):
+   ```python
+   @pytest.fixture(scope="function")
+   def db() -> Generator[Session, None, None]:
+       # Fresh session per test with transaction rollback
+   ```
+2. **Transaction Isolation**:
+   ```python
+   @pytest.fixture(scope="function")
+   def db(db_session):
+       transaction = db_session.begin()
+       yield db_session
+       transaction.rollback()
+   ```
+3. **Per-Test Cleanup**:
+   ```python
+   @pytest.fixture(scope="function", autouse=True)
+   def cleanup_after_test(db: Session):
+       yield
+       # Clean test-specific data, keep system data
+   ```
+
+**Priority**: Medium (address when test failures occur or before parallel test execution)
+
 ## 📊 Success Metrics & KPIs
 
 ### User Engagement
@@ -1110,7 +1168,7 @@ def notify_quest_match(user: User, quest: Quest, match_score: float):
 
 ### Long-term Milestones
 - **Month 1**: Core quest and party system fully functional
-- **Month 2**: Smart matching and recommendation engine live  
+- **Month 2**: Smart matching and recommendation engine live
 - **Month 3**: Real-time communication and coordination tools
 - **Month 4**: Reputation system and gamification features
 - **Month 5**: Mobile optimization and performance tuning

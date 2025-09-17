@@ -4,7 +4,7 @@
 ## Table of Contents
 1. [Profile Flow](#profile-flow)
 2. [Quest Flow (Recruitment)](#quest-flow-recruitment)
-3. [Application Flow](#application-flow)  
+3. [Application Flow](#application-flow)
 4. [Party Flow](#party-flow)
 5. [Search & Discovery Flow](#search--discovery-flow)
 6. [Rating & Reputation Flow](#rating--reputation-flow)
@@ -70,19 +70,19 @@ User Idea → Create Quest → Set Requirements → Publish → Review Applicati
      - Quest title (recruitment-style): "Need 2 developers for weekend hackathon"
      - Description of objective and what you're building
      - Category selection (Gaming, Professional, Creative, etc.)
-   
+
    - **Step 2 - Team Requirements:**
      - Party size (minimum/maximum members needed)
      - Required skills/tags with proficiency levels
      - Nice-to-have skills (optional)
      - Role descriptions if specific positions needed
-   
+
    - **Step 3 - Logistics:**
      - Timeline (start date, duration, deadline)
      - Location type (Remote, In-person, Hybrid)
      - Specific location if in-person
      - Time commitment level
-   
+
    - **Step 4 - Preferences:**
      - Auto-approve applications (yes/no)
      - Visibility (Public, Private, Invite-only)
@@ -106,17 +106,17 @@ Existing Party → Identify Need → Create Party Quest → Set Requirements →
      - **Internal Assignment:** Assign specific task to existing party members
      - **Team Expansion:** Recruit new members to join existing party
      - **Hybrid Mode:** Start internal, option to publicize later
-   
+
    - **Step 2 - Requirements (for expansion quests):**
      - Number of new members needed
      - Required skills/roles for new members
      - Integration expectations with existing team
-   
+
    - **Step 3 - Visibility Control:**
      - **Internal Only:** Visible only to party members (task assignment)
      - **Public Recruitment:** Visible on quest board for applications
      - **Hybrid:** Start internal with option to "publicize X slots" later
-   
+
    - **Step 4 - Member Assignment (internal quests):**
      - Select specific party members to assign
      - Set deadline and requirements
@@ -141,7 +141,7 @@ Existing Party → Identify Need → Create Party Quest → Set Requirements →
      - Notification of new application
      - View applicant profile, skills, and application message
      - See compatibility score and skill match analysis
-   
+
    - **Review Options:**
      - **Approve:** Send welcome message, add to pending party members
      - **Reject:** Send optional feedback message
@@ -150,7 +150,7 @@ Existing Party → Identify Need → Create Party Quest → Set Requirements →
 
 3. **Quest Closure Triggers**
    - **Manual Closure:** Owner decides they have enough good applicants
-   - **Automatic Closure:** 
+   - **Automatic Closure:**
      - Maximum party size reached with approved members
      - Minimum size reached + owner closes recruitment
    - **Timeout Closure:** Quest expires after set period
@@ -160,13 +160,13 @@ Existing Party → Identify Need → Create Party Quest → Set Requirements →
      - Quest creator becomes party owner
      - All approved applicants become party members
      - Party status: Active, ready for coordination
-   
+
    - **Party-Created Quest (Public/Hybrid):** New members added to existing party
      - New members get Member role by default
      - Existing party maintains its structure and Owner/Moderator hierarchy
      - Integration welcome messages sent to existing party chat
      - Onboarding process for new members to understand existing team dynamics
-   
+
    - **Party-Created Quest (Internal):** No party changes
      - Quest marked as completed when assigned members finish task
      - Internal task tracking and progress updates
@@ -211,7 +211,7 @@ Browse Quests → Filter/Search → View Quest Details → Submit Application �
   - Specify which role you're interested in (if multiple)
   - Portfolio/work samples (optional)
   - Availability confirmation
-  
+
 - **Application Enhancement:**
   - System suggests relevant skills to highlight
   - Template messages for common application types
@@ -417,7 +417,7 @@ Multiple pathways for users to find relevant quests based on different user inte
 
 - **Filtering System:**
   - **Quick Filters:** Available Now, This Week, Remote, In-Person
-  - **Advanced Filters:** 
+  - **Advanced Filters:**
     - Skills required (match level: exact, partial, learning)
     - Location radius for in-person quests
     - Party size preferences

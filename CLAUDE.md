@@ -15,7 +15,7 @@
 
 ## Development Standards
 - Commands for development: `@justfile`
-- Development workflow: `@development.md` 
+- Development workflow: `@development.md`
 - Database migrations: Use Alembic, always test rollbacks
 - API design: RESTful with OpenAPI docs, consistent naming
 - Code quality: Pre-commit hooks, comprehensive testing, type safety
@@ -31,12 +31,12 @@ When completing features or development phases, ALWAYS follow this documentation
 
 2. **Update PROGRESS.md**
    - Update overall completion percentage
-   - Mark completed tasks with ✅ 
+   - Mark completed tasks with ✅
    - Add new milestones and achievement dates
    - Update "What's Working Now" and "What's Ready to Build" sections
    - Document any technical insights or implementation decisions
 
-3. **Update PLAN.md** 
+3. **Update PLAN.md**
    - Update the implementation status section at the top
    - Mark completed phases/features with ✅ in the roadmap
    - Update progress percentages for each phase
@@ -61,14 +61,14 @@ When completing features or development phases, ALWAYS follow this documentation
 
 ### Documentation Consistency Rules
 - **Status Indicators**: Use ✅ for completed, 🚧 for in-progress, ⚠️ for pending/needed
-- **Percentage Updates**: Keep percentages consistent across PROGRESS.md and PLAN.md  
+- **Percentage Updates**: Keep percentages consistent across PROGRESS.md and PLAN.md
 - **Date Stamps**: Always update "Last Updated" dates when making changes
 - **Cross-References**: Ensure all three docs reference the same completion status
 - **Implementation Insights**: Document key decisions, challenges, and solutions in PROGRESS.md
 
 ### When to Update Documentation
 - **After completing any major feature or system** (e.g., completing CRUD operations for a model)
-- **After completing a development phase** (e.g., Phase 1: Foundation) 
+- **After completing a development phase** (e.g., Phase 1: Foundation)
 - **After significant architectural changes** (e.g., adding new API routes, database migrations)
 - **Before starting the next major development phase**
 - **When implementation significantly exceeds or deviates from the original PLAN.md**
@@ -149,7 +149,7 @@ The frontend uses TanStack Router with file-based routing:
 
 **Backend:**
 - `just up` - Start development containers
-- `just down` - Stop development containers  
+- `just down` - Stop development containers
 - `just generate_migration "message"` - Create new migration
 - `just migrate_up` - Apply migrations
 - `just exec backend pytest` - Run backend tests
@@ -211,7 +211,7 @@ git branch --show-current
 Use MCP GitHub server to get workflow runs filtered by branch:
 ```
 mcp__github__list_workflow_runs
-- owner: "chezzijr" 
+- owner: "chezzijr"
 - repo: "look-for-party"
 - workflow_id: "playwright.yml" (or get workflow ID first)
 - branch: "feat/landing-page" (or current branch)
@@ -223,7 +223,7 @@ From the workflow runs list, identify the failed run ID and get details:
 ```
 mcp__github__get_workflow_run
 - owner: "chezzijr"
-- repo: "look-for-party" 
+- repo: "look-for-party"
 - run_id: [failed_run_id]
 ```
 
@@ -252,7 +252,7 @@ If you need logs from a specific job:
 ```
 mcp__github__list_workflow_jobs
 - owner: "chezzijr"
-- repo: "look-for-party"  
+- repo: "look-for-party"
 - run_id: [failed_run_id]
 ```
 
@@ -268,7 +268,7 @@ mcp__github__get_job_logs
 
 ### Token Management Tips
 - Use `perPage: 10` or smaller to limit results
-- Use `tail_lines: 500` to get recent log content only  
+- Use `tail_lines: 500` to get recent log content only
 - Use `failed_only: true` to focus on failed jobs
 - Filter by current branch to avoid irrelevant results
 - Use `return_content: true` to get actual log content vs URLs
