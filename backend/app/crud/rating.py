@@ -179,7 +179,7 @@ def get_user_rating_summary(
     # Get positive feedback percentage separately
     positive_feedback_stats = select(
         func.count(Rating.id).label("total_count"),
-        func.sum(case((Rating.would_collaborate_again is True, 1), else_=0)).label(
+        func.sum(case((Rating.would_collaborate_again, 1), else_=0)).label(
             "positive_count"
         ),
     ).where(Rating.rated_user_id == user_id)
