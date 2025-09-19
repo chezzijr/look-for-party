@@ -8,6 +8,7 @@ This module tests the dual-mode recruitment platform supporting:
 4. Member Assignment for Internal Quests
 5. Quest Closure and Party Formation Logic
 """
+
 from typing import Any
 
 import pytest

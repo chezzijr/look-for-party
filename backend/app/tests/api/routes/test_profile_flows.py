@@ -9,6 +9,7 @@ This module tests the complete profile management system supporting:
 5. Reputation Monitoring
 6. Complete Profile Journey
 """
+
 import uuid
 from decimal import Decimal
 
