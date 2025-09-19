@@ -29,6 +29,8 @@ repos:
         args:
           - --fix
       - id: ruff-format
+        args:
+          - --config=backend/pyproject.toml
 
 ci:
   autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
