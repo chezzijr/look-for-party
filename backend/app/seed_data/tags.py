@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
 
+import sqlmodel
+
 from app.models.tag import Tag, TagCategory, TagStatus
 
 SYSTEM_TAGS = [
@@ -1823,7 +1825,7 @@ SYSTEM_TAGS = [
 ]
 
 
-def create_system_tags(session):
+def create_system_tags(session: sqlmodel.Session) -> int:
     """Create system tags from the predefined list."""
     created_count = 0
 
@@ -1843,6 +1845,7 @@ def create_system_tags(session):
                 description=tag_data["description"],
                 status=TagStatus.SYSTEM,
                 usage_count=0,
+                suggested_by=None,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
             )

@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -8,6 +9,7 @@ from app.core.config import settings
 from app.models.tag import (
     ProficiencyLevel,
     QuestTagCreate,
+    Tag,
     TagCategory,
     TagCreate,
     TagStatus,
@@ -18,9 +20,8 @@ from app.tests.utils.quest import create_random_quest
 from app.tests.utils.utils import random_lower_string
 
 
-def create_test_tag(db: Session, **kwargs):
+def create_test_tag(db: Session, **kwargs: Any) -> Tag:
     """Helper to create a test tag."""
-    import uuid
 
     unique_suffix = str(uuid.uuid4())[:8]
     tag_data = {

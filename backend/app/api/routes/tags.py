@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import func, select
+from sqlmodel import col, func, select
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
@@ -55,12 +55,12 @@ def read_tags(
         count_statement = count_statement.where(Tag.status == status)
     else:
         count_statement = count_statement.where(
-            Tag.status.in_([TagStatus.SYSTEM, TagStatus.APPROVED])
+            col(Tag.status).in_([TagStatus.SYSTEM, TagStatus.APPROVED])
         )
     if category:
         count_statement = count_statement.where(Tag.category == category)
     if search:
-        count_statement = count_statement.where(Tag.name.ilike(f"%{search}%"))
+        count_statement = count_statement.where(col(Tag.name).ilike(f"%{search}%"))
 
     count = session.exec(count_statement).one()
 

@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models import Quest, QuestCreate, QuestStatus, QuestUpdate
 
@@ -30,7 +30,9 @@ def get_quests(
     statement = select(Quest)
     if status:
         statement = statement.where(Quest.status == status)
-    statement = statement.offset(skip).limit(limit).order_by(Quest.created_at.desc())
+    statement = (
+        statement.offset(skip).limit(limit).order_by(col(Quest.created_at).desc())
+    )
     return list(session.exec(statement).all())
 
 
@@ -42,7 +44,7 @@ def get_quests_by_creator(
         .where(Quest.creator_id == creator_id)
         .offset(skip)
         .limit(limit)
-        .order_by(Quest.created_at.desc())
+        .order_by(col(Quest.created_at).desc())
     )
     return list(session.exec(statement).all())
 

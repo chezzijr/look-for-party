@@ -3,6 +3,8 @@ import uuid
 from sqlmodel import Session
 
 from app.models import Quest, QuestApplication
+from app.models.application import QuestApplicationCreate
+from app.models.quest import QuestCreate
 
 
 def create_random_quest(
@@ -24,13 +26,13 @@ def create_random_quest_application(
 
 
 # Re-export factories for backward compatibility
-def QuestFactory():
+def QuestFactory() -> QuestCreate:
     from app.tests.utils.factories import QuestCreateFactory
 
     return QuestCreateFactory()
 
 
-def QuestApplicationFactory():
+def QuestApplicationFactory() -> QuestApplicationCreate:
     from app.tests.utils.factories import QuestApplicationCreateFactory
 
     return QuestApplicationCreateFactory()

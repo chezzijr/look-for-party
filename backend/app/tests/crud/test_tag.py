@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from sqlmodel import Session
 
@@ -20,7 +21,7 @@ from app.tests.utils.quest import create_random_quest
 from app.tests.utils.utils import random_lower_string
 
 
-def create_test_tag(db: Session, **kwargs) -> Tag:
+def create_test_tag(db: Session, **kwargs: Any) -> Tag:
     """Create a test tag with random data."""
     unique_suffix = str(uuid.uuid4())[:8]  # Get unique 8-char suffix
     tag_data = {

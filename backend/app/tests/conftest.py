@@ -1,4 +1,6 @@
+import json
 from collections.abc import Generator
+from typing import Any, cast
 
 import pytest
 from fastapi.testclient import TestClient
@@ -63,24 +65,18 @@ def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]
 
 # Factory data fixtures that handle JSON serialization
 @pytest.fixture
-def quest_data() -> dict:
+def quest_data() -> dict[str, Any]:
     """Generate quest data properly serialized for JSON requests."""
-    import json
-
-    return json.loads(QuestFactory().model_dump_json())
+    return cast(dict[str, Any], json.loads(QuestFactory().model_dump_json()))
 
 
 @pytest.fixture
-def quest_application_data() -> dict:
+def quest_application_data() -> dict[str, Any]:
     """Generate quest application data properly serialized for JSON requests."""
-    import json
-
-    return json.loads(QuestApplicationFactory().model_dump_json())
+    return cast(dict[str, Any], json.loads(QuestApplicationFactory().model_dump_json()))
 
 
 @pytest.fixture
-def party_data() -> dict:
+def party_data() -> dict[str, Any]:
     """Generate party data properly serialized for JSON requests."""
-    import json
-
-    return json.loads(PartyFactory().model_dump_json())
+    return cast(dict[str, Any], json.loads(PartyFactory().model_dump_json()))

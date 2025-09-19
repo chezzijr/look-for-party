@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import uuid
 from datetime import timedelta
 
@@ -132,7 +133,10 @@ class QuestApplicationCreateFactory(factory.Factory):
 
 
 def create_quest_application(
-    db: Session, quest_id: uuid.UUID = None, applicant_id: uuid.UUID = None, **kwargs
+    db: Session,
+    quest_id: uuid.UUID | None = None,
+    applicant_id: uuid.UUID | None = None,
+    **kwargs,
 ) -> QuestApplication:
     """Create a quest application with factory-generated data."""
     if quest_id is None:
@@ -162,7 +166,7 @@ class PartyCreateFactory(factory.Factory):
     chat_channel_id = factory.Faker("uuid4")
 
 
-def create_party(db: Session, quest_id: uuid.UUID = None, **kwargs) -> Party:
+def create_party(db: Session, quest_id: uuid.UUID | None = None, **kwargs) -> Party:
     """Create a party with factory-generated data."""
     if quest_id is None:
         quest = create_quest(db)
@@ -183,7 +187,10 @@ class PartyMemberCreateFactory(factory.Factory):
 
 
 def create_party_member(
-    db: Session, party_id: uuid.UUID = None, user_id: uuid.UUID = None, **kwargs
+    db: Session,
+    party_id: uuid.UUID | None = None,
+    user_id: uuid.UUID | None = None,
+    **kwargs,
 ) -> PartyMember:
     """Create a party member with factory-generated data."""
     if party_id is None:

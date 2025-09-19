@@ -117,7 +117,6 @@ class TestQuestCreationWizard:
     def test_quest_creation_with_minimum_requirements(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Quest creation with minimal required fields"""
@@ -148,7 +147,6 @@ class TestQuestCreationWizard:
     def test_quest_creation_with_maximum_complexity(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Quest creation with all optional fields"""
@@ -183,7 +181,6 @@ class TestQuestCreationWizard:
     def test_quest_visibility_settings(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Different visibility settings work correctly"""
@@ -222,7 +219,6 @@ class TestQuestRequirementsValidation:
     def test_party_size_validation_success(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Valid party size combinations"""
@@ -254,7 +250,6 @@ class TestQuestRequirementsValidation:
     def test_timeline_validation_success(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Valid timeline configurations"""
@@ -263,7 +258,7 @@ class TestQuestRequirementsValidation:
         future_start = now + timedelta(days=7)
         future_deadline = now + timedelta(days=30)
 
-        timeline_tests = [
+        timeline_tests: list[dict[str, Any]] = [
             {
                 "name": "No dates",
                 "starts_at": None,
@@ -304,12 +299,11 @@ class TestQuestRequirementsValidation:
     def test_location_type_combinations(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Different location type configurations"""
 
-        location_tests = [
+        location_tests: list[dict[str, Any]] = [
             {
                 "type": LocationType.REMOTE,
                 "detail": None,
@@ -373,7 +367,6 @@ class TestQuestManagement:
     def test_edit_quest_before_applications(
         self,
         client: TestClient,
-        db: Session,
         quest_with_owner: tuple[str, dict[str, str]],
     ) -> None:
         """Test: Edit quest details before applications start"""
@@ -402,7 +395,6 @@ class TestQuestManagement:
     def test_view_quest_details(
         self,
         client: TestClient,
-        db: Session,
         quest_with_owner: tuple[str, dict[str, str]],
     ) -> None:
         """Test: View quest details and analytics"""
@@ -421,7 +413,6 @@ class TestQuestManagement:
     def test_quest_applications_list_empty(
         self,
         client: TestClient,
-        db: Session,
         quest_with_owner: tuple[str, dict[str, str]],
     ) -> None:
         """Test: View empty applications list"""
@@ -459,16 +450,18 @@ class TestApplicationReviewProcess:
             json=quest_data,
         )
         quest_id = response.json()["id"]
+        assert isinstance(quest_id, str)
 
         # Create applicants
-        applicant_headers = []
-        applicant_users = []
+        applicant_headers: list[dict[str, str]] = []
+        applicant_users: list[User] = []
         for i in range(3):
             email = random_email()
             headers = authentication_token_from_email(client=client, email=email, db=db)
             applicant_headers.append(headers)
 
             user = db.exec(select(User).where(User.email == email)).first()
+            assert user
             applicant_users.append(user)
 
             # Create application
@@ -488,7 +481,6 @@ class TestApplicationReviewProcess:
     def test_receive_and_view_applications(
         self,
         client: TestClient,
-        db: Session,
         quest_with_applications: tuple[
             str, dict[str, str], list[dict[str, str]], list[User]
         ],
@@ -515,13 +507,12 @@ class TestApplicationReviewProcess:
     def test_approve_application_success(
         self,
         client: TestClient,
-        db: Session,
         quest_with_applications: tuple[
             str, dict[str, str], list[dict[str, str]], list[User]
         ],
     ) -> None:
         """Test: Approve application with welcome message"""
-        quest_id, owner_headers, _, applicant_users = quest_with_applications
+        quest_id, owner_headers, _, _ = quest_with_applications
 
         # Get first application
         response = client.get(
@@ -554,7 +545,6 @@ class TestApplicationReviewProcess:
     def test_reject_application_with_feedback(
         self,
         client: TestClient,
-        db: Session,
         quest_with_applications: tuple[
             str, dict[str, str], list[dict[str, str]], list[User]
         ],
@@ -603,6 +593,7 @@ class TestQuestClosureScenarios:
             client=client, email=owner_email, db=db
         )
         owner_user = db.exec(select(User).where(User.email == owner_email)).first()
+        assert owner_user
 
         quest_data = create_basic_quest_data()
         quest_data["party_size_min"] = 2
@@ -616,7 +607,7 @@ class TestQuestClosureScenarios:
         quest_id = response.json()["id"]
 
         # Create and approve 2 applications
-        approved_users = []
+        approved_users: list[User] = []
         for i in range(2):
             applicant_email = random_email()
             applicant_headers = authentication_token_from_email(
@@ -625,6 +616,7 @@ class TestQuestClosureScenarios:
             applicant_user = db.exec(
                 select(User).where(User.email == applicant_email)
             ).first()
+            assert applicant_user
             approved_users.append(applicant_user)
 
             # Apply
@@ -691,7 +683,6 @@ class TestQuestCreationValidationFailures:
     def test_quest_creation_missing_required_fields(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Quest creation fails with missing required fields"""
@@ -729,7 +720,6 @@ class TestQuestCreationValidationFailures:
     def test_quest_creation_invalid_field_lengths(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Quest creation fails with invalid field lengths"""
@@ -772,7 +762,6 @@ class TestQuestCreationValidationFailures:
     def test_quest_creation_invalid_party_size(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Quest creation fails with invalid party size"""
@@ -823,7 +812,6 @@ class TestQuestCreationValidationFailures:
     def test_quest_creation_invalid_timeline(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Quest creation fails with invalid timeline"""
@@ -835,7 +823,7 @@ class TestQuestCreationValidationFailures:
 
         quest_data = create_basic_quest_data()
 
-        timeline_failure_tests = [
+        timeline_failure_tests: list[dict[str, Any]] = [
             {
                 "name": "past_start_date",
                 "starts_at": past_date.isoformat(),
@@ -868,7 +856,6 @@ class TestQuestCreationValidationFailures:
     def test_quest_creation_unauthorized(
         self,
         client: TestClient,
-        db: Session,
     ) -> None:
         """Test: Quest creation fails for non-authenticated user"""
 
@@ -914,7 +901,6 @@ class TestQuestPermissionFailures:
     def test_non_owner_cannot_edit_quest(
         self,
         client: TestClient,
-        db: Session,
         quest_with_non_owner: tuple[str, dict[str, str], dict[str, str]],
     ) -> None:
         """Test: Non-owner trying to edit quest should fail"""
@@ -935,7 +921,6 @@ class TestQuestPermissionFailures:
     def test_non_owner_cannot_close_quest(
         self,
         client: TestClient,
-        db: Session,
         quest_with_non_owner: tuple[str, dict[str, str], dict[str, str]],
     ) -> None:
         """Test: Non-owner trying to close quest should fail"""
@@ -950,7 +935,6 @@ class TestQuestPermissionFailures:
     def test_non_owner_cannot_access_applications(
         self,
         client: TestClient,
-        db: Session,
         quest_with_non_owner: tuple[str, dict[str, str], dict[str, str]],
     ) -> None:
         """Test: Non-owner accessing applications should fail"""
@@ -1198,7 +1182,6 @@ class TestDataIntegrityFailures:
     def test_create_quest_with_invalid_category_fails(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Creating quest with invalid category should fail"""
@@ -1215,7 +1198,6 @@ class TestDataIntegrityFailures:
     def test_create_quest_with_invalid_enums_fails(
         self,
         client: TestClient,
-        db: Session,
         quest_creator_headers: dict[str, str],
     ) -> None:
         """Test: Creating quest with invalid enum values should fail"""
@@ -1239,8 +1221,6 @@ class TestDataIntegrityFailures:
 
     def test_quest_update_after_applications_received_fails(
         self,
-        client: TestClient,
-        db: Session,
     ) -> None:
         """Test: Editing quest after applications received should fail (if this rule exists)"""
         # This test depends on business rules about when quests can be edited
@@ -1284,7 +1264,6 @@ class TestQuestCompletion:
     def test_complete_quest_by_creator(
         self,
         client: TestClient,
-        db: Session,
         in_progress_quest: tuple[str, dict[str, str]],
     ) -> None:
         """Test: Quest creator can complete an IN_PROGRESS quest"""
@@ -1304,7 +1283,6 @@ class TestQuestCompletion:
     def test_complete_quest_sets_completed_at(
         self,
         client: TestClient,
-        db: Session,
         in_progress_quest: tuple[str, dict[str, str]],
     ) -> None:
         """Test: Completing quest sets completed_at timestamp"""
@@ -1340,6 +1318,7 @@ class TestQuestCompletion:
             client=client, email=owner_email, db=db
         )
         owner_user = db.exec(select(User).where(User.email == owner_email)).first()
+        assert owner_user
 
         # Create party
         from app.models import PartyMemberRole
@@ -1380,6 +1359,7 @@ class TestQuestCompletion:
         moderator_user = db.exec(
             select(User).where(User.email == moderator_email)
         ).first()
+        assert moderator_user
 
         # Create party with moderator
         from app.models import PartyMemberRole
@@ -1486,6 +1466,7 @@ class TestQuestCancellation:
             client=client, email=owner_email, db=db
         )
         owner_user = db.exec(select(User).where(User.email == owner_email)).first()
+        assert owner_user
 
         # Create party
         from app.models import PartyMemberRole
@@ -1522,6 +1503,7 @@ class TestQuestCancellation:
         moderator_user = db.exec(
             select(User).where(User.email == moderator_email)
         ).first()
+        assert moderator_user
 
         # Create party with moderator
         from app.models import PartyMemberRole
@@ -1723,6 +1705,7 @@ class TestQuestCompletionFailures:
             client=client, email=member_email, db=db
         )
         member_user = db.exec(select(User).where(User.email == member_email)).first()
+        assert member_user
 
         # Create party with regular member
         from app.models import PartyMemberRole
@@ -1893,6 +1876,7 @@ class TestQuestCancellationFailures:
             client=client, email=member_email, db=db
         )
         member_user = db.exec(select(User).where(User.email == member_email)).first()
+        assert member_user
 
         # Create party with regular member
         from app.models import PartyMemberRole

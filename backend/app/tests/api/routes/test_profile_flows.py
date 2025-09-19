@@ -327,6 +327,7 @@ class TestProfileManagementFlow:
         assert response.status_code == 200
 
         user = db.exec(select(User).where(User.email == email)).first()
+        assert user
         return headers, user
 
     def test_edit_profile_information(
@@ -512,6 +513,7 @@ class TestReputationMonitoringFlow:
         headers = authentication_token_from_email(client=client, email=email, db=db)
 
         user = db.exec(select(User).where(User.email == email)).first()
+        assert user
         # Simulate some completed quests and reputation
         user.total_completed_quests = 5
         user.reputation_score = Decimal("4.2")
@@ -636,9 +638,13 @@ class TestCompleteProfileJourneyFlow:
         ]
 
         for skill in skills_to_add:
+            tag = skill["tag"]
+            assert isinstance(tag, Tag)
+            skill_level = skill["level"]
+            assert isinstance(skill_level, ProficiencyLevel)
             skill_data = {
-                "tag_id": str(skill["tag"].id),
-                "proficiency_level": skill["level"].value,
+                "tag_id": str(tag.id),
+                "proficiency_level": skill_level.value,
                 "is_primary": skill["primary"],
             }
             response = client.post(

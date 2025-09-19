@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -16,7 +17,7 @@ from app.tests.utils.utils import random_lower_string
 def test_create_quest(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     response = client.post(
         f"{settings.API_V1_STR}/quests/",
@@ -34,7 +35,9 @@ def test_create_quest(
 
 
 def test_create_quest_invalid_party_size(
-    client: TestClient, superuser_token_headers: dict[str, str], quest_data: dict
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    quest_data: dict[str, Any],
 ) -> None:
     quest_data["party_size_min"] = 5
     quest_data["party_size_max"] = 3
@@ -78,7 +81,7 @@ def test_read_quests_with_status_filter(client: TestClient, db: Session) -> None
 def test_read_my_quests(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Get superuser info (not needed for this test)
     response = client.post(
@@ -120,7 +123,7 @@ def test_read_quest_not_found(client: TestClient) -> None:
 def test_update_quest(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     response = client.post(
@@ -179,7 +182,7 @@ def test_update_quest_forbidden(
 def test_delete_quest(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     response = client.post(

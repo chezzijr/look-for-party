@@ -6,17 +6,21 @@ from sqlmodel import Session
 from app import crud
 from app.core.config import settings
 from app.models import (
+    Party,
     PartyMemberCreate,
     PartyMemberRole,
     PartyStatus,
     RatingCreate,
+    User,
 )
 from app.tests.utils.factories import create_user
 from app.tests.utils.party import create_random_party
 from app.tests.utils.quest import create_random_quest
 
 
-def create_test_party_with_members(db: Session, num_members: int = 3):
+def create_test_party_with_members(
+    db: Session, num_members: int = 3
+) -> tuple[Party, list[User]]:
     """Helper to create a party with multiple members for testing ratings."""
     # Create users
     creator = create_user(db)

@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models import PartyMember, PartyMemberCreate, PartyMemberUpdate
 
@@ -26,7 +26,7 @@ def get_party_members(
     statement = select(PartyMember).where(PartyMember.party_id == party_id)
     if active_only:
         statement = statement.where(PartyMember.status == "active")
-    statement = statement.order_by(PartyMember.joined_at)
+    statement = statement.order_by(col(PartyMember.joined_at))
     return list(session.exec(statement).all())
 
 
@@ -36,7 +36,7 @@ def get_user_party_memberships(
     statement = select(PartyMember).where(PartyMember.user_id == user_id)
     if active_only:
         statement = statement.where(PartyMember.status == "active")
-    statement = statement.order_by(PartyMember.joined_at.desc())
+    statement = statement.order_by(col(PartyMember.joined_at).desc())
     return list(session.exec(statement).all())
 
 

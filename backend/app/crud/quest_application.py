@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models import (
     ApplicationStatus,
@@ -39,7 +39,7 @@ def get_quest_applications(
     statement = select(QuestApplication).where(QuestApplication.quest_id == quest_id)
     if status:
         statement = statement.where(QuestApplication.status == status)
-    statement = statement.order_by(QuestApplication.applied_at.desc())
+    statement = statement.order_by(col(QuestApplication.applied_at).desc())
     return list(session.exec(statement).all())
 
 
@@ -54,7 +54,7 @@ def get_user_applications(
     )
     if status:
         statement = statement.where(QuestApplication.status == status)
-    statement = statement.order_by(QuestApplication.applied_at.desc())
+    statement = statement.order_by(col(QuestApplication.applied_at).desc())
     return list(session.exec(statement).all())
 
 

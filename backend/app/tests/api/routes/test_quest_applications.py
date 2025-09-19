@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -14,7 +15,7 @@ def test_apply_to_quest(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
-    quest_application_data: dict,
+    quest_application_data: dict[str, Any],
 ) -> None:
     # Create a quest with different user
     creator = create_random_user(db)
@@ -37,7 +38,7 @@ def test_apply_to_quest(
 def test_apply_to_quest_not_found(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
-    quest_application_data: dict,
+    quest_application_data: dict[str, Any],
 ) -> None:
     quest_id = uuid.uuid4()
     # application_data provided by fixture
@@ -53,7 +54,7 @@ def test_apply_to_own_quest(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
-    quest_application_data: dict,
+    quest_application_data: dict[str, Any],
 ) -> None:
     # Get current user
     user_response = client.get(
@@ -79,7 +80,7 @@ def test_apply_to_quest_twice(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
-    quest_application_data: dict,
+    quest_application_data: dict[str, Any],
 ) -> None:
     # Create a quest with different user
     creator = create_random_user(db)
@@ -108,7 +109,7 @@ def test_read_my_applications(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
-    quest_application_data: dict,
+    quest_application_data: dict[str, Any],
 ) -> None:
     # Create quest and apply to it
     creator = create_random_user(db)
@@ -140,7 +141,7 @@ def test_read_quest_applications_as_creator(
     client: TestClient,
     superuser_token_headers: dict[str, str],
     db: Session,
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     # quest_data provided by fixture
@@ -193,7 +194,7 @@ def test_approve_application(
     client: TestClient,
     superuser_token_headers: dict[str, str],
     db: Session,
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     # quest_data provided by fixture
@@ -233,7 +234,7 @@ def test_withdraw_application(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
-    quest_application_data: dict,
+    quest_application_data: dict[str, Any],
 ) -> None:
     # Create quest and apply to it
     creator = create_random_user(db)

@@ -9,12 +9,16 @@ from app.models import (
     RatingCreate,
     RatingUpdate,
 )
+from app.models.party import Party
+from app.models.user import User
 from app.tests.utils.factories import create_user
 from app.tests.utils.party import create_random_party
 from app.tests.utils.quest import create_random_quest
 
 
-def create_test_party_with_members(db: Session, num_members: int = 3):
+def create_test_party_with_members(
+    db: Session, num_members: int = 3
+) -> tuple[Party, list[User]]:
     """Create a party with multiple members for testing ratings."""
     # Create users
     creator = create_user(db)

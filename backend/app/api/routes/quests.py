@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlmodel import func, select
+from sqlmodel import col, func, select
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
@@ -45,7 +45,7 @@ def read_quests(
     count = session.exec(count_statement).one()
 
     statement = (
-        select(Quest).offset(skip).limit(limit).order_by(Quest.created_at.desc())
+        select(Quest).offset(skip).limit(limit).order_by(col(Quest.created_at).desc())
     )
     if status:
         statement = statement.where(Quest.status == status)

@@ -27,6 +27,7 @@ from app.models import (
     QuestVisibility,
     User,
 )
+from app.models.quest import CommitmentLevel, LocationType, QuestCategory
 from app.tests.utils.user import authentication_token_from_email, create_random_user
 from app.tests.utils.utils import random_email
 
@@ -70,16 +71,18 @@ class TestIndividualQuestFlow:
 
         # Get creator user ID from the created quest
         quest_db = db.exec(select(Quest).where(Quest.id == quest_id)).first()
+        assert quest_db
         creator_id = quest_db.creator_id
 
         # Step 3: Create applicants and applications
         applicant_emails = [random_email() for _ in range(3)]
-        applicant_users = []
+        applicant_users: list[User] = []
 
         for email in applicant_emails:
             # Create user through authentication (simulates registration)
             authentication_token_from_email(client=client, email=email, db=db)
             user = db.exec(select(User).where(User.email == email)).first()
+            assert user
             applicant_users.append(user)
 
         # Create applications
@@ -157,11 +160,11 @@ class TestPartyQuestCreation:
             title="Original Quest",
             description="Quest that formed this party",
             objective="Complete the original objective",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             party_size_min=2,
             party_size_max=4,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=creator.id,
             status=QuestStatus.COMPLETED,
         )
@@ -220,6 +223,7 @@ class TestPartyQuestCreation:
         from app.models import User
 
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
+        assert owner_user
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
@@ -267,6 +271,7 @@ class TestPartyQuestCreation:
         from app.models import User
 
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
+        assert owner_user
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
@@ -315,6 +320,7 @@ class TestPartyQuestCreation:
         from app.models import User
 
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
+        assert owner_user
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
@@ -363,11 +369,11 @@ class TestQuestPublicizingFlow:
             title="Original Quest",
             description="Original quest description",
             objective="Original objective",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             party_size_min=2,
             party_size_max=4,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=owner.id,
             status=QuestStatus.COMPLETED,
         )
@@ -393,12 +399,12 @@ class TestQuestPublicizingFlow:
             title="Hybrid Quest to Publicize",
             description="Quest that can be publicized",
             objective="Test publicizing",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             quest_type=QuestType.PARTY_HYBRID,
             party_size_min=1,
             party_size_max=2,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             visibility=QuestVisibility.PRIVATE,
             creator_id=owner.id,
             party_id=party.id,
@@ -430,6 +436,7 @@ class TestQuestPublicizingFlow:
         owner_user = db.exec(
             select(User).where(User.id == owner_member.user_id)
         ).first()
+        assert owner_user
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
@@ -465,12 +472,12 @@ class TestQuestPublicizingFlow:
             title="Individual Quest",
             description="Cannot be publicized",
             objective="Test error handling",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             quest_type=QuestType.INDIVIDUAL,
             party_size_min=2,
             party_size_max=4,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=creator.id,
         )
         db.add(individual_quest)
@@ -512,11 +519,11 @@ class TestMemberAssignmentFlow:
             title="Original Quest",
             description="Original quest description",
             objective="Original objective",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             party_size_min=3,
             party_size_max=5,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=owner.id,
             status=QuestStatus.COMPLETED,
         )
@@ -556,12 +563,12 @@ class TestMemberAssignmentFlow:
             title="Internal Task Assignment",
             description="Assign specific task to existing party members",
             objective="Complete internal objective",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             quest_type=QuestType.PARTY_INTERNAL,
             party_size_min=2,
             party_size_max=2,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             visibility=QuestVisibility.PRIVATE,
             creator_id=owner.id,
             party_id=party.id,
@@ -591,6 +598,7 @@ class TestMemberAssignmentFlow:
         from app.models import User
 
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
+        assert owner_user
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
@@ -634,6 +642,7 @@ class TestMemberAssignmentFlow:
         from app.models import User
 
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
+        assert owner_user
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
@@ -666,11 +675,11 @@ class TestQuestClosureFlow:
             title="Original Quest",
             description="Quest that formed the original party",
             objective="Original objective",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             party_size_min=2,
             party_size_max=4,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=owner.id,
             status=QuestStatus.COMPLETED,
         )
@@ -703,12 +712,12 @@ class TestQuestClosureFlow:
             title="Team Expansion Quest",
             description="Need to expand our existing team",
             objective="Add new team members",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             quest_type=QuestType.PARTY_EXPANSION,
             party_size_min=1,
             party_size_max=2,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=owner.id,
             party_id=party.id,
             parent_party_id=party.id,
@@ -769,11 +778,11 @@ class TestQuestClosureFlow:
             title="Original Quest",
             description="Quest that formed the party",
             objective="Original objective",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             party_size_min=1,
             party_size_max=2,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=owner.id,
             status=QuestStatus.COMPLETED,
         )
@@ -799,12 +808,12 @@ class TestQuestClosureFlow:
             title="Internal Task",
             description="Internal task for existing party",
             objective="Complete internal work",
-            category="PROFESSIONAL",
+            category=QuestCategory.PROFESSIONAL,
             quest_type=QuestType.PARTY_INTERNAL,
             party_size_min=1,
             party_size_max=1,
-            required_commitment="MODERATE",
-            location_type="REMOTE",
+            required_commitment=CommitmentLevel.MODERATE,
+            location_type=LocationType.REMOTE,
             creator_id=owner.id,
             party_id=party.id,
             parent_party_id=party.id,

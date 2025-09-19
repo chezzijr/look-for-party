@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -16,7 +17,7 @@ from app.tests.utils.factories import (
 def test_create_party(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     response = client.post(
@@ -74,7 +75,7 @@ def test_create_party_not_creator(
 def test_create_party_already_exists(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     # quest_data provided by fixture
@@ -106,7 +107,7 @@ def test_create_party_already_exists(
 def test_read_my_parties(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest and party as superuser
     # quest_data provided by fixture
@@ -157,7 +158,7 @@ def test_read_party_not_found(client: TestClient) -> None:
 def test_update_party_as_creator(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest and party as superuser
     # quest_data provided by fixture
@@ -230,7 +231,7 @@ def test_add_party_member_as_creator(
     client: TestClient,
     superuser_token_headers: dict[str, str],
     db: Session,
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     # quest_data provided by fixture
@@ -291,7 +292,7 @@ def test_update_party_member_role(
     client: TestClient,
     superuser_token_headers: dict[str, str],
     db: Session,
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest and party as superuser
     # quest_data provided by fixture
@@ -336,7 +337,7 @@ def test_remove_party_member(
     client: TestClient,
     superuser_token_headers: dict[str, str],
     db: Session,
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest and party as superuser
     # quest_data provided by fixture
@@ -383,7 +384,7 @@ def test_remove_party_member(
 def test_cannot_remove_quest_creator(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    quest_data: dict,
+    quest_data: dict[str, Any],
 ) -> None:
     # Create quest as superuser
     # quest_data provided by fixture
