@@ -23,11 +23,12 @@ repos:
                 backend/app/alembic/versions/.*
             )$
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.2.2
+    rev: v0.12.12
     hooks:
       - id: ruff
         args:
           - --fix
+          - --config=backend/pyproject.toml
       - id: ruff-format
         args:
           - --config=backend/pyproject.toml
