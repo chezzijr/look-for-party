@@ -783,9 +783,9 @@ class TestQuestCreationValidationFailures:
             quest_data_copy = quest_data.copy()
             quest_data_copy["party_size_min"] = sizes["min"]
             quest_data_copy["party_size_max"] = sizes["max"]
-            quest_data_copy[
-                "title"
-            ] = f"Invalid size test min:{sizes['min']} max:{sizes['max']}"
+            quest_data_copy["title"] = (
+                f"Invalid size test min:{sizes['min']} max:{sizes['max']}"
+            )
 
             response = client.post(
                 f"{settings.API_V1_STR}/quests/",
@@ -798,9 +798,9 @@ class TestQuestCreationValidationFailures:
             quest_data_copy = quest_data.copy()
             quest_data_copy["party_size_min"] = sizes["min"]
             quest_data_copy["party_size_max"] = sizes["max"]
-            quest_data_copy[
-                "title"
-            ] = f"Logically invalid size test min:{sizes['min']} max:{sizes['max']}"
+            quest_data_copy["title"] = (
+                f"Logically invalid size test min:{sizes['min']} max:{sizes['max']}"
+            )
 
             response = client.post(
                 f"{settings.API_V1_STR}/quests/",
