@@ -70,7 +70,7 @@ just exec <service> <command>
 Examples:
 ```bash
 just exec backend bash              # Get shell access to backend
-just exec frontend sh               # Get shell access to frontend  
+just exec frontend sh               # Get shell access to frontend
 just exec backend uv pip list      # List installed Python packages
 ```
 

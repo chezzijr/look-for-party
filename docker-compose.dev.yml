@@ -86,6 +86,8 @@ services:
     volumes:
       - ./backend/htmlcov:/app/htmlcov
       - ./backend/app:/app/app
+      - ./backend/pyproject.toml:/app/pyproject.toml
+      - ./backend/uv.lock:/app/uv.lock
       - ./backend/scripts:/app/scripts
 
   mailcatcher:
@@ -103,9 +105,13 @@ services:
       - ./frontend:/app  # Mount entire frontend directory
       - /app/node_modules  # Prevent node_modules from being overwritten by host
     working_dir: /app
+    env_file:
+      - .env
     environment:
       - VITE_API_URL=http://localhost:8000
       - NODE_ENV=development
+      - FIRST_SUPERUSER=${FIRST_SUPERUSER?Variable not set}
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD?Variable not set}
     command: >
       sh -c "
         echo 'Installing dependencies...' &&
