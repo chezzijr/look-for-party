@@ -179,7 +179,7 @@ def test_update_party_as_creator(
 
     # Update party
     update_data = {"status": PartyStatus.ACTIVE, "chat_channel_id": "new-channel-id"}
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/parties/{party['id']}",
         headers=superuser_token_headers,
         json=update_data,
@@ -200,7 +200,7 @@ def test_update_party_forbidden(
 
     # Try to update party as non-creator/non-leader
     update_data = {"status": PartyStatus.ACTIVE}
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/parties/{party.id}",
         headers=normal_user_token_headers,
         json=update_data,
@@ -323,7 +323,7 @@ def test_update_party_member_role(
 
     # Update member role
     update_data = {"role": "MODERATOR"}
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/parties/{party['id']}/members/{member['id']}",
         headers=superuser_token_headers,
         json=update_data,

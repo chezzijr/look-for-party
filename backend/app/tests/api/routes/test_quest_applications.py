@@ -219,7 +219,7 @@ def test_approve_application(
         "status": ApplicationStatus.APPROVED,
         "reviewer_feedback": "Great application!",
     }
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/quest-applications/{application.id}",
         headers=superuser_token_headers,
         json=update_data,

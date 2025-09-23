@@ -324,7 +324,7 @@ export class PartiesService {
     data: PartiesUpdatePartyData,
   ): CancelablePromise<PartiesUpdatePartyResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/parties/{party_id}",
       path: {
         party_id: data.partyId,
@@ -404,7 +404,7 @@ export class PartiesService {
     data: PartiesUpdatePartyMemberData,
   ): CancelablePromise<PartiesUpdatePartyMemberResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/parties/{party_id}/members/{member_id}",
       path: {
         party_id: data.partyId,
@@ -636,7 +636,7 @@ export class QuestApplicationsService {
     data: QuestApplicationsUpdateApplicationData,
   ): CancelablePromise<QuestApplicationsUpdateApplicationResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/quest-applications/{application_id}",
       path: {
         application_id: data.applicationId,
@@ -786,7 +786,7 @@ export class QuestsService {
     data: QuestsUpdateQuestData,
   ): CancelablePromise<QuestsUpdateQuestResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/quests/{quest_id}",
       path: {
         quest_id: data.questId,
@@ -1009,7 +1009,7 @@ export class RatingsService {
     data: RatingsUpdateRatingData,
   ): CancelablePromise<RatingsUpdateRatingResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/ratings/{rating_id}",
       path: {
         rating_id: data.ratingId,
@@ -1367,7 +1367,7 @@ export class TagsService {
     data: TagsUpdateTagData,
   ): CancelablePromise<TagsUpdateTagResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/tags/{tag_id}",
       path: {
         tag_id: data.tagId,
@@ -1474,7 +1474,7 @@ export class TagsService {
     data: TagsUpdateMyUserTagData,
   ): CancelablePromise<TagsUpdateMyUserTagResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/tags/users/me/{tag_id}",
       path: {
         tag_id: data.tagId,
@@ -1596,7 +1596,7 @@ export class TagsService {
     data: TagsUpdateQuestTagData,
   ): CancelablePromise<TagsUpdateQuestTagResponse> {
     return __request(OpenAPI, {
-      method: "PUT",
+      method: "PATCH",
       url: "/api/v1/tags/quests/{quest_id}/{tag_id}",
       path: {
         quest_id: data.questId,

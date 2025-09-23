@@ -130,7 +130,7 @@ def read_quest(session: SessionDep, quest_id: uuid.UUID) -> Any:
     return quest
 
 
-@router.put("/{quest_id}", response_model=QuestPublic)
+@router.patch("/{quest_id}", response_model=QuestPublic)
 def update_quest(
     *,
     session: SessionDep,

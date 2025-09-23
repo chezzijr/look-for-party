@@ -599,7 +599,7 @@ def test_update_rating(
         "review_text": "Much better after working together more!",
     }
 
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/ratings/{rating.id}",
         headers=normal_user_token_headers,
         json=update_data,
@@ -637,7 +637,7 @@ def test_update_rating_not_owner(
     # Try to update as different user
     update_data = {"overall_rating": 5}
 
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/ratings/{rating.id}",
         headers=normal_user_token_headers,
         json=update_data,

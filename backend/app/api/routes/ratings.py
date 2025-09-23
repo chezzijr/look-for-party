@@ -115,7 +115,7 @@ def check_can_rate_party(
     return {"can_rate": can_rate}
 
 
-@router.put("/{rating_id}", response_model=RatingPublic)
+@router.patch("/{rating_id}", response_model=RatingPublic)
 def update_rating(
     *,
     session: SessionDep,

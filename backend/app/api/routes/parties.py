@@ -94,7 +94,7 @@ def read_party(session: SessionDep, party_id: uuid.UUID) -> Any:
     return party
 
 
-@router.put("/{party_id}", response_model=PartyPublic)
+@router.patch("/{party_id}", response_model=PartyPublic)
 def update_party(
     *,
     session: SessionDep,
@@ -194,7 +194,7 @@ def add_party_member(
     return member
 
 
-@router.put("/{party_id}/members/{member_id}", response_model=PartyMemberPublic)
+@router.patch("/{party_id}/members/{member_id}", response_model=PartyMemberPublic)
 def update_party_member(
     *,
     session: SessionDep,

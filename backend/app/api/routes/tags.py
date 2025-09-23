@@ -146,7 +146,7 @@ def create_tag(*, session: SessionDep, tag_in: TagCreate) -> Any:
     return tag
 
 
-@router.put(
+@router.patch(
     "/{tag_id}",
     dependencies=[Depends(get_current_active_superuser)],
     response_model=TagPublic,
@@ -226,7 +226,7 @@ def create_my_user_tag(
     return user_tag
 
 
-@router.put("/users/me/{tag_id}", response_model=UserTagPublic)
+@router.patch("/users/me/{tag_id}", response_model=UserTagPublic)
 def update_my_user_tag(
     *,
     session: SessionDep,
@@ -326,7 +326,7 @@ def create_quest_tag(
     return quest_tag
 
 
-@router.put("/quests/{quest_id}/{tag_id}", response_model=QuestTagPublic)
+@router.patch("/quests/{quest_id}/{tag_id}", response_model=QuestTagPublic)
 def update_quest_tag(
     *,
     session: SessionDep,
