@@ -379,7 +379,7 @@ class TestQuestManagement:
             "estimated_duration": "3-4 weeks",
         }
 
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/quests/{quest_id}",
             headers=owner_headers,
             json=update_data,
@@ -528,7 +528,7 @@ class TestApplicationReviewProcess:
             "reviewer_feedback": "Great application! Welcome to the team. Looking forward to working together.",
         }
 
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/quest-applications/{first_app_id}",
             headers=owner_headers,
             json=approval_data,
@@ -566,7 +566,7 @@ class TestApplicationReviewProcess:
             "reviewer_feedback": "Thank you for applying. We're looking for someone with more React experience for this particular project.",
         }
 
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/quest-applications/{second_app_id}",
             headers=owner_headers,
             json=rejection_data,
@@ -631,7 +631,7 @@ class TestQuestClosureScenarios:
             app_id = response.json()["id"]
 
             # Approve
-            response = client.put(
+            response = client.patch(
                 f"{settings.API_V1_STR}/quest-applications/{app_id}",
                 headers=owner_headers,
                 json={
@@ -911,7 +911,7 @@ class TestQuestPermissionFailures:
             "description": "This should not be allowed to change the quest description",
         }
 
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/quests/{quest_id}",
             headers=non_owner_headers,
             json=update_data,

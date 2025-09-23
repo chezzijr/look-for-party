@@ -138,7 +138,7 @@ def read_application(
     return application
 
 
-@router.put("/{application_id}", response_model=QuestApplicationPublic)
+@router.patch("/{application_id}", response_model=QuestApplicationPublic)
 def update_application(
     *,
     session: SessionDep,

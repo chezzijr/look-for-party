@@ -276,7 +276,7 @@ def test_update_tag_admin(
         "description": "Updated description",
     }
 
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/tags/{tag.id}",
         headers=superuser_token_headers,
         json=data,
@@ -410,7 +410,7 @@ def test_update_my_user_tag(
         "is_primary": True,
     }
 
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/tags/users/me/{tag.id}",
         headers=normal_user_token_headers,
         json=data,
@@ -579,7 +579,7 @@ def test_update_quest_tag_owner(
         "min_proficiency": ProficiencyLevel.EXPERT.value,
     }
 
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/tags/quests/{quest.id}/{tag.id}",
         headers=normal_user_token_headers,
         json=data,

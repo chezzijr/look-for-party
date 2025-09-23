@@ -411,7 +411,7 @@ class TestProfileManagementFlow:
             "proficiency_level": ProficiencyLevel.ADVANCED.value,
             "is_primary": False,
         }
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/tags/users/me/{docker_tag.id}",
             headers=headers,
             json=updated_docker_skill,
@@ -425,7 +425,7 @@ class TestProfileManagementFlow:
             "proficiency_level": ProficiencyLevel.ADVANCED.value,
             "is_primary": True,
         }
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/tags/users/me/{docker_tag.id}",
             headers=headers,
             json=make_docker_primary,
@@ -437,7 +437,7 @@ class TestProfileManagementFlow:
             "proficiency_level": ProficiencyLevel.EXPERT.value,
             "is_primary": False,
         }
-        response = client.put(
+        response = client.patch(
             f"{settings.API_V1_STR}/tags/users/me/{python_tag.id}",
             headers=headers,
             json=make_python_not_primary,

@@ -136,7 +136,7 @@ def test_update_quest(
     # Update quest
     new_title = random_lower_string()
     update_data = {"title": new_title, "status": QuestStatus.IN_PROGRESS}
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/quests/{quest['id']}",
         headers=superuser_token_headers,
         json=update_data,
@@ -152,7 +152,7 @@ def test_update_quest_not_found(
 ) -> None:
     quest_id = uuid.uuid4()
     update_data = {"title": "New Title"}
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/quests/{quest_id}",
         headers=superuser_token_headers,
         json=update_data,
@@ -171,7 +171,7 @@ def test_update_quest_forbidden(
 
     # Try to update with normal user (not creator)
     update_data = {"title": "New Title"}
-    response = client.put(
+    response = client.patch(
         f"{settings.API_V1_STR}/quests/{quest.id}",
         headers=normal_user_token_headers,
         json=update_data,
