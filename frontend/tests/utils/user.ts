@@ -8,10 +8,10 @@ export async function signUpNewUser(
 ) {
   await page.goto("/signup")
 
-  await page.getByPlaceholder("Full Name").fill(name)
-  await page.getByPlaceholder("Email").fill(email)
-  await page.getByPlaceholder("Password", { exact: true }).fill(password)
-  await page.getByPlaceholder("Confirm Password").fill(password)
+  await page.getByPlaceholder("Enter your full name").fill(name)
+  await page.getByPlaceholder("Enter your email").fill(email)
+  await page.getByPlaceholder("Enter your password").fill(password)
+  await page.getByPlaceholder("Confirm your password").fill(password)
   await page.getByRole("button", { name: "Sign Up" }).click()
   await page.goto("/login")
 }
@@ -19,8 +19,8 @@ export async function signUpNewUser(
 export async function logInUser(page: Page, email: string, password: string) {
   await page.goto("/login")
 
-  await page.getByPlaceholder("Email").fill(email)
-  await page.getByPlaceholder("Password", { exact: true }).fill(password)
+  await page.getByPlaceholder("Enter your email").fill(email)
+  await page.getByPlaceholder("Enter your password").fill(password)
   await page.getByRole("button", { name: "Log In" }).click()
   await page.waitForURL("/dashboard")
   await expect(
@@ -30,6 +30,6 @@ export async function logInUser(page: Page, email: string, password: string) {
 
 export async function logOutUser(page: Page) {
   await page.getByTestId("user-menu").click()
-  await page.getByRole("menuitem", { name: "Log out" }).click()
+  await page.getByText("Log Out").click()
   await page.goto("/login")
 }

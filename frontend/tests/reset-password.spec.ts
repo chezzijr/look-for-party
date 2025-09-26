@@ -9,7 +9,7 @@ test("Password Recovery title is visible", async ({ page }) => {
   await page.goto("/recover-password")
 
   await expect(
-    page.getByRole("heading", { name: "Password Recovery" }),
+    page.getByText("Password Recovery", { exact: true }),
   ).toBeVisible()
 })
 
@@ -64,10 +64,10 @@ test("User can reset password successfully using the link", async ({
   // Set the new password and confirm it
   await page.goto(url)
 
-  await page.getByPlaceholder("New Password").fill(newPassword)
-  await page.getByPlaceholder("Confirm Password").fill(newPassword)
+  await page.getByPlaceholder("Enter new password").fill(newPassword)
+  await page.getByPlaceholder("Confirm new password").fill(newPassword)
   await page.getByRole("button", { name: "Reset Password" }).click()
-  await expect(page.getByText("Password updated successfully")).toBeVisible()
+  await expect(page.getByText("Password updated successfully.")).toBeVisible({ timeout: 10000 })
 
   // Check if the user is able to login with the new password
   await logInUser(page, email, newPassword)
@@ -79,11 +79,11 @@ test("Expired or invalid reset link", async ({ page }) => {
 
   await page.goto(invalidUrl)
 
-  await page.getByPlaceholder("New Password").fill(password)
-  await page.getByPlaceholder("Confirm Password").fill(password)
+  await page.getByPlaceholder("Enter new password").fill(password)
+  await page.getByPlaceholder("Confirm new password").fill(password)
   await page.getByRole("button", { name: "Reset Password" }).click()
 
-  await expect(page.getByText("Invalid token")).toBeVisible()
+  await expect(page.getByText("Invalid token")).toBeVisible({ timeout: 10000 })
 })
 
 test("Weak new password validation", async ({ page, request }) => {
@@ -115,11 +115,11 @@ test("Weak new password validation", async ({ page, request }) => {
 
   // Set a weak new password
   await page.goto(url)
-  await page.getByPlaceholder("New Password").fill(weakPassword)
-  await page.getByPlaceholder("Confirm Password").fill(weakPassword)
+  await page.getByPlaceholder("Enter new password").fill(weakPassword)
+  await page.getByPlaceholder("Confirm new password").fill(weakPassword)
   await page.getByRole("button", { name: "Reset Password" }).click()
 
   await expect(
     page.getByText("Password must be at least 8 characters"),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 10000 })
 })

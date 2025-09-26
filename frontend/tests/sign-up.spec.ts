@@ -15,10 +15,10 @@ const fillForm = async (
   password: string,
   confirm_password: string,
 ) => {
-  await page.getByPlaceholder("Full Name").fill(full_name)
-  await page.getByPlaceholder("Email").fill(email)
-  await page.getByPlaceholder("Password", { exact: true }).fill(password)
-  await page.getByPlaceholder("Confirm Password").fill(confirm_password)
+  await page.getByPlaceholder("Enter your full name").fill(full_name)
+  await page.getByPlaceholder("Enter your email").fill(email)
+  await page.getByPlaceholder("Enter your password").fill(password)
+  await page.getByPlaceholder("Confirm your password").fill(confirm_password)
 }
 
 const verifyInput = async (
@@ -35,10 +35,10 @@ const verifyInput = async (
 test("Inputs are visible, empty and editable", async ({ page }) => {
   await page.goto("/signup")
 
-  await verifyInput(page, "Full Name")
-  await verifyInput(page, "Email")
-  await verifyInput(page, "Password", { exact: true })
-  await verifyInput(page, "Confirm Password")
+  await verifyInput(page, "Enter your full name")
+  await verifyInput(page, "Enter your email")
+  await verifyInput(page, "Enter your password")
+  await verifyInput(page, "Confirm your password")
 })
 
 test("Sign Up button is visible", async ({ page }) => {
