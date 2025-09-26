@@ -1,4 +1,3 @@
-import React from "react"
 import { Link as RouterLink } from "@tanstack/react-router"
 import { FiHome, FiSettings } from "react-icons/fi"
 

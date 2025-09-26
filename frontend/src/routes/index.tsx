@@ -3,7 +3,7 @@ import { FiArrowRight, FiTarget, FiUsers, FiZap } from "react-icons/fi"
 import { IconType } from "react-icons"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 
 import { isLoggedIn } from "@/hooks/useAuth"
 import Logo from "/assets/images/fastapi-logo.svg"

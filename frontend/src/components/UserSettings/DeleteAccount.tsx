@@ -1,5 +1,3 @@
-import React from "react"
-
 import DeleteConfirmation from "./DeleteConfirmation"
 
 const DeleteAccount = () => {
