@@ -1,4 +1,3 @@
-import { Container, Heading, Text } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
@@ -6,7 +5,9 @@ import { FiLock } from "react-icons/fi"
 
 import { type ApiError, LoginService, type NewPassword } from "@/client"
 import { Button } from "@/components/ui/button"
-import { PasswordInput } from "@/components/ui/password-input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { isLoggedIn } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
@@ -68,39 +69,56 @@ function ResetPassword() {
   }
 
   return (
-    <Container
-      as="form"
-      onSubmit={handleSubmit(onSubmit)}
-      h="100vh"
-      maxW="sm"
-      alignItems="stretch"
-      justifyContent="center"
-      gap={4}
-      centerContent
-    >
-      <Heading size="xl" color="ui.main" textAlign="center" mb={2}>
-        Reset Password
-      </Heading>
-      <Text textAlign="center">
-        Please enter your new password and confirm it to reset your password.
-      </Text>
-      <PasswordInput
-        startElement={<FiLock />}
-        type="new_password"
-        errors={errors}
-        {...register("new_password", passwordRules())}
-        placeholder="New Password"
-      />
-      <PasswordInput
-        startElement={<FiLock />}
-        type="confirm_password"
-        errors={errors}
-        {...register("confirm_password", confirmPasswordRules(getValues))}
-        placeholder="Confirm Password"
-      />
-      <Button variant="solid" type="submit">
-        Reset Password
-      </Button>
-    </Container>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Please enter your new password and confirm it to reset your password.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new_password">New Password</Label>
+              <div className="relative">
+                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  id="new_password"
+                  {...register("new_password", passwordRules())}
+                  placeholder="Enter new password"
+                  type="password"
+                  className="pl-10"
+                />
+              </div>
+              {errors.new_password && (
+                <p className="text-sm text-destructive">{errors.new_password.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm_password">Confirm Password</Label>
+              <div className="relative">
+                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  id="confirm_password"
+                  {...register("confirm_password", confirmPasswordRules(getValues))}
+                  placeholder="Confirm new password"
+                  type="password"
+                  className="pl-10"
+                />
+              </div>
+              {errors.confirm_password && (
+                <p className="text-sm text-destructive">{errors.confirm_password.message}</p>
+              )}
+            </div>
+
+            <Button type="submit" disabled={mutation.isPending} className="w-full">
+              {mutation.isPending ? "Resetting..." : "Reset Password"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

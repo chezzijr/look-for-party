@@ -1,19 +1,19 @@
-import { Container, Heading, Text } from "@chakra-ui/react"
+import React from "react"
 
 import DeleteConfirmation from "./DeleteConfirmation"
 
 const DeleteAccount = () => {
   return (
-    <Container maxW="full">
-      <Heading size="sm" py={4}>
+    <div className="w-full">
+      <h2 className="text-lg font-semibold py-4">
         Delete Account
-      </Heading>
-      <Text>
+      </h2>
+      <p className="text-muted-foreground mb-4">
         Permanently delete your data and everything associated with your
         account.
-      </Text>
+      </p>
       <DeleteConfirmation />
-    </Container>
+    </div>
   )
 }
 export default DeleteAccount

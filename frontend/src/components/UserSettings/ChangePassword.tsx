@@ -1,4 +1,6 @@
-import { Box, Button, Container, Heading, VStack } from "@chakra-ui/react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FiLock } from "react-icons/fi"
@@ -42,47 +44,71 @@ const ChangePassword = () => {
   }
 
   return (
-    <>
-      <Container maxW="full">
-        <Heading size="sm" py={4}>
-          Change Password
-        </Heading>
-        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-          <VStack gap={4} w={{ base: "100%", md: "sm" }}>
-            <PasswordInput
-              type="current_password"
-              startElement={<FiLock />}
+    <div className="w-full">
+      <h2 className="text-lg font-semibold py-4">
+        Change Password
+      </h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full md:w-96">
+        <div className="space-y-2">
+          <Label htmlFor="current_password">Current Password</Label>
+          <div className="relative">
+            <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              id="current_password"
               {...register("current_password", passwordRules())}
               placeholder="Current Password"
-              errors={errors}
+              type="password"
+              className="pl-10"
             />
-            <PasswordInput
-              type="new_password"
-              startElement={<FiLock />}
+          </div>
+          {errors.current_password && (
+            <p className="text-sm text-destructive">{errors.current_password.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="new_password">New Password</Label>
+          <div className="relative">
+            <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              id="new_password"
               {...register("new_password", passwordRules())}
               placeholder="New Password"
-              errors={errors}
+              type="password"
+              className="pl-10"
             />
-            <PasswordInput
-              type="confirm_password"
-              startElement={<FiLock />}
+          </div>
+          {errors.new_password && (
+            <p className="text-sm text-destructive">{errors.new_password.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirm_password">Confirm Password</Label>
+          <div className="relative">
+            <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              id="confirm_password"
               {...register("confirm_password", confirmPasswordRules(getValues))}
               placeholder="Confirm Password"
-              errors={errors}
+              type="password"
+              className="pl-10"
             />
-          </VStack>
-          <Button
-            variant="solid"
-            mt={4}
-            type="submit"
-            loading={isSubmitting}
-            disabled={!isValid}
-          >
-            Save
-          </Button>
-        </Box>
-      </Container>
-    </>
+          </div>
+          {errors.confirm_password && (
+            <p className="text-sm text-destructive">{errors.confirm_password.message}</p>
+          )}
+        </div>
+
+        <Button
+          variant="default"
+          type="submit"
+          disabled={!isValid || isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Save"}
+        </Button>
+      </form>
+    </div>
   )
 }
 export default ChangePassword

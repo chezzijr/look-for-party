@@ -1,15 +1,10 @@
-import {
-  Box,
-  Button,
-  Container,
-  Flex,
-  Heading,
-  Input,
-  Text,
-} from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 import {
   type ApiError,
@@ -20,7 +15,6 @@ import {
 import useAuth from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { emailPattern, handleError } from "@/utils"
-import { Field } from "../ui/field"
 
 const UserInformation = () => {
   const queryClient = useQueryClient()
@@ -70,80 +64,71 @@ const UserInformation = () => {
   }
 
   return (
-    <>
-      <Container maxW="full">
-        <Heading size="sm" py={4}>
-          User Information
-        </Heading>
-        <Box
-          w={{ sm: "full", md: "sm" }}
-          as="form"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <Field label="Full name">
+    <div className="w-full">
+      <h2 className="text-lg font-semibold py-4">
+        User Information
+      </h2>
+      <form
+        className="w-full md:w-96"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+          <div className="space-y-2">
+            <Label htmlFor="full_name">Full name</Label>
             {editMode ? (
               <Input
+                id="full_name"
                 {...register("full_name", { maxLength: 30 })}
                 type="text"
-                size="md"
               />
             ) : (
-              <Text
-                fontSize="md"
-                py={2}
-                color={!currentUser?.full_name ? "gray" : "inherit"}
-                truncate
-                maxW="sm"
-              >
+              <p className="text-sm py-2 text-muted-foreground truncate max-w-sm">
                 {currentUser?.full_name || "N/A"}
-              </Text>
+              </p>
             )}
-          </Field>
-          <Field
-            mt={4}
-            label="Email"
-            invalid={!!errors.email}
-            errorText={errors.email?.message}
-          >
+          </div>
+          <div className="space-y-2 mt-4">
+            <Label htmlFor="email">Email</Label>
             {editMode ? (
-              <Input
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: emailPattern,
-                })}
-                type="email"
-                size="md"
-              />
+              <>
+                <Input
+                  id="email"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: emailPattern,
+                  })}
+                  type="email"
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                )}
+              </>
             ) : (
-              <Text fontSize="md" py={2} truncate maxW="sm">
+              <p className="text-sm py-2 truncate max-w-sm">
                 {currentUser?.email}
-              </Text>
+              </p>
             )}
-          </Field>
-          <Flex mt={4} gap={3}>
+          </div>
+          <div className="flex mt-4 gap-3">
             <Button
-              variant="solid"
+              variant="default"
               onClick={toggleEditMode}
               type={editMode ? "button" : "submit"}
-              loading={editMode ? isSubmitting : false}
-              disabled={editMode ? !isDirty || !getValues("email") : false}
+              disabled={editMode ? isSubmitting || !isDirty || !getValues("email") : false}
             >
-              {editMode ? "Save" : "Edit"}
+              {editMode ? (isSubmitting ? "Saving..." : "Save") : "Edit"}
             </Button>
             {editMode && (
               <Button
-                variant="subtle"
-                colorPalette="gray"
+                variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
             )}
-          </Flex>
-        </Box>
-      </Container>
-    </>
+          </div>
+        </form>
+      </div>
   )
 }
 
