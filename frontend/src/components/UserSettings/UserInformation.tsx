@@ -3,6 +3,7 @@ import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
+import { Form, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -21,13 +22,7 @@ const UserInformation = () => {
   const { showSuccessToast } = useCustomToast()
   const [editMode, setEditMode] = useState(false)
   const { user: currentUser } = useAuth()
-  const {
-    register,
-    handleSubmit,
-    reset,
-    getValues,
-    formState: { isSubmitting, errors, isDirty },
-  } = useForm<UserPublic>({
+  const form = useForm<UserPublic>({
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
@@ -35,6 +30,14 @@ const UserInformation = () => {
       email: currentUser?.email,
     },
   })
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    getValues,
+    formState: { isSubmitting, errors, isDirty },
+  } = form
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -45,6 +48,7 @@ const UserInformation = () => {
       UsersService.updateUserMe({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast("User updated successfully.")
+      setEditMode(false)
     },
     onError: (err: ApiError) => {
       handleError(err)
@@ -68,24 +72,31 @@ const UserInformation = () => {
       <h2 className="text-lg font-semibold py-4">
         User Information
       </h2>
-      <form
-        className="w-full md:w-96"
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <Form {...form}>
+        <form
+          className="w-full md:w-96"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <div className="space-y-2">
             <Label htmlFor="full_name">Full name</Label>
             {editMode ? (
-              <Input
-                id="full_name"
-                {...register("full_name", { maxLength: 30 })}
-                type="text"
-              />
+              <>
+                <Input
+                  id="full_name"
+                  {...register("full_name", { maxLength: 30 })}
+                  type="text"
+                />
+                {errors.full_name && (
+                  <FormMessage>{errors.full_name.message}</FormMessage>
+                )}
+              </>
             ) : (
               <p className="text-sm py-2 text-muted-foreground truncate max-w-sm">
                 {currentUser?.full_name || "N/A"}
               </p>
             )}
           </div>
+
           <div className="space-y-2 mt-4">
             <Label htmlFor="email">Email</Label>
             {editMode ? (
@@ -99,7 +110,7 @@ const UserInformation = () => {
                   type="email"
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <FormMessage>{errors.email.message}</FormMessage>
                 )}
               </>
             ) : (
@@ -108,27 +119,39 @@ const UserInformation = () => {
               </p>
             )}
           </div>
+
           <div className="flex mt-4 gap-3">
-            <Button
-              variant="default"
-              onClick={toggleEditMode}
-              type={editMode ? "button" : "submit"}
-              disabled={editMode ? isSubmitting || !isDirty || !getValues("email") : false}
-            >
-              {editMode ? (isSubmitting ? "Saving..." : "Save") : "Edit"}
-            </Button>
+            {editMode ? (
+              <Button
+                variant="default"
+                type="submit"
+                disabled={isSubmitting || !isDirty || !getValues("email")}
+              >
+                {isSubmitting ? "Saving..." : "Save"}
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                type="button"
+                onClick={toggleEditMode}
+              >
+                Edit
+              </Button>
+            )}
             {editMode && (
               <Button
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
+                type="button"
               >
                 Cancel
               </Button>
             )}
           </div>
         </form>
-      </div>
+      </Form>
+    </div>
   )
 }
 
