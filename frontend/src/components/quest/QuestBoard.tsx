@@ -6,11 +6,11 @@ import { QuestFilters } from "./QuestFilters"
 import { Button } from "@/components/ui/button"
 import { Grid, List, Plus } from "lucide-react"
 import { useNavigate } from "@tanstack/react-router"
-import type { QuestCategory, QuestStatus } from "@/client"
+import type { QuestCategory, QuestStatus, LocationType } from "@/client"
 
 interface QuestFiltersState {
   category?: QuestCategory
-  location_type?: string
+  location_type?: LocationType
   status?: QuestStatus
   search?: string
   party_size_min?: number

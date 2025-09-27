@@ -6,12 +6,12 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import useTagSuggestions from "@/hooks/useTagSuggestions"
-import type { QuestCategory, QuestStatus, TagPublic } from "@/client"
+import type { QuestCategory, TagPublic, LocationType } from "@/client"
 
 interface QuestFiltersProps {
   filters: {
     category?: QuestCategory
-    location_type?: string
+    location_type?: LocationType
     party_size_min?: number
     party_size_max?: number
     tag_ids?: string[]
@@ -31,19 +31,12 @@ const categories: { value: QuestCategory; label: string }[] = [
   { value: "TRAVEL", label: "Travel" },
 ]
 
-const locationTypes = [
+const locationTypes: { value: LocationType; label: string }[] = [
   { value: "REMOTE", label: "Remote" },
   { value: "IN_PERSON", label: "In-person" },
   { value: "HYBRID", label: "Hybrid" },
 ]
 
-const statuses: { value: QuestStatus; label: string }[] = [
-  { value: "RECRUITING", label: "Recruiting" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "CANCELLED", label: "Cancelled" },
-  { value: "EXPIRED", label: "Expired" },
-]
 
 export function QuestFilters({
   filters,

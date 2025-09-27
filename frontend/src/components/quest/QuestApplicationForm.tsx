@@ -8,7 +8,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 
-import { type ApiError, type QuestApplicationCreate, QuestApplicationsService } from "@/client"
+import { type QuestApplicationCreate, QuestApplicationsService } from "@/client"
 import useCustomToast from "@/hooks/useCustomToast"
 import { parseApiError } from "@/utils/apiErrors"
 

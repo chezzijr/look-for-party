@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { QuestsService } from "@/client"
-import type { QuestsPublic, QuestCategory, QuestStatus } from "@/client"
+import type { QuestsPublic, QuestCategory, QuestStatus, LocationType } from "@/client"
 
 interface QuestFilters {
   category?: QuestCategory
-  location_type?: string
+  location_type?: LocationType
   status?: QuestStatus
   limit?: number
   skip?: number
