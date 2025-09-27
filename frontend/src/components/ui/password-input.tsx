@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
-interface PasswordInputProps extends React.ComponentProps<"input"> {
+interface PasswordInputProps extends Omit<React.ComponentProps<"input">, "type"> {
   label?: string
   error?: string
 }
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, label, error, id, ...props }, ref) => {
+  ({ className, label, error, id, ref: _, ...props }, ref) => {
     return (
       <div className="space-y-2">
         {label && <Label htmlFor={id}>{label}</Label>}
