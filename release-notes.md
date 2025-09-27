@@ -23,6 +23,7 @@
 
 ### Refactors
 
+* 🎨 Migrate Frontend from Chakra UI to shadcn/ui2. PR [#53](https://github.com/chezzijr/look-for-party/pull/53) by [@chezzijr](https://github.com/chezzijr).
 * refactor: change the update endpoint to use patch. PR [#52](https://github.com/chezzijr/look-for-party/pull/52) by [@chezzijr](https://github.com/chezzijr).
 * 👷🏻‍♀️  Update CI for client generation. PR [#1573](https://github.com/fastapi/full-stack-fastapi-template/pull/1573) by [@alejsdev](https://github.com/alejsdev).
 * ♻️ Remove redundant field in inherited class. PR [#1520](https://github.com/fastapi/full-stack-fastapi-template/pull/1520) by [@tzway](https://github.com/tzway).
