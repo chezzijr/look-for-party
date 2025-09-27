@@ -682,6 +682,7 @@ export class QuestsService {
    * @param data.limit
    * @param data.status
    * @param data.category
+   * @param data.locationType
    * @returns QuestsPublic Successful Response
    * @throws ApiError
    */
@@ -696,6 +697,7 @@ export class QuestsService {
         limit: data.limit,
         status: data.status,
         category: data.category,
+        location_type: data.locationType,
       },
       errors: {
         422: "Validation Error",

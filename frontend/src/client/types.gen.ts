@@ -726,6 +726,7 @@ export type QuestApplicationsWithdrawApplicationResponse = Message
 export type QuestsReadQuestsData = {
   category?: QuestCategory | null
   limit?: number
+  locationType?: LocationType | null
   skip?: number
   status?: QuestStatus | null
 }
