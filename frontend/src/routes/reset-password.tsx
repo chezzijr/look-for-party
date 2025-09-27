@@ -1,13 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FiLock } from "react-icons/fi"
 
 import { type ApiError, LoginService, type NewPassword } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { isLoggedIn } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
@@ -83,39 +82,21 @@ function ResetPassword() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="new_password">New Password</Label>
-                <div className="relative">
-                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="new_password"
-                    {...register("new_password", passwordRules())}
-                    placeholder="Enter new password"
-                    type="password"
-                    className="pl-10"
-                  />
-                </div>
-                {errors.new_password && (
-                  <FormMessage>{errors.new_password.message}</FormMessage>
-                )}
-              </div>
+              <PasswordInput
+                id="new_password"
+                label="New Password"
+                {...register("new_password", passwordRules())}
+                placeholder="Enter new password"
+                error={errors.new_password?.message}
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="confirm_password">Confirm Password</Label>
-                <div className="relative">
-                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="confirm_password"
-                    {...register("confirm_password", confirmPasswordRules(getValues))}
-                    placeholder="Confirm new password"
-                    type="password"
-                    className="pl-10"
-                  />
-                </div>
-                {errors.confirm_password && (
-                  <FormMessage>{errors.confirm_password.message}</FormMessage>
-                )}
-              </div>
+              <PasswordInput
+                id="confirm_password"
+                label="Confirm Password"
+                {...register("confirm_password", confirmPasswordRules(getValues))}
+                placeholder="Confirm new password"
+                error={errors.confirm_password?.message}
+              />
 
               <Button type="submit" disabled={mutation.isPending} className="w-full">
                 {mutation.isPending ? "Resetting..." : "Reset Password"}

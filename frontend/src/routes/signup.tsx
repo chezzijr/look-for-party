@@ -4,13 +4,14 @@ import {
   redirect,
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FiLock, FiMail, FiUser } from "react-icons/fi"
+import { FiMail, FiUser } from "react-icons/fi"
 
 import type { UserRegister } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Form, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { confirmPasswordRules, emailPattern, passwordRules } from "@/utils"
@@ -108,39 +109,21 @@ function SignUp() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="password"
-                    {...register("password", passwordRules())}
-                    placeholder="Enter your password"
-                    type="password"
-                    className="pl-10"
-                  />
-                </div>
-                {errors.password && (
-                  <FormMessage>{errors.password.message}</FormMessage>
-                )}
-              </div>
+              <PasswordInput
+                id="password"
+                label="Password"
+                {...register("password", passwordRules())}
+                placeholder="Enter your password"
+                error={errors.password?.message}
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="confirm_password">Confirm Password</Label>
-                <div className="relative">
-                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="confirm_password"
-                    {...register("confirm_password", confirmPasswordRules(getValues))}
-                    placeholder="Confirm your password"
-                    type="password"
-                    className="pl-10"
-                  />
-                </div>
-                {errors.confirm_password && (
-                  <FormMessage>{errors.confirm_password.message}</FormMessage>
-                )}
-              </div>
+              <PasswordInput
+                id="confirm_password"
+                label="Confirm Password"
+                {...register("confirm_password", confirmPasswordRules(getValues))}
+                placeholder="Confirm your password"
+                error={errors.confirm_password?.message}
+              />
 
               <Button
                 type="submit"
