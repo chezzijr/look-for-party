@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from sqlmodel import Session
 
@@ -8,11 +9,14 @@ from app.models.quest import QuestCreate
 
 
 def create_random_quest(
-    db: Session, creator_id: uuid.UUID | None = None, party_id: uuid.UUID | None = None
+    db: Session,
+    creator_id: uuid.UUID | None = None,
+    party_id: uuid.UUID | None = None,
+    **kwargs: Any,
 ) -> Quest:
     from app.tests.utils.factories import create_quest
 
-    return create_quest(db, creator_id=creator_id, party_id=party_id)
+    return create_quest(db, creator_id=creator_id, party_id=party_id, **kwargs)
 
 
 def create_random_quest_application(

@@ -62,11 +62,17 @@ def apply_to_quest(
         ]:
             raise HTTPException(status_code=400, detail="Already applied to this quest")
 
+    # Determine initial status based on quest auto_approve setting
+    initial_status = (
+        ApplicationStatus.APPROVED if quest.auto_approve else ApplicationStatus.PENDING
+    )
+
     application = crud.create_quest_application(
         session=session,
         application_in=application_in,
         quest_id=quest_id,
         applicant_id=current_user.id,
+        status=initial_status,
     )
     return application
 

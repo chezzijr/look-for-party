@@ -17,9 +17,9 @@ def test_apply_to_quest(
     db: Session,
     quest_application_data: dict[str, Any],
 ) -> None:
-    # Create a quest with different user
+    # Create a quest with different user and auto_approve=False
     creator = create_random_user(db)
-    quest = create_random_quest(db, creator_id=creator.id)
+    quest = create_random_quest(db, creator_id=creator.id, auto_approve=False)
 
     # Apply to quest
     # application_data provided by fixture
@@ -33,6 +33,30 @@ def test_apply_to_quest(
     assert content["message"] == quest_application_data["message"]
     assert content["quest_id"] == str(quest.id)
     assert content["status"] == ApplicationStatus.PENDING
+
+
+def test_apply_to_quest_auto_approve(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+    db: Session,
+    quest_application_data: dict[str, Any],
+) -> None:
+    # Create a quest with different user and auto_approve=True
+    creator = create_random_user(db)
+    quest = create_random_quest(db, creator_id=creator.id, auto_approve=True)
+
+    # Apply to quest
+    # application_data provided by fixture
+    response = client.post(
+        f"{settings.API_V1_STR}/quest-applications/quests/{quest.id}/apply",
+        headers=normal_user_token_headers,
+        json=quest_application_data,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["message"] == quest_application_data["message"]
+    assert content["quest_id"] == str(quest.id)
+    assert content["status"] == ApplicationStatus.APPROVED
 
 
 def test_apply_to_quest_not_found(
@@ -82,9 +106,9 @@ def test_apply_to_quest_twice(
     db: Session,
     quest_application_data: dict[str, Any],
 ) -> None:
-    # Create a quest with different user
+    # Create a quest with different user and auto_approve=False
     creator = create_random_user(db)
-    quest = create_random_quest(db, creator_id=creator.id)
+    quest = create_random_quest(db, creator_id=creator.id, auto_approve=False)
 
     # Apply to quest first time
     # application_data provided by fixture
@@ -113,7 +137,7 @@ def test_read_my_applications(
 ) -> None:
     # Create quest and apply to it
     creator = create_random_user(db)
-    quest = create_random_quest(db, creator_id=creator.id)
+    quest = create_random_quest(db, creator_id=creator.id, auto_approve=False)
 
     # application_data provided by fixture
     response = client.post(
@@ -180,7 +204,7 @@ def test_read_quest_applications_forbidden(
 ) -> None:
     # Create quest with different user
     creator = create_random_user(db)
-    quest = create_random_quest(db, creator_id=creator.id)
+    quest = create_random_quest(db, creator_id=creator.id, auto_approve=False)
 
     # Try to read applications as non-creator
     response = client.get(
@@ -238,7 +262,7 @@ def test_withdraw_application(
 ) -> None:
     # Create quest and apply to it
     creator = create_random_user(db)
-    quest = create_random_quest(db, creator_id=creator.id)
+    quest = create_random_quest(db, creator_id=creator.id, auto_approve=False)
 
     # application_data provided by fixture
     response = client.post(

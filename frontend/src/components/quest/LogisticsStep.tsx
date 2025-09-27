@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react"
 import type { QuestFormData } from "./QuestCreationWizard"
 import type { CommitmentLevel } from "@/client"
-import { formatDateForInput } from "@/utils/formatters"
+import { formatDateOnlyForInput } from "@/utils/formatters"
 
 const logisticsSchema = z.object({
   required_commitment: z.enum(["CASUAL", "MODERATE", "SERIOUS", "PROFESSIONAL"]),
@@ -101,10 +101,13 @@ export function LogisticsStep({ data, onChange, onNext, onPrev }: LogisticsStepP
 
   const onSubmit = (values: LogisticsFormData) => {
     // Convert date strings to ISO format if provided
+    // For date inputs (YYYY-MM-DD), we need to preserve the local date
     const processedValues = {
       ...values,
-      starts_at: values.starts_at ? new Date(values.starts_at).toISOString() : null,
-      deadline: values.deadline ? new Date(values.deadline).toISOString() : null,
+      starts_at: values.starts_at ?
+        new Date(values.starts_at + 'T00:00:00').toISOString() : null,
+      deadline: values.deadline ?
+        new Date(values.deadline + 'T00:00:00').toISOString() : null,
       location_detail: values.location_detail?.trim() || null,
     }
 
@@ -232,7 +235,7 @@ export function LogisticsStep({ data, onChange, onNext, onPrev }: LogisticsStepP
                       <Input
                         type="date"
                         {...field}
-                        value={formatDateForInput(field.value || null)}
+                        value={formatDateOnlyForInput(field.value || null)}
                       />
                     </FormControl>
                     <FormDescription>
@@ -253,7 +256,7 @@ export function LogisticsStep({ data, onChange, onNext, onPrev }: LogisticsStepP
                       <Input
                         type="date"
                         {...field}
-                        value={formatDateForInput(field.value || null)}
+                        value={formatDateOnlyForInput(field.value || null)}
                       />
                     </FormControl>
                     <FormDescription>

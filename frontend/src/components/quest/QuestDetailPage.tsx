@@ -1,13 +1,19 @@
 import { useState } from "react"
-import { useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, MapPin, Users, Clock, Calendar, User, CheckCircle, XCircle } from "lucide-react"
+import { useQueryClient, useMutation } from "@tanstack/react-query"
+import { useNavigate, Link } from "@tanstack/react-router"
+import { ArrowLeft, MapPin, Users, Clock, Calendar, User, CheckCircle, XCircle, FileText, Eye } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { QuestApplicationForm } from "./QuestApplicationForm"
 import useQuestDetail from "@/hooks/useQuestDetail"
 import useAuth from "@/hooks/useAuth"
-import { getCategoryColor, getQuestStatusColor, formatDate } from "@/utils/formatters"
+import useUserQuestApplication from "@/hooks/useUserQuestApplication"
+import { getCategoryColor, getQuestStatusColor, formatDate, getApplicationStatusColor, formatApplicationStatus } from "@/utils/formatters"
+import { QuestApplicationsService, type QuestApplicationCreate } from "@/client"
+import { toast } from "sonner"
+import useCustomToast from "@/hooks/useCustomToast"
+import { parseApiError } from "@/utils/apiErrors"
 
 interface QuestDetailPageProps {
   questId: string
@@ -15,11 +21,39 @@ interface QuestDetailPageProps {
 
 export function QuestDetailPage({ questId }: QuestDetailPageProps) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { showErrorToast } = useCustomToast()
   const { user: currentUser } = useAuth()
   const { data: quest, isLoading, error } = useQuestDetail(questId)
+  const { data: userApplication, isLoading: applicationLoading } = useUserQuestApplication({ questId })
   const [showApplicationForm, setShowApplicationForm] = useState(false)
 
-  if (isLoading) {
+  // Auto-join mutation for auto-approve quests
+  const autoJoinMutation = useMutation({
+    mutationFn: (applicationData: QuestApplicationCreate) =>
+      QuestApplicationsService.applyToQuest({ questId, requestBody: applicationData }),
+    onSuccess: () => {
+      toast.success("Successfully joined the quest!")
+      // Refresh the application data to show the new application
+      queryClient.invalidateQueries({ queryKey: ["user-quest-application", questId, currentUser?.id] })
+      queryClient.invalidateQueries({ queryKey: ["my-applications"] })
+    },
+    onError: (error: unknown) => {
+      const userFriendlyMessage = parseApiError(error)
+      showErrorToast(userFriendlyMessage)
+    },
+  })
+
+  const handleAutoJoin = () => {
+    const applicationData: QuestApplicationCreate = {
+      message: "Joined via auto-approve",
+      proposed_role: undefined,
+      relevant_skills: undefined,
+    }
+    autoJoinMutation.mutate(applicationData)
+  }
+
+  if (isLoading || applicationLoading) {
     return (
       <div className="w-full">
         <div className="pt-12 m-4">
@@ -50,7 +84,8 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
   }
 
   const isOwnQuest = currentUser?.id === quest.creator_id
-  const canApply = !isOwnQuest && quest.status === "RECRUITING"
+  const hasExistingApplication = !!userApplication
+  const canApply = !isOwnQuest && !hasExistingApplication && quest.status === "RECRUITING"
 
   return (
     <div className="w-full">
@@ -208,6 +243,8 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
               <CardDescription>
                 {isOwnQuest
                   ? "This is your quest. You can manage applications and party formation."
+                  : hasExistingApplication
+                  ? "You have already applied to this quest. Check your application status below."
                   : canApply
                   ? "Apply to join this quest and collaborate with other members."
                   : quest.status === "RECRUITING"
@@ -218,12 +255,68 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
             </CardHeader>
             <CardContent>
               {isOwnQuest ? (
-                <div className="flex items-center gap-2 text-blue-600">
-                  <User className="h-4 w-4" />
-                  <span>Quest Creator</span>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-blue-600">
+                    <User className="h-4 w-4" />
+                    <span>Quest Creator</span>
+                  </div>
+                  <Button asChild variant="outline">
+                    <Link to="/my-quests">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Manage Applications
+                    </Link>
+                  </Button>
+                </div>
+              ) : hasExistingApplication && userApplication ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Your Application Status</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Applied on {formatDate(userApplication.applied_at)}
+                      </p>
+                    </div>
+                    <Badge
+                      className={getApplicationStatusColor(userApplication.status)}
+                      variant="outline"
+                    >
+                      {formatApplicationStatus(userApplication.status)}
+                    </Badge>
+                  </div>
+
+                  {userApplication.message && (
+                    <div className="bg-muted p-3 rounded-md">
+                      <p className="text-sm font-medium mb-1">Your Application Message:</p>
+                      <p className="text-sm text-muted-foreground">{userApplication.message}</p>
+                    </div>
+                  )}
+
+                  {userApplication.reviewer_feedback && (
+                    <div className="bg-muted p-3 rounded-md">
+                      <p className="text-sm font-medium mb-1">Feedback from Quest Creator:</p>
+                      <p className="text-sm text-muted-foreground">{userApplication.reviewer_feedback}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/my-applications">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View All Applications
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               ) : canApply ? (
-                !showApplicationForm ? (
+                quest.auto_approve ? (
+                  <Button
+                    onClick={handleAutoJoin}
+                    size="lg"
+                    disabled={autoJoinMutation.isPending}
+                  >
+                    {autoJoinMutation.isPending ? "Joining..." : "Join Quest"}
+                  </Button>
+                ) : !showApplicationForm ? (
                   <Button onClick={() => setShowApplicationForm(true)} size="lg">
                     Apply to Join Quest
                   </Button>
@@ -232,7 +325,9 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
                     questId={questId}
                     onSuccess={() => {
                       setShowApplicationForm(false)
-                      // Could add a success message here
+                      // Refresh the application data to show the new application
+                      queryClient.invalidateQueries({ queryKey: ["user-quest-application", questId, currentUser?.id] })
+                      queryClient.invalidateQueries({ queryKey: ["my-applications"] })
                     }}
                     onCancel={() => setShowApplicationForm(false)}
                   />

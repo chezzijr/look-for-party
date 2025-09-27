@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from sqlmodel import Session, col, select
 
@@ -16,10 +17,13 @@ def create_quest_application(
     application_in: QuestApplicationCreate,
     quest_id: uuid.UUID,
     applicant_id: uuid.UUID,
+    status: ApplicationStatus | None = None,
 ) -> QuestApplication:
-    db_application = QuestApplication.model_validate(
-        application_in, update={"quest_id": quest_id, "applicant_id": applicant_id}
-    )
+    update_data: dict[str, Any] = {"quest_id": quest_id, "applicant_id": applicant_id}
+    if status is not None:
+        update_data["status"] = status
+
+    db_application = QuestApplication.model_validate(application_in, update=update_data)
     session.add(db_application)
     session.commit()
     session.refresh(db_application)

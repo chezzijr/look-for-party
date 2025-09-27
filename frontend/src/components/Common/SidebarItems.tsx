@@ -1,10 +1,12 @@
 import { Link as RouterLink } from "@tanstack/react-router"
 import { FiHome, FiSettings } from "react-icons/fi"
-import { Search } from "lucide-react"
+import { Search, FileText, Briefcase } from "lucide-react"
 
 const items = [
   { icon: FiHome, title: "Dashboard", path: "/dashboard" },
   { icon: Search, title: "Quests", path: "/quests" },
+  { icon: FileText, title: "My Applications", path: "/my-applications" },
+  { icon: Briefcase, title: "My Quests", path: "/my-quests" },
   { icon: FiSettings, title: "User Settings", path: "/settings" },
 ]
 

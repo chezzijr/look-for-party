@@ -97,6 +97,50 @@ export function formatDateWithTime(dateString: string | null): string | null {
 }
 
 /**
+ * Maps application statuses to Tailwind CSS color classes for badges.
+ * @param status - Application status enum value
+ * @returns Tailwind CSS classes for background and text color
+ */
+export function getApplicationStatusColor(status: string): string {
+  switch (status) {
+    case "PENDING":
+      return "bg-yellow-100 text-yellow-800"
+    case "APPROVED":
+      return "bg-green-100 text-green-800"
+    case "REJECTED":
+      return "bg-red-100 text-red-800"
+    case "WITHDRAWN":
+      return "bg-gray-100 text-gray-800"
+    case "EXPIRED":
+      return "bg-orange-100 text-orange-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+/**
+ * Formats application status for display.
+ * @param status - Application status enum value
+ * @returns Human-readable status string
+ */
+export function formatApplicationStatus(status: string): string {
+  switch (status) {
+    case "PENDING":
+      return "Pending"
+    case "APPROVED":
+      return "Approved"
+    case "REJECTED":
+      return "Rejected"
+    case "WITHDRAWN":
+      return "Withdrawn"
+    case "EXPIRED":
+      return "Expired"
+    default:
+      return status
+  }
+}
+
+/**
  * Formats an ISO date string for use in HTML datetime-local input fields.
  * @param isoString - ISO date string or null
  * @returns Formatted string for datetime-local input or empty string if null
@@ -116,6 +160,29 @@ export function formatDateForInput(isoString: string | null): string {
     const minutes = date.getMinutes().toString().padStart(2, "0")
 
     return `${year}-${month}-${day}T${hours}:${minutes}`
+  } catch {
+    return ""
+  }
+}
+
+/**
+ * Formats an ISO date string for use in HTML date input fields (type="date").
+ * @param isoString - ISO date string or null
+ * @returns Formatted string for date input (YYYY-MM-DD) or empty string if null
+ */
+export function formatDateOnlyForInput(isoString: string | null): string {
+  if (!isoString) return ""
+
+  try {
+    const date = new Date(isoString)
+    if (isNaN(date.getTime())) return ""
+
+    // Format as YYYY-MM-DD for date input
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, "0")
+    const day = date.getDate().toString().padStart(2, "0")
+
+    return `${year}-${month}-${day}`
   } catch {
     return ""
   }
