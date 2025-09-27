@@ -52,9 +52,17 @@ def test_create_quest_invalid_party_size(
 
 
 def test_read_quests(client: TestClient, db: Session) -> None:
+    from app.models import QuestVisibility
+
     creator = create_random_user(db)
-    crud.create_quest(session=db, quest_in=QuestFactory(), creator_id=creator.id)
-    crud.create_quest(session=db, quest_in=QuestFactory(), creator_id=creator.id)
+    # Create PUBLIC quests to ensure they appear in the public quest list
+    quest_data_1 = QuestFactory()
+    quest_data_1.visibility = QuestVisibility.PUBLIC
+    crud.create_quest(session=db, quest_in=quest_data_1, creator_id=creator.id)
+
+    quest_data_2 = QuestFactory()
+    quest_data_2.visibility = QuestVisibility.PUBLIC
+    crud.create_quest(session=db, quest_in=quest_data_2, creator_id=creator.id)
 
     response = client.get(f"{settings.API_V1_STR}/quests/")
     assert response.status_code == 200
@@ -64,10 +72,13 @@ def test_read_quests(client: TestClient, db: Session) -> None:
 
 
 def test_read_quests_with_status_filter(client: TestClient, db: Session) -> None:
+    from app.models import QuestVisibility
+
     creator = create_random_user(db)
-    quest = crud.create_quest(
-        session=db, quest_in=QuestFactory(), creator_id=creator.id
-    )
+    # Create a PUBLIC quest to ensure it appears in the public quest list
+    quest_data = QuestFactory()
+    quest_data.visibility = QuestVisibility.PUBLIC
+    quest = crud.create_quest(session=db, quest_in=quest_data, creator_id=creator.id)
 
     response = client.get(
         f"{settings.API_V1_STR}/quests/?status={QuestStatus.RECRUITING.value}"
@@ -76,6 +87,111 @@ def test_read_quests_with_status_filter(client: TestClient, db: Session) -> None
     content = response.json()
     quest_ids = [q["id"] for q in content["data"]]
     assert str(quest.id) in quest_ids
+
+
+def test_read_quests_with_search_filter(client: TestClient, db: Session) -> None:
+    from app.models import QuestVisibility
+
+    creator = create_random_user(db)
+    # Create a quest with specific title and description for search testing
+    quest_data = QuestFactory()
+    quest_data.visibility = QuestVisibility.PUBLIC
+    quest_data.title = "Python Development Quest"
+    quest_data.description = (
+        "Looking for experienced Python developers to join our project"
+    )
+    quest = crud.create_quest(session=db, quest_in=quest_data, creator_id=creator.id)
+
+    # Test search by title
+    response = client.get(f"{settings.API_V1_STR}/quests/?search=Python")
+    assert response.status_code == 200
+    content = response.json()
+    quest_ids = [q["id"] for q in content["data"]]
+    assert str(quest.id) in quest_ids
+
+    # Test search by description
+    response = client.get(f"{settings.API_V1_STR}/quests/?search=developers")
+    assert response.status_code == 200
+    content = response.json()
+    quest_ids = [q["id"] for q in content["data"]]
+    assert str(quest.id) in quest_ids
+
+    # Test search with no results
+    response = client.get(f"{settings.API_V1_STR}/quests/?search=nonexistent")
+    assert response.status_code == 200
+    content = response.json()
+    quest_ids = [q["id"] for q in content["data"]]
+    assert str(quest.id) not in quest_ids
+
+
+def test_read_quests_with_party_size_filter(client: TestClient, db: Session) -> None:
+    from app.models import QuestVisibility
+
+    creator = create_random_user(db)
+    # Create a quest with specific party size for testing
+    quest_data = QuestFactory()
+    quest_data.visibility = QuestVisibility.PUBLIC
+    quest_data.party_size_min = 2
+    quest_data.party_size_max = 5
+    quest = crud.create_quest(session=db, quest_in=quest_data, creator_id=creator.id)
+
+    # Test party_size_min filter (quest max should be >= filter min)
+    response = client.get(f"{settings.API_V1_STR}/quests/?party_size_min=3")
+    assert response.status_code == 200
+    content = response.json()
+    quest_ids = [q["id"] for q in content["data"]]
+    assert str(quest.id) in quest_ids
+
+    # Test party_size_max filter (quest min should be <= filter max)
+    response = client.get(f"{settings.API_V1_STR}/quests/?party_size_max=4")
+    assert response.status_code == 200
+    content = response.json()
+    quest_ids = [q["id"] for q in content["data"]]
+    assert str(quest.id) in quest_ids
+
+    # Test party size range that excludes the quest
+    response = client.get(f"{settings.API_V1_STR}/quests/?party_size_min=6")
+    assert response.status_code == 200
+    content = response.json()
+    quest_ids = [q["id"] for q in content["data"]]
+    assert str(quest.id) not in quest_ids
+
+
+def test_read_quests_only_returns_public_visibility(
+    client: TestClient, db: Session
+) -> None:
+    from app.models import QuestVisibility
+
+    creator = create_random_user(db)
+
+    # Create quests with different visibility levels
+    public_quest_data = QuestFactory()
+    public_quest_data.visibility = QuestVisibility.PUBLIC
+    public_quest = crud.create_quest(
+        session=db, quest_in=public_quest_data, creator_id=creator.id
+    )
+
+    private_quest_data = QuestFactory()
+    private_quest_data.visibility = QuestVisibility.PRIVATE
+    private_quest = crud.create_quest(
+        session=db, quest_in=private_quest_data, creator_id=creator.id
+    )
+
+    unlisted_quest_data = QuestFactory()
+    unlisted_quest_data.visibility = QuestVisibility.UNLISTED
+    unlisted_quest = crud.create_quest(
+        session=db, quest_in=unlisted_quest_data, creator_id=creator.id
+    )
+
+    # Only public quest should appear in the public quest list
+    response = client.get(f"{settings.API_V1_STR}/quests/")
+    assert response.status_code == 200
+    content = response.json()
+    quest_ids = [q["id"] for q in content["data"]]
+
+    assert str(public_quest.id) in quest_ids
+    assert str(private_quest.id) not in quest_ids
+    assert str(unlisted_quest.id) not in quest_ids
 
 
 def test_read_my_quests(

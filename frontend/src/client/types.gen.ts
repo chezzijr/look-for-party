@@ -726,6 +726,10 @@ export type QuestApplicationsWithdrawApplicationResponse = Message
 export type QuestsReadQuestsData = {
   category?: QuestCategory | null
   limit?: number
+  locationType?: LocationType | null
+  partySizeMax?: number | null
+  partySizeMin?: number | null
+  search?: string | null
   skip?: number
   status?: QuestStatus | null
 }

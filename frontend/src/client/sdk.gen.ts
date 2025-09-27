@@ -676,12 +676,16 @@ export class QuestApplicationsService {
 export class QuestsService {
   /**
    * Read Quests
-   * Retrieve quests.
+   * Retrieve quests. Only returns PUBLIC visibility quests.
    * @param data The data for the request.
    * @param data.skip
    * @param data.limit
    * @param data.status
    * @param data.category
+   * @param data.locationType
+   * @param data.search
+   * @param data.partySizeMin
+   * @param data.partySizeMax
    * @returns QuestsPublic Successful Response
    * @throws ApiError
    */
@@ -696,6 +700,10 @@ export class QuestsService {
         limit: data.limit,
         status: data.status,
         category: data.category,
+        location_type: data.locationType,
+        search: data.search,
+        party_size_min: data.partySizeMin,
+        party_size_max: data.partySizeMax,
       },
       errors: {
         422: "Validation Error",
