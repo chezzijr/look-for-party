@@ -29,32 +29,13 @@ export function QuestBoard() {
     category: filters.category,
     location_type: filters.location_type,
     status: filters.status,
+    search: filters.search,
+    party_size_min: filters.party_size_min,
+    party_size_max: filters.party_size_max,
     limit: 50,
   })
 
   const quests = questsData?.data || []
-
-  // Filter by search term and party size on client side
-  const filteredQuests = quests.filter((quest) => {
-    // Search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      if (!quest.title.toLowerCase().includes(searchLower) &&
-          !quest.description.toLowerCase().includes(searchLower)) {
-        return false
-      }
-    }
-
-    // Party size filters
-    if (filters.party_size_min && quest.party_size_max < filters.party_size_min) {
-      return false
-    }
-    if (filters.party_size_max && quest.party_size_min > filters.party_size_max) {
-      return false
-    }
-
-    return true
-  })
 
   const handleFilterChange = (newFilters: Partial<QuestFiltersState>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }))
@@ -126,7 +107,7 @@ export function QuestBoard() {
             <div className="text-center py-8">
               <p className="text-muted-foreground">Loading quests...</p>
             </div>
-          ) : filteredQuests.length === 0 ? (
+          ) : quests.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 {Object.keys(filters).length > 0
@@ -151,7 +132,7 @@ export function QuestBoard() {
                   : "space-y-4"
               }
             >
-              {filteredQuests.map((quest) => (
+              {quests.map((quest) => (
                 <QuestCard
                   key={quest.id}
                   quest={quest}
