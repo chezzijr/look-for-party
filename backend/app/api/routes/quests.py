@@ -56,8 +56,8 @@ def read_quests(
     if location_type:
         count_statement = count_statement.where(Quest.location_type == location_type)
     if search:
-        search_filter = (Quest.title.ilike(f"%{search}%")) | (
-            Quest.description.ilike(f"%{search}%")
+        search_filter = (col(Quest.title).ilike(f"%{search}%")) | (
+            col(Quest.description).ilike(f"%{search}%")
         )
         count_statement = count_statement.where(search_filter)
     if party_size_min:
@@ -81,8 +81,8 @@ def read_quests(
     if location_type:
         statement = statement.where(Quest.location_type == location_type)
     if search:
-        search_filter = (Quest.title.ilike(f"%{search}%")) | (
-            Quest.description.ilike(f"%{search}%")
+        search_filter = (col(Quest.title).ilike(f"%{search}%")) | (
+            col(Quest.description).ilike(f"%{search}%")
         )
         statement = statement.where(search_filter)
     if party_size_min:
