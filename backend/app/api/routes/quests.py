@@ -7,6 +7,7 @@ from sqlmodel import col, func, select
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    LocationType,
     Message,
     Party,
     PartyMember,
@@ -33,6 +34,7 @@ def read_quests(
     limit: int = Query(default=100, le=100),
     status: QuestStatus | None = Query(default=None),
     category: QuestCategory | None = Query(default=None),
+    location_type: LocationType | None = Query(default=None),
 ) -> Any:
     """
     Retrieve quests.
@@ -42,6 +44,8 @@ def read_quests(
         count_statement = count_statement.where(Quest.status == status)
     if category:
         count_statement = count_statement.where(Quest.category == category)
+    if location_type:
+        count_statement = count_statement.where(Quest.location_type == location_type)
     count = session.exec(count_statement).one()
 
     statement = (
@@ -51,6 +55,8 @@ def read_quests(
         statement = statement.where(Quest.status == status)
     if category:
         statement = statement.where(Quest.category == category)
+    if location_type:
+        statement = statement.where(Quest.location_type == location_type)
 
     quests = session.exec(statement).all()
     return QuestsPublic(data=quests, count=count)
@@ -97,18 +103,35 @@ def create_quest(
         )
 
     # Validate timeline if provided
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     # Check if starts_at is in the past
     if quest_in.starts_at:
-        if quest_in.starts_at < datetime.utcnow():
+        # Ensure both datetimes are timezone-aware for comparison
+        now_utc = datetime.now(timezone.utc)
+        start_date = quest_in.starts_at
+
+        # If start_date is naive, assume it's UTC
+        if start_date.tzinfo is None:
+            start_date = start_date.replace(tzinfo=timezone.utc)
+
+        if start_date < now_utc:
             raise HTTPException(
                 status_code=400, detail="Start date cannot be in the past"
             )
 
     # Check if deadline is after start date
     if quest_in.starts_at and quest_in.deadline:
-        if quest_in.deadline <= quest_in.starts_at:
+        start_date = quest_in.starts_at
+        deadline = quest_in.deadline
+
+        # Ensure both dates are timezone-aware for comparison
+        if start_date.tzinfo is None:
+            start_date = start_date.replace(tzinfo=timezone.utc)
+        if deadline.tzinfo is None:
+            deadline = deadline.replace(tzinfo=timezone.utc)
+
+        if deadline <= start_date:
             raise HTTPException(
                 status_code=400, detail="Deadline must be after start date"
             )
