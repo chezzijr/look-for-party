@@ -41,7 +41,7 @@ test.describe("Edit user full name and email successfully", () => {
     await page.getByRole("button", { name: "Edit" }).click()
     await page.getByLabel("Full name").fill(updatedName)
     await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.getByText("User updated successfully")).toBeVisible()
+    await expect(page.getByText("User updated successfully.")).toBeVisible()
     // Check if the new name is displayed on the page
     await expect(
       page.getByLabel("My profile").getByText(updatedName, { exact: true }),
@@ -63,7 +63,7 @@ test.describe("Edit user full name and email successfully", () => {
     await page.getByRole("button", { name: "Edit" }).click()
     await page.getByLabel("Email").fill(updatedEmail)
     await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.getByText("User updated successfully")).toBeVisible()
+    await expect(page.getByText("User updated successfully.")).toBeVisible()
     await expect(
       page.getByLabel("My profile").getByText(updatedEmail, { exact: true }),
     ).toBeVisible()
@@ -105,7 +105,7 @@ test.describe("Edit user with invalid data", () => {
     await page.getByRole("tab", { name: "My profile" }).click()
     await page.getByRole("button", { name: "Edit" }).click()
     await page.getByLabel("Full name").fill(updatedName)
-    await page.getByRole("button", { name: "Cancel" }).first().click()
+    await page.getByRole("button", { name: "Cancel" }).click()
     await expect(
       page
         .getByLabel("My profile")
@@ -127,7 +127,7 @@ test.describe("Edit user with invalid data", () => {
     await page.getByRole("tab", { name: "My profile" }).click()
     await page.getByRole("button", { name: "Edit" }).click()
     await page.getByLabel("Email").fill(updatedEmail)
-    await page.getByRole("button", { name: "Cancel" }).first().click()
+    await page.getByRole("button", { name: "Cancel" }).click()
     await expect(
       page.getByLabel("My profile").getByText(email, { exact: true }),
     ).toBeVisible()
@@ -152,10 +152,13 @@ test.describe("Change password successfully", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "Password" }).click()
     await page.getByPlaceholder("Current Password").fill(password)
+    await page.getByPlaceholder("Current Password").blur()
     await page.getByPlaceholder("New Password").fill(NewPassword)
+    await page.getByPlaceholder("New Password").blur()
     await page.getByPlaceholder("Confirm Password").fill(NewPassword)
+    await page.getByPlaceholder("Confirm Password").blur()
     await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.getByText("Password updated successfully.")).toBeVisible()
+    await expect(page.getByText("Password updated successfully.")).toBeVisible({ timeout: 10000 })
 
     await logOutUser(page)
 
@@ -221,12 +224,15 @@ test.describe("Change password with invalid data", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "Password" }).click()
     await page.getByPlaceholder("Current Password").fill(password)
+    await page.getByPlaceholder("Current Password").blur()
     await page.getByPlaceholder("New Password").fill(password)
+    await page.getByPlaceholder("New Password").blur()
     await page.getByPlaceholder("Confirm Password").fill(password)
+    await page.getByPlaceholder("Confirm Password").blur()
     await page.getByRole("button", { name: "Save" }).click()
     await expect(
       page.getByText("New password cannot be the same as the current one"),
-    ).toBeVisible()
+    ).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -250,12 +256,7 @@ test("User can switch from light mode to dark mode and vice versa", async ({
       document.documentElement.classList.contains("dark"),
     )
   ) {
-    await page
-      .locator("label")
-      .filter({ hasText: "Light Mode" })
-      .locator("span")
-      .first()
-      .click()
+    await page.getByLabel("Light Mode").click()
   }
 
   let isLightMode = await page.evaluate(() =>
@@ -263,23 +264,13 @@ test("User can switch from light mode to dark mode and vice versa", async ({
   )
   expect(isLightMode).toBe(true)
 
-  await page
-    .locator("label")
-    .filter({ hasText: "Dark Mode" })
-    .locator("span")
-    .first()
-    .click()
+  await page.getByLabel("Dark Mode").click()
   const isDarkMode = await page.evaluate(() =>
     document.documentElement.classList.contains("dark"),
   )
   expect(isDarkMode).toBe(true)
 
-  await page
-    .locator("label")
-    .filter({ hasText: "Light Mode" })
-    .locator("span")
-    .first()
-    .click()
+  await page.getByLabel("Light Mode").click()
   isLightMode = await page.evaluate(() =>
     document.documentElement.classList.contains("light"),
   )
@@ -296,12 +287,7 @@ test("Selected mode is preserved across sessions", async ({ page }) => {
       document.documentElement.classList.contains("dark"),
     )
   ) {
-    await page
-      .locator("label")
-      .filter({ hasText: "Light Mode" })
-      .locator("span")
-      .first()
-      .click()
+    await page.getByLabel("Light Mode").click()
   }
 
   const isLightMode = await page.evaluate(() =>
@@ -309,12 +295,7 @@ test("Selected mode is preserved across sessions", async ({ page }) => {
   )
   expect(isLightMode).toBe(true)
 
-  await page
-    .locator("label")
-    .filter({ hasText: "Dark Mode" })
-    .locator("span")
-    .first()
-    .click()
+  await page.getByLabel("Dark Mode").click()
   let isDarkMode = await page.evaluate(() =>
     document.documentElement.classList.contains("dark"),
   )

@@ -9,8 +9,8 @@ type OptionsType = {
 }
 
 const fillForm = async (page: Page, email: string, password: string) => {
-  await page.getByPlaceholder("Email").fill(email)
-  await page.getByPlaceholder("Password", { exact: true }).fill(password)
+  await page.getByPlaceholder("Enter your email").fill(email)
+  await page.getByPlaceholder("Enter your password").fill(password)
 }
 
 const verifyInput = async (
@@ -27,8 +27,8 @@ const verifyInput = async (
 test("Inputs are visible, empty and editable", async ({ page }) => {
   await page.goto("/login")
 
-  await verifyInput(page, "Email")
-  await verifyInput(page, "Password", { exact: true })
+  await verifyInput(page, "Enter your email")
+  await verifyInput(page, "Enter your password")
 })
 
 test("Log In button is visible", async ({ page }) => {
@@ -41,7 +41,7 @@ test("Forgot Password link is visible", async ({ page }) => {
   await page.goto("/login")
 
   await expect(
-    page.getByRole("link", { name: "Forgot password?" }),
+    page.getByRole("link", { name: "Forgot Password?" }),
   ).toBeVisible()
 })
 
@@ -92,7 +92,7 @@ test("Successful log out", async ({ page }) => {
   ).toBeVisible()
 
   await page.getByTestId("user-menu").click()
-  await page.getByRole("menuitem", { name: "Log out" }).click()
+  await page.getByText("Log Out").click()
   await page.waitForURL("/")
 })
 
@@ -109,7 +109,7 @@ test("Logged-out user cannot access protected routes", async ({ page }) => {
   ).toBeVisible()
 
   await page.getByTestId("user-menu").click()
-  await page.getByRole("menuitem", { name: "Log out" }).click()
+  await page.getByText("Log Out").click()
   await page.waitForURL("/")
 
   await page.goto("/settings")

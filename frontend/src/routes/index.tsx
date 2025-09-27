@@ -1,21 +1,12 @@
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Image,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
 import { Link as RouterLink, createFileRoute, redirect } from "@tanstack/react-router"
 import { FiArrowRight, FiTarget, FiUsers, FiZap } from "react-icons/fi"
+import { IconType } from "react-icons"
 
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 
 import { isLoggedIn } from "@/hooks/useAuth"
 import Logo from "/assets/images/fastapi-logo.svg"
-import { IconType } from "react-icons"
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -30,76 +21,66 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   return (
-    <Box minH="100vh" bg="gray.subtle">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Container maxW="7xl" px={4}>
-        <Flex h={16} alignItems="center" justifyContent="space-between">
-          <Flex alignItems="center">
-            <Image src={Logo} alt="Logo" height={8} mr={4} />
-            <Heading size="lg" color="blue.500">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <img src={Logo} alt="Logo" className="h-8 mr-4" />
+            <h1 className="text-xl font-semibold text-blue-500">
               Look For Party
-            </Heading>
-          </Flex>
-          <Stack direction="row" gap={4}>
+            </h1>
+          </div>
+          <div className="flex gap-4">
             <Button asChild variant="ghost" size="sm">
               <RouterLink to="/login">Log In</RouterLink>
             </Button>
-            <Button asChild variant="solid" size="sm">
+            <Button asChild variant="default" size="sm">
               <RouterLink to="/signup">Sign Up</RouterLink>
             </Button>
-          </Stack>
-        </Flex>
-      </Container>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section */}
-      <Container maxW="7xl" px={4} py={20}>
-        <VStack gap={8} textAlign="center">
-          <Heading
-            as="h1"
-            size="2xl"
-            maxW="4xl"
-            lineHeight={1.2}
-            fontWeight="bold"
-          >
+      <div className="max-w-7xl mx-auto px-4 py-20">
+        <div className="flex flex-col gap-8 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight">
             Find Your Perfect{" "}
-            <Text as="span" color="blue.500">
+            <span className="text-blue-500">
               Collaboration Party
-            </Text>
-          </Heading>
-          <Text fontSize="xl" color="gray.subtle" maxW="2xl">
+            </span>
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Intent-first platform for quest-based collaboration. Start with what you want to accomplish,
             find the right party members to make it happen. No more endless scrolling - just purposeful connections.
-          </Text>
-          <Stack direction={{ base: "column", sm: "row" }} gap={4}>
-            <Button asChild variant="solid" size="lg">
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild variant="default" size="lg">
               <RouterLink to="/signup">
-                Start Your Quest <FiArrowRight />
+                Start Your Quest <FiArrowRight className="ml-2 h-4 w-4" />
               </RouterLink>
             </Button>
             <Button asChild variant="outline" size="lg">
               <RouterLink to="/login">Join Existing Party</RouterLink>
             </Button>
-          </Stack>
-        </VStack>
-      </Container>
+          </div>
+        </div>
+      </div>
 
       {/* Features Section */}
-      <Container maxW="7xl" px={4} py={20}>
-        <VStack gap={12}>
-          <VStack gap={4} textAlign="center">
-            <Heading as="h2" size="xl">
+      <div className="max-w-7xl mx-auto px-4 py-20">
+        <div className="flex flex-col gap-12">
+          <div className="flex flex-col gap-4 text-center">
+            <h2 className="text-3xl font-bold">
               How LFP Works
-            </Heading>
-            <Text fontSize="lg" color="gray.subtle" maxW="2xl">
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Intent-first collaboration that connects the right people for the right quests
-            </Text>
-          </VStack>
+            </p>
+          </div>
 
-          <Flex
-            gap={8}
-            direction={{ base: "column", md: "row" }}
-            align="stretch"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard
               icon={FiTarget}
               title="Quest-Based Discovery"
@@ -115,50 +96,45 @@ function LandingPage() {
               title="Temporary Teams"
               description="Form parties for specific quests, collaborate effectively, then rate and disband when complete."
             />
-          </Flex>
-        </VStack>
-      </Container>
+          </div>
+        </div>
+      </div>
 
       {/* CTA Section */}
-      <Box bg="blue.500" color="white">
-        <Container maxW="7xl" px={4} py={20}>
-          <VStack gap={8} textAlign="center">
-            <Heading as="h2" size="xl">
+      <div className="bg-blue-500 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-20">
+          <div className="flex flex-col gap-8 text-center">
+            <h2 className="text-3xl font-bold">
               Ready to Find Your Party?
-            </Heading>
-            <Text fontSize="lg" maxW="2xl">
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto">
               Join the quest-based collaboration platform where objectives come first.
               Create your first quest or join an existing party today.
-            </Text>
-            <Button asChild size="lg" bg="white" color="blue.500" _hover={{ bg: "gray.50" }}>
+            </p>
+            <Button asChild size="lg" variant="outline" className="bg-white text-blue-500 hover:bg-gray-50 mx-auto">
               <RouterLink to="/signup">
-                Start Collaborating <FiArrowRight />
+                Start Collaborating <FiArrowRight className="ml-2 h-4 w-4" />
               </RouterLink>
             </Button>
-          </VStack>
-        </Container>
-      </Box>
+          </div>
+        </div>
+      </div>
 
       {/* Footer */}
-      <Box bg="gray.800" color="white" py={8}>
-        <Container maxW="7xl" px={4}>
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            justify="space-between"
-            align="center"
-            gap={4}
-          >
-            <Flex alignItems="center">
-              <Image src={Logo} alt="Logo" height={6} mr={2} />
-              <Text fontSize="sm">Look For Party</Text>
-            </Flex>
-            <Text fontSize="sm" color="gray.400">
+      <div className="bg-gray-800 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center">
+              <img src={Logo} alt="Logo" className="h-6 mr-2" />
+              <span className="text-sm">Look For Party</span>
+            </div>
+            <p className="text-sm text-gray-400">
               © 2024 Look For Party. Intent-first quest-based collaboration.
-            </Text>
-          </Flex>
-        </Container>
-      </Box>
-    </Box>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -170,26 +146,16 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon: Icon, title, description }: FeatureCardProps) {
   return (
-    <Box
-      bg="white"
-      p={8}
-      rounded="lg"
-      shadow="md"
-      borderWidth="1px"
-      flex="1"
-    >
-      <VStack gap={4} align="start">
-        <Box
-          p={3}
-          bg="blue.50"
-          rounded="lg"
-          color="blue.500"
-        >
-          <Icon />
-        </Box>
-        <Heading size="md">{title}</Heading>
-        <Text color="gray.subtle">{description}</Text>
-      </VStack>
-    </Box>
+    <Card className="flex-1">
+      <CardContent className="p-8">
+        <div className="flex flex-col gap-4 items-start">
+          <div className="p-3 bg-blue-50 rounded-lg text-blue-500">
+            <Icon className="h-6 w-6" />
+          </div>
+          <CardTitle className="text-xl">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

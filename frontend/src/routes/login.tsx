@@ -1,20 +1,21 @@
-import { Container, Image, Input, Text } from "@chakra-ui/react"
 import {
   Link as RouterLink,
   createFileRoute,
   redirect,
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FiLock, FiMail } from "react-icons/fi"
+import { FiMail } from "react-icons/fi"
 
 import type { Body_login_login_access_token as AccessToken } from "@/client"
 import { Button } from "@/components/ui/button"
-import { Field } from "@/components/ui/field"
-import { InputGroup } from "@/components/ui/input-group"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Form, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
+import { Label } from "@/components/ui/label"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import Logo from "/assets/images/fastapi-logo.svg"
-import { emailPattern, passwordRules } from "../utils"
+import { emailPattern, passwordRules } from "@/utils"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -29,11 +30,7 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const { loginMutation, error, resetError } = useAuth()
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<AccessToken>({
+  const form = useForm<AccessToken>({
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
@@ -41,6 +38,12 @@ function Login() {
       password: "",
     },
   })
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = form
 
   const onSubmit: SubmitHandler<AccessToken> = async (data) => {
     if (isSubmitting) return
@@ -55,61 +58,79 @@ function Login() {
   }
 
   return (
-    <>
-      <Container
-        as="form"
-        onSubmit={handleSubmit(onSubmit)}
-        h="100vh"
-        maxW="sm"
-        alignItems="stretch"
-        justifyContent="center"
-        gap={4}
-        centerContent
-      >
-        <Image
-          src={Logo}
-          alt="FastAPI logo"
-          height="auto"
-          maxW="2xs"
-          alignSelf="center"
-          mb={4}
-        />
-        <Field
-          invalid={!!errors.username}
-          errorText={errors.username?.message || !!error}
-        >
-          <InputGroup w="100%" startElement={<FiMail />}>
-            <Input
-              id="username"
-              {...register("username", {
-                required: "Username is required",
-                pattern: emailPattern,
-              })}
-              placeholder="Email"
-              type="email"
-            />
-          </InputGroup>
-        </Field>
-        <PasswordInput
-          type="password"
-          startElement={<FiLock />}
-          {...register("password", passwordRules())}
-          placeholder="Password"
-          errors={errors}
-        />
-        <RouterLink to="/recover-password" className="main-link">
-          Forgot Password?
-        </RouterLink>
-        <Button variant="solid" type="submit" loading={isSubmitting} size="md">
-          Log In
-        </Button>
-        <Text>
-          Don't have an account?{" "}
-          <RouterLink to="/signup" className="main-link">
-            Sign Up
-          </RouterLink>
-        </Text>
-      </Container>
-    </>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <img
+            src={Logo}
+            alt="FastAPI logo"
+            className="h-16 w-auto mx-auto mb-4"
+          />
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Email</Label>
+                <div className="relative">
+                  <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="username"
+                    {...register("username", {
+                      required: "Username is required",
+                      pattern: emailPattern,
+                    })}
+                    placeholder="Enter your email"
+                    type="email"
+                    className="pl-10"
+                  />
+                </div>
+                {errors.username && (
+                  <FormMessage>{errors.username.message}</FormMessage>
+                )}
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
+              </div>
+
+              <PasswordInput
+                id="password"
+                label="Password"
+                {...register("password", passwordRules())}
+                placeholder="Enter your password"
+                error={errors.password?.message}
+              />
+
+              <div className="text-right">
+                <RouterLink
+                  to="/recover-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot Password?
+                </RouterLink>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? "Signing in..." : "Log In"}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <RouterLink
+                  to="/signup"
+                  className="text-primary hover:underline"
+                >
+                  Sign Up
+                </RouterLink>
+              </p>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

@@ -1,12 +1,11 @@
-import { Box, Button, Container, Heading, VStack } from "@chakra-ui/react"
+import { Button } from "@/components/ui/button"
+import { PasswordInput } from "@/components/ui/password-input"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FiLock } from "react-icons/fi"
 
 import { type ApiError, type UpdatePassword, UsersService } from "@/client"
 import useCustomToast from "@/hooks/useCustomToast"
 import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
-import { PasswordInput } from "../ui/password-input"
 
 interface UpdatePasswordForm extends UpdatePassword {
   confirm_password: string
@@ -42,47 +41,44 @@ const ChangePassword = () => {
   }
 
   return (
-    <>
-      <Container maxW="full">
-        <Heading size="sm" py={4}>
-          Change Password
-        </Heading>
-        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-          <VStack gap={4} w={{ base: "100%", md: "sm" }}>
-            <PasswordInput
-              type="current_password"
-              startElement={<FiLock />}
-              {...register("current_password", passwordRules())}
-              placeholder="Current Password"
-              errors={errors}
-            />
-            <PasswordInput
-              type="new_password"
-              startElement={<FiLock />}
-              {...register("new_password", passwordRules())}
-              placeholder="New Password"
-              errors={errors}
-            />
-            <PasswordInput
-              type="confirm_password"
-              startElement={<FiLock />}
-              {...register("confirm_password", confirmPasswordRules(getValues))}
-              placeholder="Confirm Password"
-              errors={errors}
-            />
-          </VStack>
-          <Button
-            variant="solid"
-            mt={4}
-            type="submit"
-            loading={isSubmitting}
-            disabled={!isValid}
-          >
-            Save
-          </Button>
-        </Box>
-      </Container>
-    </>
+    <div className="w-full">
+      <h2 className="text-lg font-semibold py-4">
+        Change Password
+      </h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full md:w-96">
+        <PasswordInput
+          id="current_password"
+          label="Current Password"
+          {...register("current_password", passwordRules())}
+          placeholder="Current Password"
+          error={errors.current_password?.message}
+        />
+
+        <PasswordInput
+          id="new_password"
+          label="New Password"
+          {...register("new_password", passwordRules())}
+          placeholder="New Password"
+          error={errors.new_password?.message}
+        />
+
+        <PasswordInput
+          id="confirm_password"
+          label="Confirm Password"
+          {...register("confirm_password", confirmPasswordRules(getValues))}
+          placeholder="Confirm Password"
+          error={errors.confirm_password?.message}
+        />
+
+        <Button
+          variant="default"
+          type="submit"
+          disabled={!isValid || isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Save"}
+        </Button>
+      </form>
+    </div>
   )
 }
 export default ChangePassword

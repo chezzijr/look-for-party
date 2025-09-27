@@ -1,5 +1,6 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router"
 import React, { Suspense } from "react"
+import '@/styles/global.css'
 
 import NotFound from "@/components/Common/NotFound"
 

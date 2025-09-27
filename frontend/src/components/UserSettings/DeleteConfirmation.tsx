@@ -1,17 +1,16 @@
-import { Button, ButtonGroup, Text } from "@chakra-ui/react"
+import { Button } from "@/components/ui/button"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
 import { type ApiError, UsersService } from "@/client"
 import {
-  DialogActionTrigger,
-  DialogBody,
-  DialogCloseTrigger,
+  Dialog,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogRoot,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
@@ -49,60 +48,44 @@ const DeleteConfirmation = () => {
   }
 
   return (
-    <>
-      <DialogRoot
-        size={{ base: "xs", md: "md" }}
-        role="alertdialog"
-        placement="center"
-        open={isOpen}
-        onOpenChange={({ open }) => setIsOpen(open)}
-      >
-        <DialogTrigger asChild>
-          <Button variant="solid" colorPalette="red" mt={4}>
-            Delete
-          </Button>
-        </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="destructive" className="mt-4">
+          Delete
+        </Button>
+      </DialogTrigger>
 
-        <DialogContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <DialogCloseTrigger />
-            <DialogHeader>
-              <DialogTitle>Confirmation Required</DialogTitle>
-            </DialogHeader>
-            <DialogBody>
-              <Text mb={4}>
-                All your account data will be{" "}
-                <strong>permanently deleted.</strong> If you are sure, please
-                click <strong>"Confirm"</strong> to proceed. This action cannot
-                be undone.
-              </Text>
-            </DialogBody>
+      <DialogContent className="sm:max-w-md">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogHeader>
+            <DialogTitle>Confirmation Required</DialogTitle>
+            <DialogDescription>
+              All your account data will be permanently deleted. If you are sure, please
+              click "Delete" to proceed. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
 
-            <DialogFooter gap={2}>
-              <ButtonGroup>
-                <DialogActionTrigger asChild>
-                  <Button
-                    variant="subtle"
-                    colorPalette="gray"
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                </DialogActionTrigger>
-                <Button
-                  variant="solid"
-                  colorPalette="red"
-                  type="submit"
-                  loading={isSubmitting}
-                >
-                  Delete
-                </Button>
-              </ButtonGroup>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </DialogRoot>
-    </>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                disabled={isSubmitting}
+                type="button"
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
 

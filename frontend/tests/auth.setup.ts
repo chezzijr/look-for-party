@@ -5,8 +5,8 @@ const authFile = "playwright/.auth/user.json"
 
 setup("authenticate", async ({ page }) => {
   await page.goto("/login")
-  await page.getByPlaceholder("Email").fill(firstSuperuser)
-  await page.getByPlaceholder("Password").fill(firstSuperuserPassword)
+  await page.getByPlaceholder("Enter your email").fill(firstSuperuser)
+  await page.getByPlaceholder("Enter your password").fill(firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
   await page.waitForURL("/dashboard")
   await page.context().storageState({ path: authFile })
