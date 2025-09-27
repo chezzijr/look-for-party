@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react"
 import type { QuestFormData } from "./QuestCreationWizard"
 import type { CommitmentLevel } from "@/client"
+import { formatDateForInput } from "@/utils/formatters"
 
 const logisticsSchema = z.object({
   required_commitment: z.enum(["CASUAL", "MODERATE", "SERIOUS", "PROFESSIONAL"]),
@@ -109,13 +110,6 @@ export function LogisticsStep({ data, onChange, onNext, onPrev }: LogisticsStepP
 
     onChange(processedValues)
     onNext()
-  }
-
-  // Helper to format date for input (YYYY-MM-DD)
-  const formatDateForInput = (isoString: string | null) => {
-    if (!isoString) return ""
-    const date = new Date(isoString)
-    return date.toISOString().slice(0, 10)
   }
 
   return (

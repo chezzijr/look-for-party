@@ -15,44 +15,13 @@ import {
   Loader2
 } from "lucide-react"
 import type { QuestFormData } from "./QuestCreationWizard"
+import { getCategoryColor, formatDateWithTime } from "@/utils/formatters"
 
 interface ReviewStepProps {
   data: QuestFormData
   onSubmit: () => Promise<void>
   onPrev: () => void
   isSubmitting: boolean
-}
-
-const getCategoryColor = (category: string) => {
-  switch (category) {
-    case "GAMING":
-      return "bg-purple-100 text-purple-800"
-    case "PROFESSIONAL":
-      return "bg-blue-100 text-blue-800"
-    case "SOCIAL":
-      return "bg-green-100 text-green-800"
-    case "LEARNING":
-      return "bg-yellow-100 text-yellow-800"
-    case "CREATIVE":
-      return "bg-pink-100 text-pink-800"
-    case "FITNESS":
-      return "bg-orange-100 text-orange-800"
-    case "TRAVEL":
-      return "bg-indigo-100 text-indigo-800"
-    default:
-      return "bg-gray-100 text-gray-800"
-  }
-}
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return null
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 const getCommitmentDescription = (level: string) => {
@@ -209,14 +178,14 @@ export function ReviewStep({ data, onSubmit, onPrev, isSubmitting }: ReviewStepP
               {data.starts_at && (
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Starts: {formatDate(data.starts_at)}</span>
+                  <span>Starts: {formatDateWithTime(data.starts_at)}</span>
                 </div>
               )}
 
               {data.deadline && (
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Deadline: {formatDate(data.deadline)}</span>
+                  <span>Deadline: {formatDateWithTime(data.deadline)}</span>
                 </div>
               )}
 

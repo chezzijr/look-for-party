@@ -4,27 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Users, Calendar, ArrowRight, MessageCircle } from "lucide-react"
 import usePartyMembers from "@/hooks/usePartyMembers"
 import type { PartyPublic } from "@/client"
+import { getPartyStatusColor, formatDate } from "@/utils/formatters"
 
 interface PartyCardProps {
   party: PartyPublic
   onClick?: () => void
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 text-green-800"
-    case "COMPLETED":
-      return "bg-blue-100 text-blue-800"
-    case "ARCHIVED":
-      return "bg-gray-100 text-gray-800"
-    default:
-      return "bg-gray-100 text-gray-800"
-  }
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString()
 }
 
 export function PartyCard({ party, onClick }: PartyCardProps) {
@@ -62,7 +46,7 @@ export function PartyCard({ party, onClick }: PartyCardProps) {
           </div>
           <Badge
             variant="secondary"
-            className={getStatusColor(party.status || "ACTIVE")}
+            className={getPartyStatusColor(party.status || "ACTIVE")}
           >
             {party.status}
           </Badge>

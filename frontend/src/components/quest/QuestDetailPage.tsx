@@ -7,52 +7,10 @@ import { Button } from "@/components/ui/button"
 import { QuestApplicationForm } from "./QuestApplicationForm"
 import useQuestDetail from "@/hooks/useQuestDetail"
 import useAuth from "@/hooks/useAuth"
+import { getCategoryColor, getQuestStatusColor, formatDate } from "@/utils/formatters"
 
 interface QuestDetailPageProps {
   questId: string
-}
-
-const getCategoryColor = (category: string) => {
-  switch (category) {
-    case "GAMING":
-      return "bg-purple-100 text-purple-800"
-    case "PROFESSIONAL":
-      return "bg-blue-100 text-blue-800"
-    case "SOCIAL":
-      return "bg-green-100 text-green-800"
-    case "LEARNING":
-      return "bg-yellow-100 text-yellow-800"
-    case "CREATIVE":
-      return "bg-pink-100 text-pink-800"
-    case "FITNESS":
-      return "bg-orange-100 text-orange-800"
-    case "TRAVEL":
-      return "bg-indigo-100 text-indigo-800"
-    default:
-      return "bg-gray-100 text-gray-800"
-  }
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "RECRUITING":
-      return "bg-green-100 text-green-800"
-    case "IN_PROGRESS":
-      return "bg-blue-100 text-blue-800"
-    case "COMPLETED":
-      return "bg-gray-100 text-gray-800"
-    case "CANCELLED":
-      return "bg-red-100 text-red-800"
-    case "EXPIRED":
-      return "bg-orange-100 text-orange-800"
-    default:
-      return "bg-gray-100 text-gray-800"
-  }
-}
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return null
-  return new Date(dateString).toLocaleDateString()
 }
 
 export function QuestDetailPage({ questId }: QuestDetailPageProps) {
@@ -122,7 +80,7 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
                     </Badge>
                     <Badge
                       variant="outline"
-                      className={getStatusColor(quest.status)}
+                      className={getQuestStatusColor(quest.status)}
                     >
                       {quest.status}
                     </Badge>
