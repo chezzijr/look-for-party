@@ -2,9 +2,20 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Link } from "@tanstack/react-router"
 import { Clock, User, MessageCircle, CheckCircle, XCircle, Eye } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import type { QuestApplicationPublic, QuestPublic } from "@/client"
@@ -30,6 +41,7 @@ export function ApplicationCard({
 }: ApplicationCardProps) {
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false)
 
   const withdrawMutation = useMutation({
     mutationFn: (applicationId: string) =>
@@ -37,6 +49,7 @@ export function ApplicationCard({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-applications"] })
       toast.success("Application withdrawn successfully")
+      setWithdrawDialogOpen(false)
     },
     onError: (error: unknown) => {
       const userFriendlyMessage = parseApiError(error)
@@ -45,9 +58,7 @@ export function ApplicationCard({
   })
 
   const handleWithdraw = () => {
-    if (confirm("Are you sure you want to withdraw this application?")) {
-      withdrawMutation.mutate(application.id)
-    }
+    withdrawMutation.mutate(application.id)
   }
 
   const canWithdraw = application.status === "PENDING"
@@ -177,16 +188,44 @@ export function ApplicationCard({
           )}
 
           {canWithdraw && !showActions && (
-            <Button
-              onClick={handleWithdraw}
-              disabled={isWithdrawing}
-              variant="outline"
-              size="sm"
-              className="text-red-600 hover:text-red-700"
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              {isWithdrawing ? "Withdrawing..." : "Withdraw"}
-            </Button>
+            <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Withdraw
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Withdraw Application</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to withdraw your application? This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <DialogClose asChild>
+                    <Button
+                      variant="outline"
+                      disabled={isWithdrawing}
+                      type="button"
+                    >
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    variant="destructive"
+                    onClick={handleWithdraw}
+                    disabled={isWithdrawing}
+                  >
+                    {isWithdrawing ? "Withdrawing..." : "Withdraw"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </CardContent>
