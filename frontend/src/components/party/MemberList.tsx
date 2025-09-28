@@ -74,7 +74,7 @@ function MemberCard({ member, canManage, onRoleChange, onRemoveMember }: MemberC
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               {/* TODO: avatar */}
-              <AvatarImage src={""} />
+              <AvatarImage src={undefined} />
               <AvatarFallback>{getUserInitials(member.user)}</AvatarFallback>
             </Avatar>
             <div className="flex-1">

@@ -1,3 +1,4 @@
+import json
 import uuid
 from typing import Any
 
@@ -367,9 +368,6 @@ def create_party_quest(
                 detail="Minimum party size cannot be greater than maximum party size",
             )
 
-    # Create the quest
-    import json
-
     quest_data = Quest(
         title=quest_in.title,
         description=quest_in.description,
@@ -399,7 +397,7 @@ def create_party_quest(
     )
 
     session.add(quest_data)
-    session.commit()
+    session.flush()  # Flush to get the ID, but don't commit yet
     session.refresh(quest_data)
 
     # Create QuestMember record for the quest creator
@@ -411,7 +409,7 @@ def create_party_quest(
     )
     creator_member = QuestMember.model_validate(creator_member_in)
     session.add(creator_member)
-    session.commit()
+    session.commit()  # Single commit for both operations
     session.refresh(creator_member)
 
     return quest_data

@@ -7,6 +7,7 @@ from sqlmodel import col, func, select
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    ApplicationStatus,
     JoinMethod,
     LocationType,
     Message,
@@ -14,6 +15,7 @@ from app.models import (
     PartyMember,
     PartyMemberRole,
     Quest,
+    QuestApplication,
     QuestCategory,
     QuestCreate,
     QuestMember,
@@ -195,7 +197,7 @@ def create_quest(
             )
 
     quest = crud.create_quest(
-        session=session, quest_in=quest_in, creator_id=current_user.id
+        session=session, quest_in=quest_in, creator_id=current_user.id, commit=False
     )
 
     # Create QuestMember record for the quest creator
@@ -423,15 +425,12 @@ def assign_quest_members(
             session.delete(member)
 
     # Create QuestMember records for newly assigned members
-    for user_id in assignment_request.user_ids:
-        # Check if member already exists
-        existing_member = session.exec(
-            select(QuestMember).where(
-                QuestMember.quest_id == quest_id, QuestMember.user_id == user_id
-            )
-        ).first()
+    # Get existing member user IDs to avoid N+1 queries
+    existing_user_ids = {member.user_id for member in existing_members}
 
-        if not existing_member:
+    for user_id in assignment_request.user_ids:
+        # Check if member already exists using set operation
+        if user_id not in existing_user_ids:
             member_in = QuestMemberCreate(
                 quest_id=quest_id,
                 user_id=user_id,
@@ -503,7 +502,6 @@ def close_quest(
         )
 
     # Check minimum party size requirement before closing
-    from app.models import ApplicationStatus, QuestApplication
 
     approved_count = session.exec(
         select(func.count())

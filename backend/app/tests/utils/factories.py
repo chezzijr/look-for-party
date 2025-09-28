@@ -108,7 +108,9 @@ def create_quest(
         kwargs.setdefault("visibility", QuestVisibility.PUBLIC)
 
     quest_in = QuestCreateFactory(**kwargs)
-    quest = crud.create_quest(session=db, quest_in=quest_in, creator_id=creator_id)
+    quest = crud.create_quest(
+        session=db, quest_in=quest_in, creator_id=creator_id, commit=False
+    )
 
     # Set parent_party_id after creation since it's not in QuestCreate model
     if party_id is not None:
@@ -116,8 +118,10 @@ def create_quest(
         quest.quest_type = QuestType.PARTY_INTERNAL
         quest.visibility = QuestVisibility.PRIVATE
         db.add(quest)
-        db.commit()
-        db.refresh(quest)
+
+    # Always commit to ensure quest is persisted for tests
+    db.commit()
+    db.refresh(quest)
 
     return quest
 

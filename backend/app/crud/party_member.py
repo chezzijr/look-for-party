@@ -1,8 +1,12 @@
 import uuid
+from typing import cast
 
+from sqlalchemy.orm import InstrumentedAttribute
 from sqlmodel import Session, col, select
 
 from app.models import PartyMember, PartyMemberCreate, PartyMemberUpdate
+from app.models.party import Party
+from app.models.user import User
 
 
 def create_party_member(
@@ -34,28 +38,22 @@ def get_party_members_detailed(
     *, session: Session, party_id: uuid.UUID, active_only: bool = True
 ) -> list[PartyMember]:
     """Get party members with user and party data loaded."""
-    from app.models import Party, User
+    from sqlalchemy.orm import selectinload
 
     statement = (
         select(PartyMember)
-        .join(User, col(PartyMember.user_id) == col(User.id))
-        .join(Party, col(PartyMember.party_id) == col(Party.id))
+        .options(
+            selectinload(cast(InstrumentedAttribute[User], PartyMember.user)),
+            selectinload(cast(InstrumentedAttribute[Party], PartyMember.party)),
+        )
         .where(PartyMember.party_id == party_id)
     )
     if active_only:
         statement = statement.where(PartyMember.status == "active")
     statement = statement.order_by(col(PartyMember.joined_at))
 
-    # Execute query and explicitly load relationships
-    members = list(session.exec(statement).all())
-
-    # Ensure relationships are loaded
-    for member in members:
-        # Access relationships to trigger loading
-        _ = member.user
-        _ = member.party
-
-    return members
+    # Execute query with eager loading
+    return list(session.exec(statement).all())
 
 
 def get_user_party_memberships(

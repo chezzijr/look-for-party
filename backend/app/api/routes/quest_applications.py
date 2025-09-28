@@ -37,8 +37,6 @@ def create_quest_member_from_application(
 
     quest_member = QuestMember.model_validate(quest_member_in)
     session.add(quest_member)
-    session.commit()
-    session.refresh(quest_member)
     return quest_member
 
 
@@ -105,6 +103,7 @@ def apply_to_quest(
             application=application,
             join_method=JoinMethod.AUTO_APPROVAL,
         )
+        session.commit()
 
     return application
 
@@ -242,6 +241,7 @@ def update_application(
         create_quest_member_from_application(
             session=session, application=application, join_method=JoinMethod.APPLICATION
         )
+        session.commit()
 
     return application
 
