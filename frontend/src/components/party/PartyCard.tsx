@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Users, Calendar, ArrowRight, MessageCircle } from "lucide-react"
+import { useNavigate } from "@tanstack/react-router"
 import usePartyMembers from "@/hooks/usePartyMembers"
 import type { PartyPublic } from "@/client"
 import { getPartyStatusColor, formatDate } from "@/utils/formatters"
@@ -13,15 +14,13 @@ interface PartyCardProps {
 
 export function PartyCard({ party, onClick }: PartyCardProps) {
   const { data: membersData, isLoading } = usePartyMembers(party.id)
+  const navigate = useNavigate()
 
   const memberCount = membersData?.count || 0
 
   const handleViewParty = (e: React.MouseEvent) => {
     e.stopPropagation()
-    // For now, create a stub route that shows party info
-    // TODO: Implement proper party detail page in Phase 2.1
-    console.log("Navigate to party detail:", party.id)
-    // navigate({ to: "/parties/$partyId", params: { partyId: party.id } })
+    navigate({ to: "/parties/$partyId", params: { partyId: party.id } })
   }
 
   const handleCardClick = () => {

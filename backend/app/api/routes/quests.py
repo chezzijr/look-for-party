@@ -484,6 +484,20 @@ def close_quest(
             )
             session.add(member)
 
+        # Convert the quest to an internal party quest
+        quest.quest_type = QuestType.PARTY_INTERNAL
+        quest.party_id = party_data.id
+        quest.parent_party_id = party_data.id
+        quest.visibility = QuestVisibility.PRIVATE
+        # Assign all party members to the quest
+        import json
+
+        all_member_ids = [str(quest.creator_id)] + [
+            str(app.applicant_id) for app in approved_applications
+        ]
+        quest.assigned_member_ids = json.dumps(all_member_ids)
+        quest.internal_slots = len(all_member_ids)
+
     elif quest.quest_type == QuestType.PARTY_EXPANSION:
         # Add approved applicants to existing party
         if quest.parent_party_id:
