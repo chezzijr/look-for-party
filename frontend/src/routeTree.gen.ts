@@ -16,7 +16,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutDashboardRouteImport } from './routes/_layout/dashboard'
+import { Route as LayoutQuestsRouteImport } from './routes/_layout/quests'
+import { Route as LayoutMyQuestsRouteImport } from './routes/_layout/my-quests'
+import { Route as LayoutMyApplicationsRouteImport } from './routes/_layout/my-applications'
+import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
+import { Route as LayoutQuestsIndexRouteImport } from './routes/_layout/quests.index'
+import { Route as LayoutQuestsCreateRouteImport } from './routes/_layout/quests.create'
+import { Route as LayoutQuestsQuestIdRouteImport } from './routes/_layout/quests.$questId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -52,10 +58,40 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutDashboardRoute = LayoutDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const LayoutQuestsRoute = LayoutQuestsRouteImport.update({
+  id: '/quests',
+  path: '/quests',
   getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutMyQuestsRoute = LayoutMyQuestsRouteImport.update({
+  id: '/my-quests',
+  path: '/my-quests',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutMyApplicationsRoute = LayoutMyApplicationsRouteImport.update({
+  id: '/my-applications',
+  path: '/my-applications',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutHomeRoute = LayoutHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutQuestsIndexRoute = LayoutQuestsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutQuestsRoute,
+} as any)
+const LayoutQuestsCreateRoute = LayoutQuestsCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => LayoutQuestsRoute,
+} as any)
+const LayoutQuestsQuestIdRoute = LayoutQuestsQuestIdRouteImport.update({
+  id: '/$questId',
+  path: '/$questId',
+  getParentRoute: () => LayoutQuestsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -64,8 +100,14 @@ export interface FileRoutesByFullPath {
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/dashboard': typeof LayoutDashboardRoute
+  '/home': typeof LayoutHomeRoute
+  '/my-applications': typeof LayoutMyApplicationsRoute
+  '/my-quests': typeof LayoutMyQuestsRoute
+  '/quests': typeof LayoutQuestsRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
+  '/quests/$questId': typeof LayoutQuestsQuestIdRoute
+  '/quests/create': typeof LayoutQuestsCreateRoute
+  '/quests/': typeof LayoutQuestsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -73,8 +115,13 @@ export interface FileRoutesByTo {
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/dashboard': typeof LayoutDashboardRoute
+  '/home': typeof LayoutHomeRoute
+  '/my-applications': typeof LayoutMyApplicationsRoute
+  '/my-quests': typeof LayoutMyQuestsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/quests/$questId': typeof LayoutQuestsQuestIdRoute
+  '/quests/create': typeof LayoutQuestsCreateRoute
+  '/quests': typeof LayoutQuestsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,8 +131,14 @@ export interface FileRoutesById {
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/_layout/dashboard': typeof LayoutDashboardRoute
+  '/_layout/home': typeof LayoutHomeRoute
+  '/_layout/my-applications': typeof LayoutMyApplicationsRoute
+  '/_layout/my-quests': typeof LayoutMyQuestsRoute
+  '/_layout/quests': typeof LayoutQuestsRouteWithChildren
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/quests/$questId': typeof LayoutQuestsQuestIdRoute
+  '/_layout/quests/create': typeof LayoutQuestsCreateRoute
+  '/_layout/quests/': typeof LayoutQuestsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,8 +148,14 @@ export interface FileRouteTypes {
     | '/recover-password'
     | '/reset-password'
     | '/signup'
-    | '/dashboard'
+    | '/home'
+    | '/my-applications'
+    | '/my-quests'
+    | '/quests'
     | '/settings'
+    | '/quests/$questId'
+    | '/quests/create'
+    | '/quests/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -104,8 +163,13 @@ export interface FileRouteTypes {
     | '/recover-password'
     | '/reset-password'
     | '/signup'
-    | '/dashboard'
+    | '/home'
+    | '/my-applications'
+    | '/my-quests'
     | '/settings'
+    | '/quests/$questId'
+    | '/quests/create'
+    | '/quests'
   id:
     | '__root__'
     | '/'
@@ -114,8 +178,14 @@ export interface FileRouteTypes {
     | '/recover-password'
     | '/reset-password'
     | '/signup'
-    | '/_layout/dashboard'
+    | '/_layout/home'
+    | '/_layout/my-applications'
+    | '/_layout/my-quests'
+    | '/_layout/quests'
     | '/_layout/settings'
+    | '/_layout/quests/$questId'
+    | '/_layout/quests/create'
+    | '/_layout/quests/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -178,23 +248,87 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/dashboard': {
-      id: '/_layout/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof LayoutDashboardRouteImport
+    '/_layout/quests': {
+      id: '/_layout/quests'
+      path: '/quests'
+      fullPath: '/quests'
+      preLoaderRoute: typeof LayoutQuestsRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/_layout/my-quests': {
+      id: '/_layout/my-quests'
+      path: '/my-quests'
+      fullPath: '/my-quests'
+      preLoaderRoute: typeof LayoutMyQuestsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/my-applications': {
+      id: '/_layout/my-applications'
+      path: '/my-applications'
+      fullPath: '/my-applications'
+      preLoaderRoute: typeof LayoutMyApplicationsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/home': {
+      id: '/_layout/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof LayoutHomeRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/quests/': {
+      id: '/_layout/quests/'
+      path: '/'
+      fullPath: '/quests/'
+      preLoaderRoute: typeof LayoutQuestsIndexRouteImport
+      parentRoute: typeof LayoutQuestsRoute
+    }
+    '/_layout/quests/create': {
+      id: '/_layout/quests/create'
+      path: '/create'
+      fullPath: '/quests/create'
+      preLoaderRoute: typeof LayoutQuestsCreateRouteImport
+      parentRoute: typeof LayoutQuestsRoute
+    }
+    '/_layout/quests/$questId': {
+      id: '/_layout/quests/$questId'
+      path: '/$questId'
+      fullPath: '/quests/$questId'
+      preLoaderRoute: typeof LayoutQuestsQuestIdRouteImport
+      parentRoute: typeof LayoutQuestsRoute
     }
   }
 }
 
+interface LayoutQuestsRouteChildren {
+  LayoutQuestsQuestIdRoute: typeof LayoutQuestsQuestIdRoute
+  LayoutQuestsCreateRoute: typeof LayoutQuestsCreateRoute
+  LayoutQuestsIndexRoute: typeof LayoutQuestsIndexRoute
+}
+
+const LayoutQuestsRouteChildren: LayoutQuestsRouteChildren = {
+  LayoutQuestsQuestIdRoute: LayoutQuestsQuestIdRoute,
+  LayoutQuestsCreateRoute: LayoutQuestsCreateRoute,
+  LayoutQuestsIndexRoute: LayoutQuestsIndexRoute,
+}
+
+const LayoutQuestsRouteWithChildren = LayoutQuestsRoute._addFileChildren(
+  LayoutQuestsRouteChildren,
+)
+
 interface LayoutRouteChildren {
-  LayoutDashboardRoute: typeof LayoutDashboardRoute
+  LayoutHomeRoute: typeof LayoutHomeRoute
+  LayoutMyApplicationsRoute: typeof LayoutMyApplicationsRoute
+  LayoutMyQuestsRoute: typeof LayoutMyQuestsRoute
+  LayoutQuestsRoute: typeof LayoutQuestsRouteWithChildren
   LayoutSettingsRoute: typeof LayoutSettingsRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutDashboardRoute: LayoutDashboardRoute,
+  LayoutHomeRoute: LayoutHomeRoute,
+  LayoutMyApplicationsRoute: LayoutMyApplicationsRoute,
+  LayoutMyQuestsRoute: LayoutMyQuestsRoute,
+  LayoutQuestsRoute: LayoutQuestsRouteWithChildren,
   LayoutSettingsRoute: LayoutSettingsRoute,
 }
 
