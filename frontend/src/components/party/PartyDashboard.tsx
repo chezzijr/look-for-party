@@ -1,10 +1,8 @@
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Users, Settings, Calendar, MessageCircle, Crown, Shield, User } from "lucide-react"
+import { Users, Settings, Calendar, MessageCircle } from "lucide-react"
 import { usePartyDetail } from "@/hooks/usePartyDetail"
 import { usePartyMembers } from "@/hooks/usePartyMembers"
 import { PartyHeader } from "./PartyHeader"
@@ -20,7 +18,7 @@ interface PartyDashboardProps {
 export function PartyDashboard({ partyId }: PartyDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const { data: party, isLoading: partyLoading, error: partyError } = usePartyDetail(partyId)
-  const { data: membersData, isLoading: membersLoading } = usePartyMembers(partyId)
+  const { data: membersData } = usePartyMembers(partyId)
 
   if (partyLoading) {
     return (

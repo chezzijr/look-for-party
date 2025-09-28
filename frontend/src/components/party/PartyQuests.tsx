@@ -12,17 +12,15 @@ import {
   EyeOff,
   Clock,
   Target,
-  Settings,
   CheckCircle,
   ExternalLink,
   UserPlus,
-  Play,
-  Archive,
   XCircle
 } from "lucide-react"
 import { formatDate, getQuestStatusColor } from "@/utils/formatters"
-import type { PartyPublic, QuestPublic, PartyMemberPublic } from "@/client"
+import type { PartyPublic, QuestPublic, PartyMemberDetail } from "@/client"
 import { QuestCreateModal } from "./QuestCreateModal"
+import { QuestAssignModal } from "./QuestAssignModal"
 import {
   usePartyQuestsByType,
   useCreatePartyQuest,
@@ -82,7 +80,6 @@ function QuestCard({ quest, type, onPublicize, onAssign, onComplete, onCancel, c
     : []
   const assignedCount = assignedMemberIds.length
 
-  const isCompleted = quest.status === "COMPLETED"
   const isInProgress = quest.status === "IN_PROGRESS"
   const isRecruiting = quest.status === "RECRUITING"
 
@@ -117,7 +114,7 @@ function QuestCard({ quest, type, onPublicize, onAssign, onComplete, onCancel, c
             <span>
               {type === "internal"
                 ? `${assignedCount} assigned`
-                : `${quest.current_party_size || 0} members`
+                : `${quest.party_size_min || 0}-${quest.party_size_max || 0} members`
               }
             </span>
           </div>
@@ -271,7 +268,8 @@ function EmptyState({
 export function PartyQuests({ partyId, party }: PartyQuestsProps) {
   const [activeTab, setActiveTab] = useState("internal")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [defaultQuestType, setDefaultQuestType] = useState<"PARTY_INTERNAL" | "PARTY_EXPANSION" | "PARTY_HYBRID">("PARTY_INTERNAL")
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
+  const [selectedQuestForAssignment, setSelectedQuestForAssignment] = useState<QuestPublic | null>(null)
 
   const { user: currentUser } = useAuth()
   const { data: membersData } = usePartyMembers(partyId)
@@ -292,20 +290,14 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
 
   // Check if current user can manage quests (owner or moderator)
   const canCreateQuests = membersData?.data?.some(
-    (member: PartyMemberPublic) => {
+    (member: PartyMemberDetail) => {
       const userId = member.user?.id || member.user_id
       return userId === currentUser?.id &&
         (member.role === "OWNER" || member.role === "MODERATOR")
     }
   ) || false
 
-  const handleCreateQuest = (type: "internal" | "public" | "hybrid") => {
-    const questTypeMap = {
-      internal: "PARTY_INTERNAL" as const,
-      public: "PARTY_EXPANSION" as const,
-      hybrid: "PARTY_HYBRID" as const,
-    }
-    setDefaultQuestType(questTypeMap[type])
+  const handleCreateQuest = () => {
     setIsCreateModalOpen(true)
   }
 
@@ -325,8 +317,17 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
   }
 
   const handleAssignMembers = (quest: QuestPublic) => {
-    // TODO: Open assignment modal - for now just a placeholder
-    console.log("Assign members to quest:", quest.id)
+    setSelectedQuestForAssignment(quest)
+    setIsAssignModalOpen(true)
+  }
+
+  const handleSubmitAssignment = async (data: { user_ids: string[]; assignment_reason?: string }) => {
+    if (!selectedQuestForAssignment) return
+
+    await assignMutation.mutateAsync({
+      questId: selectedQuestForAssignment.id,
+      data,
+    })
   }
 
   const handleCompleteQuest = async (quest: QuestPublic) => {
@@ -383,7 +384,7 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
             {canCreateQuests && (
               <Button
                 className="flex items-center gap-2"
-                onClick={() => handleCreateQuest("internal")}
+                onClick={handleCreateQuest}
               >
                 <Plus className="h-4 w-4" />
                 Create Quest
@@ -418,7 +419,7 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
           {internalQuests.length === 0 ? (
             <EmptyState
               type="internal"
-              onCreateQuest={canCreateQuests ? handleCreateQuest : undefined}
+              onCreateQuest={canCreateQuests ? () => handleCreateQuest() : undefined}
             />
           ) : (
             <div className="space-y-4">
@@ -446,7 +447,7 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
           {publicQuests.length === 0 ? (
             <EmptyState
               type="public"
-              onCreateQuest={canCreateQuests ? handleCreateQuest : undefined}
+              onCreateQuest={canCreateQuests ? () => handleCreateQuest() : undefined}
             />
           ) : (
             <div className="space-y-4">
@@ -472,7 +473,7 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
           {hybridQuests.length === 0 ? (
             <EmptyState
               type="hybrid"
-              onCreateQuest={canCreateQuests ? handleCreateQuest : undefined}
+              onCreateQuest={canCreateQuests ? () => handleCreateQuest() : undefined}
             />
           ) : (
             <div className="space-y-4">
@@ -504,7 +505,7 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
               <Button
                 variant="outline"
                 className="flex items-center gap-2 h-auto p-4"
-                onClick={() => handleCreateQuest("internal")}
+                onClick={handleCreateQuest}
               >
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-2 font-medium">
@@ -519,7 +520,7 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
               <Button
                 variant="outline"
                 className="flex items-center gap-2 h-auto p-4"
-                onClick={() => handleCreateQuest("public")}
+                onClick={handleCreateQuest}
               >
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-2 font-medium">
@@ -534,7 +535,7 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
               <Button
                 variant="outline"
                 className="flex items-center gap-2 h-auto p-4"
-                onClick={() => handleCreateQuest("hybrid")}
+                onClick={handleCreateQuest}
               >
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-2 font-medium">
@@ -559,6 +560,16 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
         members={membersData?.data || []}
         onSubmit={handleSubmitQuest}
         isLoading={createQuestMutation.isPending}
+      />
+
+      {/* Quest Assignment Modal */}
+      <QuestAssignModal
+        isOpen={isAssignModalOpen}
+        onOpenChange={setIsAssignModalOpen}
+        quest={selectedQuestForAssignment}
+        members={membersData?.data || []}
+        onSubmit={handleSubmitAssignment}
+        isLoading={assignMutation.isPending}
       />
     </div>
   )

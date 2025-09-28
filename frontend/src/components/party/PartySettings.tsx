@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -26,7 +25,7 @@ interface PartySettingsProps {
 const partySettingsSchema = z.object({
   name: z.string().min(1, "Party name is required").max(100),
   description: z.string().max(500).optional(),
-  status: z.enum(["ACTIVE", "INACTIVE", "COMPLETED"]),
+  status: z.enum(["ACTIVE", "COMPLETED", "ARCHIVED"]),
   is_private: z.boolean(),
   auto_accept_applications: z.boolean(),
 })
@@ -41,7 +40,7 @@ const deletePartySchema = z.object({
 
 type DeletePartyForm = z.infer<typeof deletePartySchema>
 
-export function PartySettings({ partyId, party }: PartySettingsProps) {
+export function PartySettings({ party }: PartySettingsProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const queryClient = useQueryClient()
 
@@ -100,7 +99,7 @@ export function PartySettings({ partyId, party }: PartySettingsProps) {
     updatePartyMutation.mutate(data)
   }
 
-  const onDeleteSubmit = (data: DeletePartyForm) => {
+  const onDeleteSubmit = (_: DeletePartyForm) => {
     deletePartyMutation.mutate()
     setIsDeleting(false)
   }

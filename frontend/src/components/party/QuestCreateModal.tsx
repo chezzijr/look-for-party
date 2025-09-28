@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { CalendarIcon, Users, EyeOff, Eye, Target } from "lucide-react"
+import { EyeOff, Eye, Target } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -35,7 +35,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import type { PartyPublic, PartyMemberPublic } from "@/client"
+import type { PartyPublic, PartyMemberDetail } from "@/client"
 
 const questFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters").max(200, "Title must be less than 200 characters"),
@@ -67,7 +67,7 @@ interface QuestCreateModalProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   party: PartyPublic
-  members: PartyMemberPublic[]
+  members: PartyMemberDetail[]
   onSubmit: (data: QuestFormData) => Promise<void>
   isLoading?: boolean
 }
@@ -104,7 +104,7 @@ export function QuestCreateModal({
   const [selectedQuestType, setSelectedQuestType] = useState<"PARTY_INTERNAL" | "PARTY_EXPANSION" | "PARTY_HYBRID">("PARTY_INTERNAL")
 
   const form = useForm<QuestFormData>({
-    resolver: zodResolver(questFormSchema),
+    resolver: zodResolver(questFormSchema) as any,
     defaultValues: {
       title: "",
       description: "",
@@ -185,7 +185,7 @@ export function QuestCreateModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit as any)} className="space-y-6">
             {/* Quest Type Selection */}
             <div className="space-y-4">
               <Label className="text-base font-medium">Quest Type</Label>
@@ -223,7 +223,7 @@ export function QuestCreateModal({
 
               <TabsContent value="basic" className="space-y-4">
                 <FormField
-                  control={form.control}
+                  control={form.control as any}
                   name="title"
                   render={({ field }) => (
                     <FormItem>
@@ -237,7 +237,7 @@ export function QuestCreateModal({
                 />
 
                 <FormField
-                  control={form.control}
+                  control={form.control as any}
                   name="description"
                   render={({ field }) => (
                     <FormItem>
@@ -255,7 +255,7 @@ export function QuestCreateModal({
                 />
 
                 <FormField
-                  control={form.control}
+                  control={form.control as any}
                   name="objective"
                   render={({ field }) => (
                     <FormItem>
@@ -269,7 +269,7 @@ export function QuestCreateModal({
                 />
 
                 <FormField
-                  control={form.control}
+                  control={form.control as any}
                   name="category"
                   render={({ field }) => (
                     <FormItem>
@@ -304,7 +304,7 @@ export function QuestCreateModal({
                       {members.map((member) => {
                         // Handle cases where user data might not be populated
                         const userId = member.user?.id || member.user_id
-                        const username = member.user?.username || member.user?.email || `User ${member.user_id}`
+                        const username = member.user?.full_name || member.user?.email || `User ${member.user_id}`
 
                         if (!userId) {
                           console.warn("Member missing user data:", member)
@@ -334,7 +334,7 @@ export function QuestCreateModal({
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
-                      control={form.control}
+                      control={form.control as any}
                       name="party_size_min"
                       render={({ field }) => (
                         <FormItem>
@@ -354,7 +354,7 @@ export function QuestCreateModal({
                     />
 
                     <FormField
-                      control={form.control}
+                      control={form.control as any}
                       name="party_size_max"
                       render={({ field }) => (
                         <FormItem>
@@ -376,7 +376,7 @@ export function QuestCreateModal({
                 )}
 
                 <FormField
-                  control={form.control}
+                  control={form.control as any}
                   name="required_commitment"
                   render={({ field }) => (
                     <FormItem>
@@ -403,7 +403,7 @@ export function QuestCreateModal({
               <TabsContent value="logistics" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    control={form.control}
+                    control={form.control as any}
                     name="location_type"
                     render={({ field }) => (
                       <FormItem>
@@ -426,7 +426,7 @@ export function QuestCreateModal({
                   />
 
                   <FormField
-                    control={form.control}
+                    control={form.control as any}
                     name="estimated_duration"
                     render={({ field }) => (
                       <FormItem>
@@ -441,7 +441,7 @@ export function QuestCreateModal({
                 </div>
 
                 <FormField
-                  control={form.control}
+                  control={form.control as any}
                   name="location_detail"
                   render={({ field }) => (
                     <FormItem>
@@ -456,7 +456,7 @@ export function QuestCreateModal({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    control={form.control}
+                    control={form.control as any}
                     name="starts_at"
                     render={({ field }) => (
                       <FormItem>
@@ -470,7 +470,7 @@ export function QuestCreateModal({
                   />
 
                   <FormField
-                    control={form.control}
+                    control={form.control as any}
                     name="deadline"
                     render={({ field }) => (
                       <FormItem>
@@ -486,7 +486,7 @@ export function QuestCreateModal({
 
                 {watchedQuestType !== "PARTY_INTERNAL" && (
                   <FormField
-                    control={form.control}
+                    control={form.control as any}
                     name="auto_approve"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0">

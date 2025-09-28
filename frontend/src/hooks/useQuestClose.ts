@@ -36,11 +36,15 @@ export default function useQuestClose(options: UseQuestCloseOptions = {}) {
       // Return a context object with the snapshotted value
       return { previousQuest, questId }
     },
-    onError: (err, { questId }, context) => {
+    onError: (error, { questId }, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousQuest) {
         queryClient.setQueryData(["quest", questId], context.previousQuest)
       }
+
+      // Show error message
+      const userFriendlyMessage = parseApiError(error)
+      showErrorToast(userFriendlyMessage)
     },
     onSuccess: (closedQuest) => {
       // Show success message
@@ -98,10 +102,6 @@ export default function useQuestClose(options: UseQuestCloseOptions = {}) {
           })
         }
       }
-    },
-    onError: (error: unknown) => {
-      const userFriendlyMessage = parseApiError(error)
-      showErrorToast(userFriendlyMessage)
     },
   })
 

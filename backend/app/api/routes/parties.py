@@ -7,6 +7,7 @@ from sqlmodel import select
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    JoinMethod,
     Message,
     PartiesPublic,
     PartyCreate,
@@ -20,6 +21,9 @@ from app.models import (
     PartyQuestCreate,
     PartyUpdate,
     Quest,
+    QuestMember,
+    QuestMemberCreate,
+    QuestMemberRole,
     QuestPublic,
     QuestType,
 )
@@ -397,6 +401,18 @@ def create_party_quest(
     session.add(quest_data)
     session.commit()
     session.refresh(quest_data)
+
+    # Create QuestMember record for the quest creator
+    creator_member_in = QuestMemberCreate(
+        quest_id=quest_data.id,
+        user_id=current_user.id,
+        role=QuestMemberRole.CREATOR,
+        join_method=JoinMethod.CREATOR,
+    )
+    creator_member = QuestMember.model_validate(creator_member_in)
+    session.add(creator_member)
+    session.commit()
+    session.refresh(creator_member)
 
     return quest_data
 

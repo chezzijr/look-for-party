@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from .application import QuestApplication
     from .party import Party
+    from .quest_member import QuestMember
     from .tag import QuestTag
     from .user import User
 
@@ -158,6 +159,9 @@ class Quest(QuestBase, table=True):
     # Relationships
     creator: "User" = Relationship(back_populates="created_quests")
     applications: list["QuestApplication"] = Relationship(
+        back_populates="quest", cascade_delete=True
+    )
+    quest_members: list["QuestMember"] = Relationship(
         back_populates="quest", cascade_delete=True
     )
     party: Optional["Party"] = Relationship(

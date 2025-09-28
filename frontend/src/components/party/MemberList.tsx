@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 import { usePartyMembers } from "@/hooks/usePartyMembers"
 import { formatDate } from "@/utils/formatters"
-import type { PartyPublic, PartyMemberPublic } from "@/client"
+import type { PartyPublic, PartyMemberDetail } from "@/client"
 
 interface MemberListProps {
   partyId: string
@@ -25,7 +25,7 @@ interface MemberListProps {
 }
 
 interface MemberCardProps {
-  member: PartyMemberPublic
+  member: PartyMemberDetail
   canManage: boolean
   onRoleChange?: (memberId: string, newRole: string) => void
   onRemoveMember?: (memberId: string) => void
@@ -73,7 +73,8 @@ function MemberCard({ member, canManage, onRoleChange, onRemoveMember }: MemberC
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={member.user?.avatar_url} />
+              {/* TODO: avatar */}
+              <AvatarImage src={""} />
               <AvatarFallback>{getUserInitials(member.user)}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
@@ -154,7 +155,7 @@ function MemberCard({ member, canManage, onRoleChange, onRemoveMember }: MemberC
   )
 }
 
-export function MemberList({ partyId, party }: MemberListProps) {
+export function MemberList({ partyId }: MemberListProps) {
   const { data: membersData, isLoading } = usePartyMembers(partyId)
 
   const handleRoleChange = (memberId: string, newRole: string) => {

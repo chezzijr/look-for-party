@@ -208,10 +208,11 @@ export type QuestCreate = {
 }
 
 /**
- * Request to assign/unassign members to internal quest
+ * Request to assign members to internal quest
  */
-export type QuestMemberAssignmentRequest = {
-  assigned_member_ids: Array<string>
+export type QuestMemberAssignRequest = {
+  user_ids: Array<string>
+  assignment_reason?: string | null
 }
 
 export type QuestPublic = {
@@ -789,7 +790,7 @@ export type QuestsPublicizeQuestResponse = QuestPublic
 
 export type QuestsAssignQuestMembersData = {
   questId: string
-  requestBody: QuestMemberAssignmentRequest
+  requestBody: QuestMemberAssignRequest
 }
 
 export type QuestsAssignQuestMembersResponse = QuestPublic

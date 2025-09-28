@@ -7,6 +7,7 @@ from sqlmodel import col, func, select
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    JoinMethod,
     LocationType,
     Message,
     Party,
@@ -15,7 +16,10 @@ from app.models import (
     Quest,
     QuestCategory,
     QuestCreate,
-    QuestMemberAssignmentRequest,
+    QuestMember,
+    QuestMemberAssignRequest,
+    QuestMemberCreate,
+    QuestMemberRole,
     QuestPublic,
     QuestPublicizeRequest,
     QuestsPublic,
@@ -164,6 +168,19 @@ def create_quest(
     quest = crud.create_quest(
         session=session, quest_in=quest_in, creator_id=current_user.id
     )
+
+    # Create QuestMember record for the quest creator
+    creator_member_in = QuestMemberCreate(
+        quest_id=quest.id,
+        user_id=current_user.id,
+        role=QuestMemberRole.CREATOR,
+        join_method=JoinMethod.CREATOR,
+    )
+    creator_member = QuestMember.model_validate(creator_member_in)
+    session.add(creator_member)
+    session.commit()
+    session.refresh(creator_member)
+
     return quest
 
 
@@ -306,7 +323,7 @@ def assign_quest_members(
     session: SessionDep,
     current_user: CurrentUser,
     quest_id: uuid.UUID,
-    assignment_request: QuestMemberAssignmentRequest,
+    assignment_request: QuestMemberAssignRequest,
 ) -> Any:
     """
     Assign members to an internal party quest.
@@ -351,24 +368,52 @@ def assign_quest_members(
             )
         ).all()
 
-        invalid_members = set(assignment_request.assigned_member_ids) - set(
-            party_member_ids
-        )
+        invalid_members = set(assignment_request.user_ids) - set(party_member_ids)
         if invalid_members:
             raise HTTPException(
                 status_code=400,
                 detail=f"Members {invalid_members} are not active party members",
             )
 
-    # Update quest with assigned members
-    import json
+    # Create QuestMember records for assigned members
     from datetime import datetime
 
-    quest.assigned_member_ids = json.dumps(
-        [str(uid) for uid in assignment_request.assigned_member_ids]
-    )
-    quest.updated_at = datetime.utcnow()
+    # First, remove any existing quest members that are not in the new assignment
+    existing_members = session.exec(
+        select(QuestMember).where(QuestMember.quest_id == quest_id)
+    ).all()
 
+    # Keep creator member, remove others not in new assignment
+    for member in existing_members:
+        if (
+            member.role != QuestMemberRole.CREATOR
+            and member.user_id not in assignment_request.user_ids
+        ):
+            session.delete(member)
+
+    # Create QuestMember records for newly assigned members
+    for user_id in assignment_request.user_ids:
+        # Check if member already exists
+        existing_member = session.exec(
+            select(QuestMember).where(
+                QuestMember.quest_id == quest_id, QuestMember.user_id == user_id
+            )
+        ).first()
+
+        if not existing_member:
+            member_in = QuestMemberCreate(
+                quest_id=quest_id,
+                user_id=user_id,
+                role=QuestMemberRole.MEMBER,
+                join_method=JoinMethod.INTERNAL_ASSIGNMENT,
+                assigned_by_id=current_user.id,
+                assignment_reason=assignment_request.assignment_reason,
+            )
+            quest_member = QuestMember.model_validate(member_in)
+            session.add(quest_member)
+
+    # Update quest timestamp
+    quest.updated_at = datetime.utcnow()
     session.add(quest)
     session.commit()
     session.refresh(quest)

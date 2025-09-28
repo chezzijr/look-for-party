@@ -35,7 +35,8 @@ interface QuestPublicizeData {
 }
 
 interface QuestAssignmentData {
-  assigned_member_ids: string[]
+  user_ids: string[]
+  assignment_reason?: string
 }
 
 export function usePartyQuests({ partyId, questType }: UsePartyQuestsOptions) {

@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .quest import Quest
+    from .quest_member import QuestMember
     from .user import User
 
 
@@ -61,6 +62,9 @@ class QuestApplication(QuestApplicationBase, table=True):
     # Relationships
     quest: "Quest" = Relationship(back_populates="applications")
     applicant: "User" = Relationship(back_populates="applications")
+    quest_member: Optional["QuestMember"] = Relationship(
+        back_populates="source_application"
+    )
 
 
 # Properties to return via API
