@@ -198,6 +198,7 @@ class QuestPublic(QuestBase):
     assigned_member_ids: str | None = None
     is_publicized: bool = False
     publicized_at: datetime | None = None
+    quest_members_count: int = 0
 
 
 class QuestDetail(QuestPublic):

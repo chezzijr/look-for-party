@@ -46,6 +46,16 @@ import type {
   QuestApplicationsUpdateApplicationResponse,
   QuestApplicationsWithdrawApplicationData,
   QuestApplicationsWithdrawApplicationResponse,
+  QuestMembersReadQuestMembersData,
+  QuestMembersReadQuestMembersResponse,
+  QuestMembersReadQuestMembersDetailedData,
+  QuestMembersReadQuestMembersDetailedResponse,
+  QuestMembersGetQuestMembersCountData,
+  QuestMembersGetQuestMembersCountResponse,
+  QuestMembersUpdateQuestMemberStatusData,
+  QuestMembersUpdateQuestMemberStatusResponse,
+  QuestMembersRemoveQuestMemberData,
+  QuestMembersRemoveQuestMemberResponse,
   QuestsReadQuestsData,
   QuestsReadQuestsResponse,
   QuestsCreateQuestData,
@@ -665,6 +675,126 @@ export class QuestApplicationsService {
       url: "/api/v1/quest-applications/{application_id}",
       path: {
         application_id: data.applicationId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class QuestMembersService {
+  /**
+   * Read Quest Members
+   * Get all members of a quest.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns QuestMembersPublic Successful Response
+   * @throws ApiError
+   */
+  public static readQuestMembers(
+    data: QuestMembersReadQuestMembersData,
+  ): CancelablePromise<QuestMembersReadQuestMembersResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quest-members/{quest_id}",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Quest Members Detailed
+   * Get all members of a quest with detailed user information.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns QuestMemberDetailedPublic Successful Response
+   * @throws ApiError
+   */
+  public static readQuestMembersDetailed(
+    data: QuestMembersReadQuestMembersDetailedData,
+  ): CancelablePromise<QuestMembersReadQuestMembersDetailedResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quest-members/{quest_id}/detailed",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Quest Members Count
+   * Get count of quest members.
+   * @param data The data for the request.
+   * @param data.questId
+   * @returns number Successful Response
+   * @throws ApiError
+   */
+  public static getQuestMembersCount(
+    data: QuestMembersGetQuestMembersCountData,
+  ): CancelablePromise<QuestMembersGetQuestMembersCountResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/quest-members/{quest_id}/count",
+      path: {
+        quest_id: data.questId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Quest Member Status
+   * Update quest member status.
+   * @param data The data for the request.
+   * @param data.memberId
+   * @param data.requestBody
+   * @returns QuestMemberPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateQuestMemberStatus(
+    data: QuestMembersUpdateQuestMemberStatusData,
+  ): CancelablePromise<QuestMembersUpdateQuestMemberStatusResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/quest-members/{member_id}/status",
+      path: {
+        member_id: data.memberId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Remove Quest Member
+   * Remove a quest member.
+   * @param data The data for the request.
+   * @param data.memberId
+   * @returns string Successful Response
+   * @throws ApiError
+   */
+  public static removeQuestMember(
+    data: QuestMembersRemoveQuestMemberData,
+  ): CancelablePromise<QuestMembersRemoveQuestMemberResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/quest-members/{member_id}",
+      path: {
+        member_id: data.memberId,
       },
       errors: {
         422: "Validation Error",

@@ -32,6 +32,19 @@ from app.models import (
 router = APIRouter(prefix="/quests", tags=["quests"])
 
 
+def populate_quest_member_count(session: SessionDep, quest: Any) -> None:
+    """Populate quest_members_count field for QuestPublic response."""
+
+    count = session.exec(
+        select(func.count(col(QuestMember.id))).where(
+            QuestMember.quest_id == quest.id, QuestMember.status == "ACTIVE"
+        )
+    ).one()
+
+    # Set the count on the quest object
+    quest.quest_members_count = count
+
+
 @router.get("/", response_model=QuestsPublic)
 def read_quests(
     session: SessionDep,
@@ -95,6 +108,11 @@ def read_quests(
         statement = statement.where(Quest.party_size_min <= party_size_max)
 
     quests = session.exec(statement).all()
+
+    # Populate quest member counts
+    for quest in quests:
+        populate_quest_member_count(session, quest)
+
     return QuestsPublic(data=quests, count=count)
 
 
@@ -118,6 +136,11 @@ def read_my_quests(
     quests = crud.get_quests_by_creator(
         session=session, creator_id=current_user.id, skip=skip, limit=limit
     )
+
+    # Populate quest member counts
+    for quest in quests:
+        populate_quest_member_count(session, quest)
+
     return QuestsPublic(data=quests, count=count)
 
 
@@ -181,6 +204,9 @@ def create_quest(
     session.commit()
     session.refresh(creator_member)
 
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
+
     return quest
 
 
@@ -192,6 +218,10 @@ def read_quest(session: SessionDep, quest_id: uuid.UUID) -> Any:
     quest = crud.get_quest(session=session, quest_id=quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
+
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
+
     return quest
 
 
@@ -231,6 +261,10 @@ def update_quest(
         raise HTTPException(status_code=400, detail="Deadline must be after start date")
 
     quest = crud.update_quest(session=session, db_quest=quest, quest_in=quest_in)
+
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
+
     return quest
 
 
@@ -313,6 +347,9 @@ def publicize_quest(
     session.add(quest)
     session.commit()
     session.refresh(quest)
+
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
 
     return quest
 
@@ -417,6 +454,9 @@ def assign_quest_members(
     session.add(quest)
     session.commit()
     session.refresh(quest)
+
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
 
     return quest
 
@@ -534,14 +574,10 @@ def close_quest(
         quest.party_id = party_data.id
         quest.parent_party_id = party_data.id
         quest.visibility = QuestVisibility.PRIVATE
-        # Assign all party members to the quest
-        import json
-
-        all_member_ids = [str(quest.creator_id)] + [
-            str(app.applicant_id) for app in approved_applications
-        ]
-        quest.assigned_member_ids = json.dumps(all_member_ids)
-        quest.internal_slots = len(all_member_ids)
+        # Set internal slots based on number of quest members
+        quest.internal_slots = len(
+            [quest.creator_id] + [app.applicant_id for app in approved_applications]
+        )
 
     elif quest.quest_type == QuestType.PARTY_EXPANSION:
         # Add approved applicants to existing party
@@ -584,6 +620,9 @@ def close_quest(
     session.add(quest)
     session.commit()
     session.refresh(quest)
+
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
 
     return quest
 
@@ -649,6 +688,9 @@ def complete_quest(
     session.commit()
     session.refresh(quest)
 
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
+
     return quest
 
 
@@ -713,5 +755,8 @@ def cancel_quest(
     session.add(quest)
     session.commit()
     session.refresh(quest)
+
+    # Populate quest member count
+    populate_quest_member_count(session, quest)
 
     return quest

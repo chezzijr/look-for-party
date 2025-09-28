@@ -5,6 +5,9 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
+from app.models.quest import QuestPublic
+from app.models.user import UserPublic
+
 if TYPE_CHECKING:
     from .application import QuestApplication
     from .quest import Quest
@@ -129,9 +132,9 @@ class QuestMemberPublic(QuestMemberBase):
 
 
 class QuestMemberDetail(QuestMemberPublic):
-    quest: "Quest" = Field(exclude={"quest_members", "applications"})
-    user: "User" = Field(exclude={"hashed_password", "quest_memberships"})
-    assigned_by: Optional["User"] = Field(exclude={"hashed_password"}, default=None)
+    quest: QuestPublic
+    user: UserPublic
+    assigned_by: UserPublic | None
 
 
 class QuestMembersPublic(SQLModel):

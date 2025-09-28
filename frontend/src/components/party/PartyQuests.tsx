@@ -74,11 +74,8 @@ function QuestCard({ quest, type, onPublicize, onAssign, onComplete, onCancel, c
     }
   }
 
-  // Parse assigned members count
-  const assignedMemberIds = quest.assigned_member_ids
-    ? JSON.parse(quest.assigned_member_ids)
-    : []
-  const assignedCount = assignedMemberIds.length
+  // Get quest member count from the API field
+  const assignedCount = quest.quest_members_count || 0
 
   const isInProgress = quest.status === "IN_PROGRESS"
   const isRecruiting = quest.status === "RECRUITING"

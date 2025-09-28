@@ -22,6 +22,12 @@ export type HTTPValidationError = {
   detail?: Array<ValidationError>
 }
 
+export type JoinMethod =
+  | "APPLICATION"
+  | "AUTO_APPROVAL"
+  | "INTERNAL_ASSIGNMENT"
+  | "CREATOR"
+
 export type LocationType = "REMOTE" | "IN_PERSON" | "HYBRID"
 
 export type Message = {
@@ -215,6 +221,63 @@ export type QuestMemberAssignRequest = {
   assignment_reason?: string | null
 }
 
+export type QuestMemberDetail = {
+  role?: QuestMemberRole
+  status?: QuestMemberStatus
+  join_method?: JoinMethod
+  assignment_reason?: string | null
+  id: string
+  quest_id: string
+  user_id: string
+  assigned_by_id: string | null
+  source_application_id: string | null
+  joined_at: string
+  left_at: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+  quest: QuestPublic
+  user: UserPublic
+  assigned_by: UserPublic | null
+}
+
+export type QuestMemberDetailedPublic = {
+  data: Array<QuestMemberDetail>
+  count: number
+}
+
+export type QuestMemberPublic = {
+  role?: QuestMemberRole
+  status?: QuestMemberStatus
+  join_method?: JoinMethod
+  assignment_reason?: string | null
+  id: string
+  quest_id: string
+  user_id: string
+  assigned_by_id: string | null
+  source_application_id: string | null
+  joined_at: string
+  left_at: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type QuestMemberRole = "CREATOR" | "MEMBER" | "MODERATOR"
+
+export type QuestMembersPublic = {
+  data: Array<QuestMemberPublic>
+  count: number
+}
+
+export type QuestMemberStatus = "ACTIVE" | "COMPLETED" | "LEFT" | "REMOVED"
+
+export type QuestMemberUpdate = {
+  role?: QuestMemberRole | null
+  status?: QuestMemberStatus | null
+  assignment_reason?: string | null
+}
+
 export type QuestPublic = {
   title: string
   description: string
@@ -244,6 +307,7 @@ export type QuestPublic = {
   assigned_member_ids?: string | null
   is_publicized?: boolean
   publicized_at?: string | null
+  quest_members_count?: number
 }
 
 /**
@@ -735,6 +799,42 @@ export type QuestApplicationsWithdrawApplicationData = {
 }
 
 export type QuestApplicationsWithdrawApplicationResponse = Message
+
+export type QuestMembersReadQuestMembersData = {
+  questId: string
+}
+
+export type QuestMembersReadQuestMembersResponse = QuestMembersPublic
+
+export type QuestMembersReadQuestMembersDetailedData = {
+  questId: string
+}
+
+export type QuestMembersReadQuestMembersDetailedResponse =
+  QuestMemberDetailedPublic
+
+export type QuestMembersGetQuestMembersCountData = {
+  questId: string
+}
+
+export type QuestMembersGetQuestMembersCountResponse = {
+  [key: string]: number
+}
+
+export type QuestMembersUpdateQuestMemberStatusData = {
+  memberId: string
+  requestBody: QuestMemberUpdate
+}
+
+export type QuestMembersUpdateQuestMemberStatusResponse = QuestMemberPublic
+
+export type QuestMembersRemoveQuestMemberData = {
+  memberId: string
+}
+
+export type QuestMembersRemoveQuestMemberResponse = {
+  [key: string]: string
+}
 
 export type QuestsReadQuestsData = {
   category?: QuestCategory | null
