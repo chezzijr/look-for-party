@@ -10,6 +10,9 @@ if TYPE_CHECKING:
     from .rating import Rating
     from .user import User
 
+# Import UserPublic outside TYPE_CHECKING for Pydantic model definitions
+from .user import UserPublic
+
 
 class PartyStatus(str, Enum):
     ACTIVE = "ACTIVE"
@@ -141,9 +144,14 @@ class PartyMemberPublic(PartyMemberBase):
 
 class PartyMemberDetail(PartyMemberPublic):
     party: PartyPublic
-    user: "User" = Field(exclude={"hashed_password"})
+    user: UserPublic
 
 
 class PartyMembersPublic(SQLModel):
     data: list[PartyMemberPublic]
+    count: int
+
+
+class PartyDetailedMembersPublic(SQLModel):
+    data: list[PartyMemberDetail]
     count: int

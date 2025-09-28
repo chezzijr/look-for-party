@@ -339,11 +339,11 @@ export class PartiesService {
 
   /**
    * Read Party Members
-   * Get party members.
+   * Get party members with detailed user information.
    * @param data The data for the request.
    * @param data.partyId
    * @param data.activeOnly
-   * @returns PartyMembersPublic Successful Response
+   * @returns PartyDetailedMembersPublic Successful Response
    * @throws ApiError
    */
   public static readPartyMembers(

@@ -47,10 +47,27 @@ export type PartyCreate = {
   quest_id: string
 }
 
+export type PartyDetailedMembersPublic = {
+  data: Array<PartyMemberDetail>
+  count: number
+}
+
 export type PartyMemberCreate = {
   role?: PartyMemberRole
   status?: string
   user_id: string
+}
+
+export type PartyMemberDetail = {
+  role?: PartyMemberRole
+  status?: string
+  id: string
+  party_id: string
+  user_id: string
+  joined_at: string
+  left_at: string | null
+  party: PartyPublic
+  user: UserPublic
 }
 
 export type PartyMemberPublic = {
@@ -64,11 +81,6 @@ export type PartyMemberPublic = {
 }
 
 export type PartyMemberRole = "OWNER" | "MODERATOR" | "MEMBER"
-
-export type PartyMembersPublic = {
-  data: Array<PartyMemberPublic>
-  count: number
-}
 
 export type PartyMemberUpdate = {
   role?: PartyMemberRole | null
@@ -638,7 +650,7 @@ export type PartiesReadPartyMembersData = {
   partyId: string
 }
 
-export type PartiesReadPartyMembersResponse = PartyMembersPublic
+export type PartiesReadPartyMembersResponse = PartyDetailedMembersPublic
 
 export type PartiesAddPartyMemberData = {
   partyId: string

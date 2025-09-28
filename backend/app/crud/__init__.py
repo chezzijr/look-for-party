@@ -8,6 +8,7 @@ from .party_member import (
     create_party_member,
     get_party_member,
     get_party_members,
+    get_party_members_detailed,
     get_user_party_memberships,
     remove_party_member,
     update_party_member,

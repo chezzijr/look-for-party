@@ -10,11 +10,11 @@ from app.models import (
     Message,
     PartiesPublic,
     PartyCreate,
+    PartyDetailedMembersPublic,
     PartyMember,
     PartyMemberCreate,
     PartyMemberPublic,
     PartyMemberRole,
-    PartyMembersPublic,
     PartyMemberUpdate,
     PartyPublic,
     PartyQuestCreate,
@@ -128,23 +128,23 @@ def update_party(
 
 
 # Party Member endpoints
-@router.get("/{party_id}/members", response_model=PartyMembersPublic)
+@router.get("/{party_id}/members", response_model=PartyDetailedMembersPublic)
 def read_party_members(
     session: SessionDep,
     party_id: uuid.UUID,
     active_only: bool = Query(default=True),
 ) -> Any:
     """
-    Get party members.
+    Get party members with detailed user information.
     """
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
 
-    members = crud.get_party_members(
+    members = crud.get_party_members_detailed(
         session=session, party_id=party_id, active_only=active_only
     )
-    return PartyMembersPublic(data=members, count=len(members))
+    return PartyDetailedMembersPublic(data=members, count=len(members))
 
 
 @router.post("/{party_id}/members", response_model=PartyMemberPublic)

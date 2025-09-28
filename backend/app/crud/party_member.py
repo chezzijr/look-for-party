@@ -30,6 +30,34 @@ def get_party_members(
     return list(session.exec(statement).all())
 
 
+def get_party_members_detailed(
+    *, session: Session, party_id: uuid.UUID, active_only: bool = True
+) -> list[PartyMember]:
+    """Get party members with user and party data loaded."""
+    from app.models import Party, User
+
+    statement = (
+        select(PartyMember)
+        .join(User, PartyMember.user_id == User.id)
+        .join(Party, PartyMember.party_id == Party.id)
+        .where(PartyMember.party_id == party_id)
+    )
+    if active_only:
+        statement = statement.where(PartyMember.status == "active")
+    statement = statement.order_by(col(PartyMember.joined_at))
+
+    # Execute query and explicitly load relationships
+    members = list(session.exec(statement).all())
+
+    # Ensure relationships are loaded
+    for member in members:
+        # Access relationships to trigger loading
+        _ = member.user
+        _ = member.party
+
+    return members
+
+
 def get_user_party_memberships(
     *, session: Session, user_id: uuid.UUID, active_only: bool = True
 ) -> list[PartyMember]:
