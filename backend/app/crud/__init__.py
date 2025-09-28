@@ -342,6 +342,7 @@ __all__ = [
     "get_party",
     "get_quest",
     "get_party_members",
+    "get_party_members_detailed",
     "create_party_member",
     "get_party",
     "get_party_member",

@@ -38,8 +38,8 @@ def get_party_members_detailed(
 
     statement = (
         select(PartyMember)
-        .join(User, PartyMember.user_id == User.id)
-        .join(Party, PartyMember.party_id == Party.id)
+        .join(User, col(PartyMember.user_id) == col(User.id))
+        .join(Party, col(PartyMember.party_id) == col(Party.id))
         .where(PartyMember.party_id == party_id)
     )
     if active_only:
