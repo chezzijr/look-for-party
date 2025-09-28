@@ -222,10 +222,6 @@ class TestPartyQuestCreation:
         owner = members[0]  # First member is owner
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -270,10 +266,6 @@ class TestPartyQuestCreation:
         owner = members[0]
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -319,10 +311,6 @@ class TestPartyQuestCreation:
         owner = members[0]
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -433,10 +421,6 @@ class TestQuestPublicizingFlow:
         quest, owner_member = hybrid_quest_setup
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(
             select(User).where(User.id == owner_member.user_id)
         ).first()
@@ -607,10 +591,6 @@ class TestMemberAssignmentFlow:
         assignees = members[1:3]  # Two regular members
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -665,10 +645,6 @@ class TestMemberAssignmentFlow:
         non_member = create_random_user(db)
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(

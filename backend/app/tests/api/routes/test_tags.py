@@ -69,8 +69,6 @@ def test_read_tags(client: TestClient, db: Session) -> None:
 
 def test_read_tags_with_filters(client: TestClient, db: Session) -> None:
     # Create tags with different categories
-    import uuid
-
     suffix = str(uuid.uuid4())[:8]
     programming_tag_name = f"TEST_ONLY_Python_{suffix}"
     framework_tag_name = f"TEST_ONLY_Django_{suffix}"

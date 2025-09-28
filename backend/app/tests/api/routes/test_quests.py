@@ -8,6 +8,7 @@ from app import crud
 from app.core.config import settings
 from app.models import (
     QuestStatus,
+    QuestVisibility,
 )
 from app.tests.utils.quest import QuestFactory
 from app.tests.utils.user import create_random_user
@@ -52,8 +53,6 @@ def test_create_quest_invalid_party_size(
 
 
 def test_read_quests(client: TestClient, db: Session) -> None:
-    from app.models import QuestVisibility
-
     creator = create_random_user(db)
     # Create PUBLIC quests to ensure they appear in the public quest list
     quest_data_1 = QuestFactory()
@@ -72,8 +71,6 @@ def test_read_quests(client: TestClient, db: Session) -> None:
 
 
 def test_read_quests_with_status_filter(client: TestClient, db: Session) -> None:
-    from app.models import QuestVisibility
-
     creator = create_random_user(db)
     # Create a PUBLIC quest to ensure it appears in the public quest list
     quest_data = QuestFactory()
@@ -90,8 +87,6 @@ def test_read_quests_with_status_filter(client: TestClient, db: Session) -> None
 
 
 def test_read_quests_with_search_filter(client: TestClient, db: Session) -> None:
-    from app.models import QuestVisibility
-
     creator = create_random_user(db)
     # Create a quest with specific title and description for search testing
     quest_data = QuestFactory()
@@ -125,8 +120,6 @@ def test_read_quests_with_search_filter(client: TestClient, db: Session) -> None
 
 
 def test_read_quests_with_party_size_filter(client: TestClient, db: Session) -> None:
-    from app.models import QuestVisibility
-
     creator = create_random_user(db)
     # Create a quest with specific party size for testing
     quest_data = QuestFactory()
@@ -160,8 +153,6 @@ def test_read_quests_with_party_size_filter(client: TestClient, db: Session) -> 
 def test_read_quests_only_returns_public_visibility(
     client: TestClient, db: Session
 ) -> None:
-    from app.models import QuestVisibility
-
     creator = create_random_user(db)
 
     # Create quests with different visibility levels

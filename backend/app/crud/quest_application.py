@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Any
 
 from sqlmodel import Session, col, select
@@ -68,8 +69,6 @@ def update_quest_application(
     db_application: QuestApplication,
     application_in: QuestApplicationUpdate,
 ) -> QuestApplication:
-    from datetime import datetime
-
     application_data = application_in.model_dump(exclude_unset=True)
 
     # Always update the updated_at field

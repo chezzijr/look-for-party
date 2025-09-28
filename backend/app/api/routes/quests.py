@@ -540,9 +540,6 @@ def close_quest(
         )
         session.add(creator_member)
 
-        # Add all approved applicants as party members
-        from app.models import ApplicationStatus, QuestApplication
-
         approved_applications = session.exec(
             select(QuestApplication).where(
                 QuestApplication.quest_id == quest.id,
@@ -571,8 +568,6 @@ def close_quest(
     elif quest.quest_type == QuestType.PARTY_EXPANSION:
         # Add approved applicants to existing party
         if quest.parent_party_id:
-            from app.models import ApplicationStatus, QuestApplication
-
             approved_applications = session.exec(
                 select(QuestApplication).where(
                     QuestApplication.quest_id == quest.id,

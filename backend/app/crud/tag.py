@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from sqlmodel import Session, col, func, select
 
@@ -124,7 +125,6 @@ def get_tag_suggestions(
 
 def update_tag(*, session: Session, db_tag: Tag, tag_in: TagUpdate) -> Tag:
     """Update a tag."""
-    from datetime import datetime
 
     tag_data = tag_in.model_dump(exclude_unset=True)
     tag_data["updated_at"] = datetime.utcnow()

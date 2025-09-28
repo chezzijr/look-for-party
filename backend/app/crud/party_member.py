@@ -1,7 +1,8 @@
 import uuid
+from datetime import datetime
 from typing import cast
 
-from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.orm import InstrumentedAttribute, selectinload
 from sqlmodel import Session, col, select
 
 from app.models import PartyMember, PartyMemberCreate, PartyMemberUpdate
@@ -38,7 +39,6 @@ def get_party_members_detailed(
     *, session: Session, party_id: uuid.UUID, active_only: bool = True
 ) -> list[PartyMember]:
     """Get party members with user and party data loaded."""
-    from sqlalchemy.orm import selectinload
 
     statement = (
         select(PartyMember)
@@ -80,8 +80,6 @@ def update_party_member(
 def remove_party_member(*, session: Session, member_id: uuid.UUID) -> bool:
     member = get_party_member(session=session, member_id=member_id)
     if member:
-        from datetime import datetime
-
         member.status = "inactive"
         member.left_at = datetime.utcnow()
         session.add(member)

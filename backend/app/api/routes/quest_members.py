@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Any, cast
 
 from fastapi import APIRouter, HTTPException
@@ -27,8 +28,6 @@ def read_quest_members(
 ) -> Any:
     """Get all members of a quest."""
     # First verify quest exists and user has access
-    from app.models import Quest
-
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
@@ -54,8 +53,6 @@ def read_quest_members(
 
     # For party quests, check if user is party member
     if not user_has_access and quest.party_id:
-        from app.models import PartyMember
-
         party_member = session.exec(
             select(PartyMember).where(
                 PartyMember.party_id == quest.party_id,
@@ -104,8 +101,6 @@ def read_quest_members_detailed(
             user_has_access = True
 
     if not user_has_access and quest.party_id:
-        from app.models import PartyMember
-
         party_member = session.exec(
             select(PartyMember).where(
                 PartyMember.party_id == quest.party_id,
@@ -140,8 +135,6 @@ def get_quest_members_count(
     *, session: SessionDep, current_user: CurrentUser, quest_id: uuid.UUID
 ) -> dict[str, int]:
     """Get count of quest members."""
-    from app.models import Quest
-
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
@@ -165,8 +158,6 @@ def get_quest_members_count(
                 user_has_access = True
 
         if not user_has_access and quest.party_id:
-            from app.models import PartyMember
-
             party_member = session.exec(
                 select(PartyMember).where(
                     PartyMember.party_id == quest.party_id,
@@ -213,8 +204,6 @@ def update_quest_member_status(
 
     # Quest creator can update member status
     if not can_update:
-        from app.models import Quest
-
         quest = session.get(Quest, quest_member.quest_id)
         if quest and quest.creator_id == current_user.id:
             can_update = True
@@ -241,7 +230,6 @@ def update_quest_member_status(
     quest_member.sqlmodel_update(quest_member_data)
 
     # Set timestamps based on status change
-    from datetime import datetime
 
     if quest_member_update.status == QuestMemberStatus.COMPLETED:
         quest_member.completed_at = datetime.utcnow()
@@ -272,16 +260,12 @@ def remove_quest_member(
     can_remove = False
 
     # Quest creator can remove members
-    from app.models import Quest
-
     quest = session.get(Quest, quest_member.quest_id)
     if quest and quest.creator_id == current_user.id:
         can_remove = True
 
     # Party owner/moderator can remove members for party quests
     if not can_remove and quest and quest.party_id:
-        from app.models import PartyMember
-
         party_member = session.exec(
             select(PartyMember).where(
                 PartyMember.party_id == quest.party_id,

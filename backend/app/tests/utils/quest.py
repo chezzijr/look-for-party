@@ -3,9 +3,18 @@ from typing import Any
 
 from sqlmodel import Session
 
-from app.models import Quest, QuestApplication
-from app.models.application import QuestApplicationCreate
-from app.models.quest import QuestCreate
+from app.models import (
+    Quest,
+    QuestApplication,
+    QuestApplicationCreate,
+    QuestCreate,
+)
+from app.tests.utils.factories import (
+    QuestApplicationCreateFactory,
+    QuestCreateFactory,
+    create_quest,
+    create_quest_application,
+)
 
 
 def create_random_quest(
@@ -14,8 +23,6 @@ def create_random_quest(
     party_id: uuid.UUID | None = None,
     **kwargs: Any,
 ) -> Quest:
-    from app.tests.utils.factories import create_quest
-
     return create_quest(db, creator_id=creator_id, party_id=party_id, **kwargs)
 
 
@@ -24,19 +31,13 @@ def create_random_quest_application(
     quest_id: uuid.UUID | None = None,
     applicant_id: uuid.UUID | None = None,
 ) -> QuestApplication:
-    from app.tests.utils.factories import create_quest_application
-
     return create_quest_application(db, quest_id=quest_id, applicant_id=applicant_id)
 
 
 # Re-export factories for backward compatibility
 def QuestFactory() -> QuestCreate:
-    from app.tests.utils.factories import QuestCreateFactory
-
     return QuestCreateFactory()
 
 
 def QuestApplicationFactory() -> QuestApplicationCreate:
-    from app.tests.utils.factories import QuestApplicationCreateFactory
-
     return QuestApplicationCreateFactory()
