@@ -5,7 +5,7 @@ import useParties from "@/hooks/useParties"
 import { PartyCard } from "@/components/party/PartyCard"
 import { EmptyParties } from "@/components/party/EmptyParties"
 
-export const Route = createFileRoute("/_layout/dashboard")({
+export const Route = createFileRoute("/_layout/home")({
   component: Dashboard,
 })
 

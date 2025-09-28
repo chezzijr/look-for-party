@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
   beforeLoad: async () => {
     if (isLoggedIn()) {
       throw redirect({
-        to: "/dashboard",
+        to: "/home",
       })
     }
   },

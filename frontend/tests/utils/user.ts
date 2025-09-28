@@ -22,7 +22,7 @@ export async function logInUser(page: Page, email: string, password: string) {
   await page.getByPlaceholder("Enter your email").fill(email)
   await page.getByPlaceholder("Enter your password").fill(password)
   await page.getByRole("button", { name: "Log In" }).click()
-  await page.waitForURL("/dashboard")
+  await page.waitForURL("/home")
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
   ).toBeVisible()
