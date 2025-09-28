@@ -32,6 +32,7 @@
 
 ### Upgrades
 
+* Feat: Quest System UI Implementation. PR [#54](https://github.com/chezzijr/look-for-party/pull/54) by [@chezzijr](https://github.com/chezzijr).
 * feat: Implement comprehensive quest and party management system. PR [#48](https://github.com/chezzijr/look-for-party/pull/48) by [@chezzijr](https://github.com/chezzijr).
 
 ### Docs
