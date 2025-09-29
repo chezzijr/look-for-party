@@ -82,16 +82,19 @@ This workflow ensures project documentation always reflects current reality and 
 ## LFP Platform Architecture
 
 ### Current Implementation Status
-**Latest Update**: Complete Quest Frontend System Implementation completed (September 27, 2025)
+**Latest Update**: Quest Member System Implementation completed (September 29, 2025)
 - ✅ **User Model**: Streamlined by removing search preferences (preferred_commitment_level, communication_style)
 - ✅ **Enhanced Quest Model**: Dual-mode recruitment platform supporting individual and party-created quests with QuestType enum (INDIVIDUAL, PARTY_INTERNAL, PARTY_EXPANSION, PARTY_HYBRID), party integration fields, and quest closure logic
 - ✅ **Enhanced Party Model**: Expanded with quest creation relationships, supports party quest management and member assignment workflows
 - ✅ **PartyMember Model**: Updated roles (OWNER/MODERATOR/MEMBER) with implicit permissions for quest creation
+- ✅ **QuestMember Model**: Complete quest participation tracking with role-based permissions (CREATOR/MEMBER/MODERATOR), status lifecycle management (ACTIVE/COMPLETED/LEFT/REMOVED), multiple join methods, and internal assignment system for party workflows
 - ✅ **Application Model**: Complete quest application system with enhanced fields (relevant_skills, created_at, updated_at), moved to dedicated application.py file
 - ✅ **Tag System**: Comprehensive tag infrastructure with Tag, UserTag, QuestTag models, 16 balanced categories, 300 system tags seeded
 - ✅ **Rating System**: Complete party-based peer review system with multi-dimensional ratings (overall, collaboration, communication, reliability, skill), automatic reputation updates, comprehensive validation (prevents self-rating, duplicate ratings, non-member ratings)
 - ✅ **Enhanced Quest API**: Party quest creation, quest publicizing, member assignment, and automatic party formation endpoints
+- ✅ **Quest Member API**: Complete CRUD operations for quest participation tracking, bulk assignment for internal quests, status management, and comprehensive authentication
 - ✅ **Complete Quest Frontend System**: Full quest discovery, creation, and application workflow with advanced filtering
+- ✅ **Complete Party Management System**: Full-featured party dashboard with member management, quest creation, quest assignment modal, and settings
 - ✅ **Enhanced Backend APIs**: Server-side filtering, utility functions for formatting, improved quest endpoints
 - ✅ **Database Migrations**: Successfully applied all migrations with 180+ backend tests passing
 
@@ -106,7 +109,7 @@ The frontend uses TanStack Router with file-based routing:
 - `/reset-password` - Password reset form (with token) ✅ COMPLETED
 
 **Protected Routes (require authentication, under `/_layout`):**
-- `/dashboard` - User dashboard after authentication ✅ COMPLETED
+- `/home` - Parties dashboard after authentication ✅ COMPLETED
 - `/settings` - User settings page with tabs:
   - My profile (user information)
   - Password (change password)
@@ -118,10 +121,12 @@ The frontend uses TanStack Router with file-based routing:
 - `/quests/create` - Quest creation wizard with skill tag requirements ✅ COMPLETED
 - `/quests/{id}` - Individual quest details and application with skill matching ✅ COMPLETED
 
+**Completed LFP Routes:**
+- `/parties/{id}` - Party management and communication ✅ COMPLETED
+
 **Future LFP Routes (To Be Implemented):**
 - `/my-quests` - User's created and joined quests
 - `/my-applications` - Application status tracking
-- `/parties/{id}` - Party management and communication
 - `/profile` - Enhanced user profile with skills and reputation via tag system
 - `/discover` - AI-powered quest recommendations with tag-based compatibility
 
