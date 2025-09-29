@@ -1,8 +1,13 @@
 import uuid
+from datetime import datetime
+from typing import cast
 
+from sqlalchemy.orm import InstrumentedAttribute, selectinload
 from sqlmodel import Session, col, select
 
 from app.models import PartyMember, PartyMemberCreate, PartyMemberUpdate
+from app.models.party import Party
+from app.models.user import User
 
 
 def create_party_member(
@@ -30,6 +35,27 @@ def get_party_members(
     return list(session.exec(statement).all())
 
 
+def get_party_members_detailed(
+    *, session: Session, party_id: uuid.UUID, active_only: bool = True
+) -> list[PartyMember]:
+    """Get party members with user and party data loaded."""
+
+    statement = (
+        select(PartyMember)
+        .options(
+            selectinload(cast(InstrumentedAttribute[User], PartyMember.user)),
+            selectinload(cast(InstrumentedAttribute[Party], PartyMember.party)),
+        )
+        .where(PartyMember.party_id == party_id)
+    )
+    if active_only:
+        statement = statement.where(PartyMember.status == "active")
+    statement = statement.order_by(col(PartyMember.joined_at))
+
+    # Execute query with eager loading
+    return list(session.exec(statement).all())
+
+
 def get_user_party_memberships(
     *, session: Session, user_id: uuid.UUID, active_only: bool = True
 ) -> list[PartyMember]:
@@ -54,8 +80,6 @@ def update_party_member(
 def remove_party_member(*, session: Session, member_id: uuid.UUID) -> bool:
     member = get_party_member(session=session, member_id=member_id)
     if member:
-        from datetime import datetime
-
         member.status = "inactive"
         member.left_at = datetime.utcnow()
         session.add(member)

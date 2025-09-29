@@ -7,16 +7,37 @@ from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
     ApplicationStatus,
+    JoinMethod,
     Message,
     QuestApplicationCreate,
     QuestApplicationPublic,
     QuestApplicationsPublic,
     QuestApplicationUpdate,
+    QuestMember,
+    QuestMemberCreate,
+    QuestMemberRole,
     QuestStatus,
     QuestVisibility,
 )
 
 router = APIRouter(prefix="/quest-applications", tags=["quest-applications"])
+
+
+def create_quest_member_from_application(
+    session: SessionDep, application: Any, join_method: JoinMethod
+) -> QuestMember:
+    """Helper function to create a quest member from an approved application."""
+    quest_member_in = QuestMemberCreate(
+        quest_id=application.quest_id,
+        user_id=application.applicant_id,
+        role=QuestMemberRole.MEMBER,
+        join_method=join_method,
+        source_application_id=application.id,
+    )
+
+    quest_member = QuestMember.model_validate(quest_member_in)
+    session.add(quest_member)
+    return quest_member
 
 
 @router.post("/quests/{quest_id}/apply", response_model=QuestApplicationPublic)
@@ -74,6 +95,16 @@ def apply_to_quest(
         applicant_id=current_user.id,
         status=initial_status,
     )
+
+    # If auto-approved, create quest member immediately
+    if initial_status == ApplicationStatus.APPROVED:
+        create_quest_member_from_application(
+            session=session,
+            application=application,
+            join_method=JoinMethod.AUTO_APPROVAL,
+        )
+        session.commit()
+
     return application
 
 
@@ -195,9 +226,23 @@ def update_application(
                 status_code=400, detail="Can only edit pending applications"
             )
 
+    # Check if this is an approval (status change to APPROVED)
+    is_approval = (
+        application_in.status == ApplicationStatus.APPROVED
+        and application.status == ApplicationStatus.PENDING
+    )
+
     application = crud.update_quest_application(
         session=session, db_application=application, application_in=application_in
     )
+
+    # If manually approved, create quest member
+    if is_approval:
+        create_quest_member_from_application(
+            session=session, application=application, join_method=JoinMethod.APPLICATION
+        )
+        session.commit()
+
     return application
 
 

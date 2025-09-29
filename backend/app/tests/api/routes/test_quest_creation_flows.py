@@ -24,6 +24,9 @@ from app.models import (
     ApplicationStatus,
     CommitmentLevel,
     LocationType,
+    Party,
+    PartyMember,
+    PartyMemberRole,
     Quest,
     QuestCategory,
     QuestStatus,
@@ -37,6 +40,7 @@ from app.models.tag import (
     TagCreate,
     TagStatus,
 )
+from app.tests.utils.factories import create_party, create_party_member
 from app.tests.utils.quest import create_random_quest
 from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import random_email
@@ -652,7 +656,6 @@ class TestQuestClosureScenarios:
         assert closed_quest["status"] == QuestStatus.IN_PROGRESS
 
         # Verify party was created
-        from app.models import Party, PartyMember
 
         party = db.exec(select(Party).where(Party.quest_id == quest_id)).first()
         assert party is not None
@@ -1298,7 +1301,6 @@ class TestQuestCompletion:
         assert quest_data["completed_at"] is not None
 
         # Verify timestamp is recent (within last minute)
-        from datetime import datetime
 
         # Parse the timestamp - API returns datetime without Z suffix
         completed_time = datetime.fromisoformat(quest_data["completed_at"])
@@ -1321,8 +1323,6 @@ class TestQuestCompletion:
         assert owner_user
 
         # Create party
-        from app.models import PartyMemberRole
-        from app.tests.utils.factories import create_party, create_party_member
 
         party = create_party(db)
         create_party_member(
@@ -1362,9 +1362,6 @@ class TestQuestCompletion:
         assert moderator_user
 
         # Create party with moderator
-        from app.models import PartyMemberRole
-        from app.tests.utils.factories import create_party, create_party_member
-
         party = create_party(db)
         create_party_member(
             db,
@@ -1469,9 +1466,6 @@ class TestQuestCancellation:
         assert owner_user
 
         # Create party
-        from app.models import PartyMemberRole
-        from app.tests.utils.factories import create_party, create_party_member
-
         party = create_party(db)
         create_party_member(
             db, party_id=party.id, user_id=owner_user.id, role=PartyMemberRole.OWNER
@@ -1506,9 +1500,6 @@ class TestQuestCancellation:
         assert moderator_user
 
         # Create party with moderator
-        from app.models import PartyMemberRole
-        from app.tests.utils.factories import create_party, create_party_member
-
         party = create_party(db)
         create_party_member(
             db,
@@ -1708,9 +1699,6 @@ class TestQuestCompletionFailures:
         assert member_user
 
         # Create party with regular member
-        from app.models import PartyMemberRole
-        from app.tests.utils.factories import create_party, create_party_member
-
         party = create_party(db)
         create_party_member(
             db, party_id=party.id, user_id=member_user.id, role=PartyMemberRole.MEMBER
@@ -1879,9 +1867,6 @@ class TestQuestCancellationFailures:
         assert member_user
 
         # Create party with regular member
-        from app.models import PartyMemberRole
-        from app.tests.utils.factories import create_party, create_party_member
-
         party = create_party(db)
         create_party_member(
             db, party_id=party.id, user_id=member_user.id, role=PartyMemberRole.MEMBER

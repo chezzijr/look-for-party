@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .application import QuestApplication
     from .party import PartyMember
     from .quest import Quest
+    from .quest_member import QuestMember
     from .rating import Rating
     from .tag import Tag, UserTag
 
@@ -75,6 +76,11 @@ class User(UserBase, table=True):
     )
     applications: list["QuestApplication"] = Relationship(
         back_populates="applicant", cascade_delete=True
+    )
+    quest_memberships: list["QuestMember"] = Relationship(
+        back_populates="user",
+        cascade_delete=True,
+        sa_relationship_kwargs={"foreign_keys": "[QuestMember.user_id]"},
     )
     party_memberships: list["PartyMember"] = Relationship(
         back_populates="user", cascade_delete=True

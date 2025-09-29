@@ -7,15 +7,21 @@ from sqlmodel import col, func, select
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    ApplicationStatus,
+    JoinMethod,
     LocationType,
     Message,
     Party,
     PartyMember,
     PartyMemberRole,
     Quest,
+    QuestApplication,
     QuestCategory,
     QuestCreate,
-    QuestMemberAssignmentRequest,
+    QuestMember,
+    QuestMemberAssignRequest,
+    QuestMemberCreate,
+    QuestMemberRole,
     QuestPublic,
     QuestPublicizeRequest,
     QuestsPublic,
@@ -26,6 +32,27 @@ from app.models import (
 )
 
 router = APIRouter(prefix="/quests", tags=["quests"])
+
+
+def get_quest_member_count(session: SessionDep, quest_id: uuid.UUID) -> int:
+    """Get the count of active quest members for a quest."""
+    count = session.exec(
+        select(func.count(col(QuestMember.id))).where(
+            QuestMember.quest_id == quest_id, QuestMember.status == "ACTIVE"
+        )
+    ).one()
+    return count
+
+
+def create_quest_public_response(session: SessionDep, quest: Any) -> QuestPublic:
+    """Create QuestPublic response with quest member count populated."""
+    # Convert the quest to QuestPublic format
+    quest_data = QuestPublic.model_validate(quest)
+
+    # Add the quest member count
+    quest_data.quest_members_count = get_quest_member_count(session, quest.id)
+
+    return quest_data
 
 
 @router.get("/", response_model=QuestsPublic)
@@ -91,7 +118,11 @@ def read_quests(
         statement = statement.where(Quest.party_size_min <= party_size_max)
 
     quests = session.exec(statement).all()
-    return QuestsPublic(data=quests, count=count)
+
+    # Convert to QuestPublic with member counts
+    quest_responses = [create_quest_public_response(session, quest) for quest in quests]
+
+    return QuestsPublic(data=quest_responses, count=count)
 
 
 @router.get("/my", response_model=QuestsPublic)
@@ -114,7 +145,11 @@ def read_my_quests(
     quests = crud.get_quests_by_creator(
         session=session, creator_id=current_user.id, skip=skip, limit=limit
     )
-    return QuestsPublic(data=quests, count=count)
+
+    # Convert to QuestPublic with member counts
+    quest_responses = [create_quest_public_response(session, quest) for quest in quests]
+
+    return QuestsPublic(data=quest_responses, count=count)
 
 
 @router.post("/", response_model=QuestPublic)
@@ -162,9 +197,22 @@ def create_quest(
             )
 
     quest = crud.create_quest(
-        session=session, quest_in=quest_in, creator_id=current_user.id
+        session=session, quest_in=quest_in, creator_id=current_user.id, commit=False
     )
-    return quest
+
+    # Create QuestMember record for the quest creator
+    creator_member_in = QuestMemberCreate(
+        quest_id=quest.id,
+        user_id=current_user.id,
+        role=QuestMemberRole.CREATOR,
+        join_method=JoinMethod.CREATOR,
+    )
+    creator_member = QuestMember.model_validate(creator_member_in)
+    session.add(creator_member)
+    session.commit()
+    session.refresh(creator_member)
+
+    return create_quest_public_response(session, quest)
 
 
 @router.get("/{quest_id}", response_model=QuestPublic)
@@ -175,7 +223,8 @@ def read_quest(session: SessionDep, quest_id: uuid.UUID) -> Any:
     quest = crud.get_quest(session=session, quest_id=quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
-    return quest
+
+    return create_quest_public_response(session, quest)
 
 
 @router.patch("/{quest_id}", response_model=QuestPublic)
@@ -214,7 +263,8 @@ def update_quest(
         raise HTTPException(status_code=400, detail="Deadline must be after start date")
 
     quest = crud.update_quest(session=session, db_quest=quest, quest_in=quest_in)
-    return quest
+
+    return create_quest_public_response(session, quest)
 
 
 @router.delete("/{quest_id}")
@@ -297,7 +347,7 @@ def publicize_quest(
     session.commit()
     session.refresh(quest)
 
-    return quest
+    return create_quest_public_response(session, quest)
 
 
 @router.post("/{quest_id}/assign-members", response_model=QuestPublic)
@@ -306,7 +356,7 @@ def assign_quest_members(
     session: SessionDep,
     current_user: CurrentUser,
     quest_id: uuid.UUID,
-    assignment_request: QuestMemberAssignmentRequest,
+    assignment_request: QuestMemberAssignRequest,
 ) -> Any:
     """
     Assign members to an internal party quest.
@@ -351,29 +401,54 @@ def assign_quest_members(
             )
         ).all()
 
-        invalid_members = set(assignment_request.assigned_member_ids) - set(
-            party_member_ids
-        )
+        invalid_members = set(assignment_request.user_ids) - set(party_member_ids)
         if invalid_members:
             raise HTTPException(
                 status_code=400,
                 detail=f"Members {invalid_members} are not active party members",
             )
 
-    # Update quest with assigned members
-    import json
+    # Create QuestMember records for assigned members
     from datetime import datetime
 
-    quest.assigned_member_ids = json.dumps(
-        [str(uid) for uid in assignment_request.assigned_member_ids]
-    )
-    quest.updated_at = datetime.utcnow()
+    # First, remove any existing quest members that are not in the new assignment
+    existing_members = session.exec(
+        select(QuestMember).where(QuestMember.quest_id == quest_id)
+    ).all()
 
+    # Keep creator member, remove others not in new assignment
+    for member in existing_members:
+        if (
+            member.role != QuestMemberRole.CREATOR
+            and member.user_id not in assignment_request.user_ids
+        ):
+            session.delete(member)
+
+    # Create QuestMember records for newly assigned members
+    # Get existing member user IDs to avoid N+1 queries
+    existing_user_ids = {member.user_id for member in existing_members}
+
+    for user_id in assignment_request.user_ids:
+        # Check if member already exists using set operation
+        if user_id not in existing_user_ids:
+            member_in = QuestMemberCreate(
+                quest_id=quest_id,
+                user_id=user_id,
+                role=QuestMemberRole.MEMBER,
+                join_method=JoinMethod.INTERNAL_ASSIGNMENT,
+                assigned_by_id=current_user.id,
+                assignment_reason=assignment_request.assignment_reason,
+            )
+            quest_member = QuestMember.model_validate(member_in)
+            session.add(quest_member)
+
+    # Update quest timestamp
+    quest.updated_at = datetime.utcnow()
     session.add(quest)
     session.commit()
     session.refresh(quest)
 
-    return quest
+    return create_quest_public_response(session, quest)
 
 
 @router.post("/{quest_id}/close", response_model=QuestPublic)
@@ -427,7 +502,6 @@ def close_quest(
         )
 
     # Check minimum party size requirement before closing
-    from app.models import ApplicationStatus, QuestApplication
 
     approved_count = session.exec(
         select(func.count())
@@ -466,9 +540,6 @@ def close_quest(
         )
         session.add(creator_member)
 
-        # Add all approved applicants as party members
-        from app.models import ApplicationStatus, QuestApplication
-
         approved_applications = session.exec(
             select(QuestApplication).where(
                 QuestApplication.quest_id == quest.id,
@@ -484,11 +555,19 @@ def close_quest(
             )
             session.add(member)
 
+        # Convert the quest to an internal party quest
+        quest.quest_type = QuestType.PARTY_INTERNAL
+        quest.party_id = party_data.id
+        quest.parent_party_id = party_data.id
+        quest.visibility = QuestVisibility.PRIVATE
+        # Set internal slots based on number of quest members
+        quest.internal_slots = len(
+            [quest.creator_id] + [app.applicant_id for app in approved_applications]
+        )
+
     elif quest.quest_type == QuestType.PARTY_EXPANSION:
         # Add approved applicants to existing party
         if quest.parent_party_id:
-            from app.models import ApplicationStatus, QuestApplication
-
             approved_applications = session.exec(
                 select(QuestApplication).where(
                     QuestApplication.quest_id == quest.id,
@@ -526,7 +605,7 @@ def close_quest(
     session.commit()
     session.refresh(quest)
 
-    return quest
+    return create_quest_public_response(session, quest)
 
 
 @router.post("/{quest_id}/complete", response_model=QuestPublic)
@@ -590,7 +669,7 @@ def complete_quest(
     session.commit()
     session.refresh(quest)
 
-    return quest
+    return create_quest_public_response(session, quest)
 
 
 @router.post("/{quest_id}/cancel", response_model=QuestPublic)
@@ -655,4 +734,4 @@ def cancel_quest(
     session.commit()
     session.refresh(quest)
 
-    return quest
+    return create_quest_public_response(session, quest)

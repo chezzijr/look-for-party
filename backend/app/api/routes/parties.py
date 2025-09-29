@@ -1,3 +1,4 @@
+import json
 import uuid
 from typing import Any
 
@@ -7,19 +8,23 @@ from sqlmodel import select
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    JoinMethod,
     Message,
     PartiesPublic,
     PartyCreate,
+    PartyDetailedMembersPublic,
     PartyMember,
     PartyMemberCreate,
     PartyMemberPublic,
     PartyMemberRole,
-    PartyMembersPublic,
     PartyMemberUpdate,
     PartyPublic,
     PartyQuestCreate,
     PartyUpdate,
     Quest,
+    QuestMember,
+    QuestMemberCreate,
+    QuestMemberRole,
     QuestPublic,
     QuestType,
 )
@@ -128,23 +133,23 @@ def update_party(
 
 
 # Party Member endpoints
-@router.get("/{party_id}/members", response_model=PartyMembersPublic)
+@router.get("/{party_id}/members", response_model=PartyDetailedMembersPublic)
 def read_party_members(
     session: SessionDep,
     party_id: uuid.UUID,
     active_only: bool = Query(default=True),
 ) -> Any:
     """
-    Get party members.
+    Get party members with detailed user information.
     """
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
 
-    members = crud.get_party_members(
+    members = crud.get_party_members_detailed(
         session=session, party_id=party_id, active_only=active_only
     )
-    return PartyMembersPublic(data=members, count=len(members))
+    return PartyDetailedMembersPublic(data=members, count=len(members))
 
 
 @router.post("/{party_id}/members", response_model=PartyMemberPublic)
@@ -363,9 +368,6 @@ def create_party_quest(
                 detail="Minimum party size cannot be greater than maximum party size",
             )
 
-    # Create the quest
-    import json
-
     quest_data = Quest(
         title=quest_in.title,
         description=quest_in.description,
@@ -395,8 +397,20 @@ def create_party_quest(
     )
 
     session.add(quest_data)
-    session.commit()
+    session.flush()  # Flush to get the ID, but don't commit yet
     session.refresh(quest_data)
+
+    # Create QuestMember record for the quest creator
+    creator_member_in = QuestMemberCreate(
+        quest_id=quest_data.id,
+        user_id=current_user.id,
+        role=QuestMemberRole.CREATOR,
+        join_method=JoinMethod.CREATOR,
+    )
+    creator_member = QuestMember.model_validate(creator_member_in)
+    session.add(creator_member)
+    session.commit()  # Single commit for both operations
+    session.refresh(creator_member)
 
     return quest_data
 

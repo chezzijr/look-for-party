@@ -1,14 +1,17 @@
 import { useState } from "react"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { useNavigate, Link } from "@tanstack/react-router"
-import { ArrowLeft, MapPin, Users, Clock, Calendar, User, CheckCircle, XCircle, FileText, Eye } from "lucide-react"
+import { ArrowLeft, MapPin, Users, Clock, Calendar, User, CheckCircle, XCircle, FileText, Eye, Settings } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { QuestApplicationForm } from "./QuestApplicationForm"
+import { QuestCloseDialog } from "./QuestCloseDialog"
 import useQuestDetail from "@/hooks/useQuestDetail"
 import useAuth from "@/hooks/useAuth"
 import useUserQuestApplication from "@/hooks/useUserQuestApplication"
+import useQuestApplications from "@/hooks/useQuestApplications"
+import useQuestClose from "@/hooks/useQuestClose"
 import { getCategoryColor, getQuestStatusColor, formatDate, getApplicationStatusColor, formatApplicationStatus } from "@/utils/formatters"
 import { QuestApplicationsService, type QuestApplicationCreate } from "@/client"
 import { toast } from "sonner"
@@ -26,7 +29,13 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
   const { user: currentUser } = useAuth()
   const { data: quest, isLoading, error } = useQuestDetail(questId)
   const { data: userApplication, isLoading: applicationLoading } = useUserQuestApplication({ questId })
+  const { data: approvedApplications } = useQuestApplications({ questId, status: "APPROVED" })
   const [showApplicationForm, setShowApplicationForm] = useState(false)
+
+  // Quest closing functionality
+  const { closeQuest, isClosing } = useQuestClose({
+    navigateToParty: true,
+  })
 
   // Auto-join mutation for auto-approve quests
   const autoJoinMutation = useMutation({
@@ -86,6 +95,15 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
   const isOwnQuest = currentUser?.id === quest.creator_id
   const hasExistingApplication = !!userApplication
   const canApply = !isOwnQuest && !hasExistingApplication && quest.status === "RECRUITING"
+
+  // Quest closing logic
+  const approvedApplicationsCount = approvedApplications?.data?.length || 0
+  const totalPartySize = approvedApplicationsCount + 1 // +1 for creator
+  const canCloseQuest = isOwnQuest && quest.status === "RECRUITING" && totalPartySize >= quest.party_size_min && !isClosing
+
+  const handleCloseQuest = () => {
+    closeQuest({ questId })
+  }
 
   return (
     <div className="w-full">
@@ -255,17 +273,61 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
             </CardHeader>
             <CardContent>
               {isOwnQuest ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2 text-blue-600">
                     <User className="h-4 w-4" />
                     <span>Quest Creator</span>
                   </div>
-                  <Button asChild variant="outline">
-                    <Link to="/my-quests">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Manage Applications
-                    </Link>
-                  </Button>
+
+                  {/* Quest Status Summary for Creator */}
+                  <div className="bg-muted p-4 rounded-lg space-y-2">
+                    <h4 className="font-medium text-sm">Quest Status</h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Current Party Size:</span>
+                        <div className="font-medium">{totalPartySize} / {quest.party_size_min}-{quest.party_size_max}</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Approved Applications:</span>
+                        <div className="font-medium">{approvedApplicationsCount}</div>
+                      </div>
+                    </div>
+                    {canCloseQuest && (
+                      <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                        <div className="flex items-center gap-1 text-green-700">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="font-medium">Ready to close!</span>
+                        </div>
+                        <p className="text-green-600 mt-1">You have enough approved applications to meet the minimum party size.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button asChild variant="outline">
+                      <Link to="/my-quests">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Manage Applications
+                      </Link>
+                    </Button>
+
+                    {quest.status === "RECRUITING" && (
+                      <QuestCloseDialog
+                        quest={quest}
+                        approvedApplicationsCount={approvedApplicationsCount}
+                        onClose={handleCloseQuest}
+                        isLoading={isClosing}
+                      >
+                        <Button
+                          variant={canCloseQuest ? "destructive" : "outline"}
+                          disabled={!canCloseQuest || isClosing}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          {canCloseQuest ? "Close Quest" : "Close Quest"}
+                        </Button>
+                      </QuestCloseDialog>
+                    )}
+                  </div>
                 </div>
               ) : hasExistingApplication && userApplication ? (
                 <div className="space-y-4">

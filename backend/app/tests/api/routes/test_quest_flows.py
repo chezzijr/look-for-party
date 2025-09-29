@@ -18,11 +18,14 @@ from sqlmodel import Session, select
 from app.core.config import settings
 from app.models import (
     ApplicationStatus,
+    JoinMethod,
     Party,
     PartyMember,
     PartyMemberRole,
     Quest,
     QuestApplication,
+    QuestMember,
+    QuestMemberRole,
     QuestStatus,
     QuestType,
     QuestVisibility,
@@ -219,10 +222,6 @@ class TestPartyQuestCreation:
         owner = members[0]  # First member is owner
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -267,10 +266,6 @@ class TestPartyQuestCreation:
         owner = members[0]
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -316,10 +311,6 @@ class TestPartyQuestCreation:
         owner = members[0]
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -430,10 +421,6 @@ class TestQuestPublicizingFlow:
         quest, owner_member = hybrid_quest_setup
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(
             select(User).where(User.id == owner_member.user_id)
         ).first()
@@ -580,6 +567,16 @@ class TestMemberAssignmentFlow:
         db.commit()
         db.refresh(internal_quest)
 
+        # Create QuestMember record for the quest creator (since we bypassed the API)
+        creator_quest_member = QuestMember(
+            quest_id=internal_quest.id,
+            user_id=owner.id,
+            role=QuestMemberRole.CREATOR,
+            join_method=JoinMethod.CREATOR,
+        )
+        db.add(creator_quest_member)
+        db.commit()
+
         return internal_quest, members
 
     def test_member_assignment_flow(
@@ -594,10 +591,6 @@ class TestMemberAssignmentFlow:
         assignees = members[1:3]  # Two regular members
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
@@ -606,7 +599,8 @@ class TestMemberAssignmentFlow:
 
         # Assign specific members to internal quest
         assignment_request = {
-            "assigned_member_ids": [str(member.user_id) for member in assignees]
+            "user_ids": [str(member.user_id) for member in assignees],
+            "assignment_reason": "Assigned to complete internal task",
         }
 
         response = client.post(
@@ -615,14 +609,27 @@ class TestMemberAssignmentFlow:
             json=assignment_request,
         )
         assert response.status_code == 200
-        updated_quest = response.json()
 
-        # Verify assignment was saved
-        import json
+        # Verify assignment was saved by checking QuestMember records
 
-        assigned_ids = json.loads(updated_quest["assigned_member_ids"])
-        expected_ids = [str(member.user_id) for member in assignees]
-        assert set(assigned_ids) == set(expected_ids)
+        quest_members = db.exec(
+            select(QuestMember).where(QuestMember.quest_id == quest.id)
+        ).all()
+
+        # Should have creator + assigned members
+        expected_member_count = 1 + len(assignees)  # creator + assignees
+        assert len(quest_members) == expected_member_count
+
+        # Check that assignees are in the quest members
+        assignee_ids = {str(member.user_id) for member in assignees}
+        quest_member_ids = {str(qm.user_id) for qm in quest_members}
+
+        # All assignees should be quest members
+        assert assignee_ids.issubset(quest_member_ids)
+
+        # Creator should also be a quest member
+        creator_id = str(owner.user_id)
+        assert creator_id in quest_member_ids
 
     def test_cannot_assign_non_party_members(
         self,
@@ -638,17 +645,16 @@ class TestMemberAssignmentFlow:
         non_member = create_random_user(db)
 
         # Get proper JWT token for owner
-        from sqlmodel import select
-
-        from app.models import User
-
         owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
         assert owner_user
         owner_headers = authentication_token_from_email(
             client=client, email=owner_user.email, db=db
         )
 
-        assignment_request = {"assigned_member_ids": [str(non_member.id)]}
+        assignment_request = {
+            "user_ids": [str(non_member.id)],
+            "assignment_reason": "Trying to assign non-member",
+        }
 
         response = client.post(
             f"{settings.API_V1_STR}/quests/{quest.id}/assign-members",

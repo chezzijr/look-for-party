@@ -23,6 +23,7 @@ import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
 import { Route as LayoutQuestsIndexRouteImport } from './routes/_layout/quests.index'
 import { Route as LayoutQuestsCreateRouteImport } from './routes/_layout/quests.create'
 import { Route as LayoutQuestsQuestIdRouteImport } from './routes/_layout/quests.$questId'
+import { Route as LayoutPartiesPartyIdRouteImport } from './routes/_layout/parties.$partyId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -93,6 +94,11 @@ const LayoutQuestsQuestIdRoute = LayoutQuestsQuestIdRouteImport.update({
   path: '/$questId',
   getParentRoute: () => LayoutQuestsRoute,
 } as any)
+const LayoutPartiesPartyIdRoute = LayoutPartiesPartyIdRouteImport.update({
+  id: '/parties/$partyId',
+  path: '/parties/$partyId',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/my-quests': typeof LayoutMyQuestsRoute
   '/quests': typeof LayoutQuestsRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
+  '/parties/$partyId': typeof LayoutPartiesPartyIdRoute
   '/quests/$questId': typeof LayoutQuestsQuestIdRoute
   '/quests/create': typeof LayoutQuestsCreateRoute
   '/quests/': typeof LayoutQuestsIndexRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/my-applications': typeof LayoutMyApplicationsRoute
   '/my-quests': typeof LayoutMyQuestsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/parties/$partyId': typeof LayoutPartiesPartyIdRoute
   '/quests/$questId': typeof LayoutQuestsQuestIdRoute
   '/quests/create': typeof LayoutQuestsCreateRoute
   '/quests': typeof LayoutQuestsIndexRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/_layout/my-quests': typeof LayoutMyQuestsRoute
   '/_layout/quests': typeof LayoutQuestsRouteWithChildren
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/parties/$partyId': typeof LayoutPartiesPartyIdRoute
   '/_layout/quests/$questId': typeof LayoutQuestsQuestIdRoute
   '/_layout/quests/create': typeof LayoutQuestsCreateRoute
   '/_layout/quests/': typeof LayoutQuestsIndexRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/my-quests'
     | '/quests'
     | '/settings'
+    | '/parties/$partyId'
     | '/quests/$questId'
     | '/quests/create'
     | '/quests/'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/my-applications'
     | '/my-quests'
     | '/settings'
+    | '/parties/$partyId'
     | '/quests/$questId'
     | '/quests/create'
     | '/quests'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/_layout/my-quests'
     | '/_layout/quests'
     | '/_layout/settings'
+    | '/_layout/parties/$partyId'
     | '/_layout/quests/$questId'
     | '/_layout/quests/create'
     | '/_layout/quests/'
@@ -297,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutQuestsQuestIdRouteImport
       parentRoute: typeof LayoutQuestsRoute
     }
+    '/_layout/parties/$partyId': {
+      id: '/_layout/parties/$partyId'
+      path: '/parties/$partyId'
+      fullPath: '/parties/$partyId'
+      preLoaderRoute: typeof LayoutPartiesPartyIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
@@ -322,6 +341,7 @@ interface LayoutRouteChildren {
   LayoutMyQuestsRoute: typeof LayoutMyQuestsRoute
   LayoutQuestsRoute: typeof LayoutQuestsRouteWithChildren
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutPartiesPartyIdRoute: typeof LayoutPartiesPartyIdRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
@@ -330,6 +350,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutMyQuestsRoute: LayoutMyQuestsRoute,
   LayoutQuestsRoute: LayoutQuestsRouteWithChildren,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutPartiesPartyIdRoute: LayoutPartiesPartyIdRoute,
 }
 
 const LayoutRouteWithChildren =

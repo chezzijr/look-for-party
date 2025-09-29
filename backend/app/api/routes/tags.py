@@ -6,8 +6,9 @@ from sqlmodel import col, func, select
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
-from app.models import Message
-from app.models.tag import (
+from app.models import (
+    Message,
+    Quest,
     QuestTagCreate,
     QuestTagPublic,
     QuestTagsPublic,
@@ -297,8 +298,6 @@ def create_quest_tag(
     Add a tag to a quest (quest creator only).
     """
     # Check if quest exists and user owns it
-    from app.models.quest import Quest
-
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
@@ -339,8 +338,6 @@ def update_quest_tag(
     Update quest's tag relationship (quest creator only).
     """
     # Check if quest exists and user owns it
-    from app.models.quest import Quest
-
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")
@@ -371,8 +368,6 @@ def delete_quest_tag(
     Remove a tag from a quest (quest creator only).
     """
     # Check if quest exists and user owns it
-    from app.models.quest import Quest
-
     quest = session.get(Quest, quest_id)
     if not quest:
         raise HTTPException(status_code=404, detail="Quest not found")

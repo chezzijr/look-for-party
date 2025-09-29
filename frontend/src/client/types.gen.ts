@@ -22,6 +22,12 @@ export type HTTPValidationError = {
   detail?: Array<ValidationError>
 }
 
+export type JoinMethod =
+  | "APPLICATION"
+  | "AUTO_APPROVAL"
+  | "INTERNAL_ASSIGNMENT"
+  | "CREATOR"
+
 export type LocationType = "REMOTE" | "IN_PERSON" | "HYBRID"
 
 export type Message = {
@@ -47,10 +53,27 @@ export type PartyCreate = {
   quest_id: string
 }
 
+export type PartyDetailedMembersPublic = {
+  data: Array<PartyMemberDetail>
+  count: number
+}
+
 export type PartyMemberCreate = {
   role?: PartyMemberRole
   status?: string
   user_id: string
+}
+
+export type PartyMemberDetail = {
+  role?: PartyMemberRole
+  status?: string
+  id: string
+  party_id: string
+  user_id: string
+  joined_at: string
+  left_at: string | null
+  party: PartyPublic
+  user: UserPublic
 }
 
 export type PartyMemberPublic = {
@@ -64,11 +87,6 @@ export type PartyMemberPublic = {
 }
 
 export type PartyMemberRole = "OWNER" | "MODERATOR" | "MEMBER"
-
-export type PartyMembersPublic = {
-  data: Array<PartyMemberPublic>
-  count: number
-}
 
 export type PartyMemberUpdate = {
   role?: PartyMemberRole | null
@@ -196,10 +214,68 @@ export type QuestCreate = {
 }
 
 /**
- * Request to assign/unassign members to internal quest
+ * Request to assign members to internal quest
  */
-export type QuestMemberAssignmentRequest = {
-  assigned_member_ids: Array<string>
+export type QuestMemberAssignRequest = {
+  user_ids: Array<string>
+  assignment_reason?: string | null
+}
+
+export type QuestMemberDetail = {
+  role?: QuestMemberRole
+  status?: QuestMemberStatus
+  join_method?: JoinMethod
+  assignment_reason?: string | null
+  id: string
+  quest_id: string
+  user_id: string
+  assigned_by_id: string | null
+  source_application_id: string | null
+  joined_at: string
+  left_at: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+  quest: QuestPublic
+  user: UserPublic
+  assigned_by: UserPublic | null
+}
+
+export type QuestMemberDetailedPublic = {
+  data: Array<QuestMemberDetail>
+  count: number
+}
+
+export type QuestMemberPublic = {
+  role?: QuestMemberRole
+  status?: QuestMemberStatus
+  join_method?: JoinMethod
+  assignment_reason?: string | null
+  id: string
+  quest_id: string
+  user_id: string
+  assigned_by_id: string | null
+  source_application_id: string | null
+  joined_at: string
+  left_at: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type QuestMemberRole = "CREATOR" | "MEMBER" | "MODERATOR"
+
+export type QuestMembersPublic = {
+  data: Array<QuestMemberPublic>
+  count: number
+}
+
+export type QuestMemberStatus = "ACTIVE" | "COMPLETED" | "LEFT" | "REMOVED"
+
+export type QuestMemberUpdate = {
+  role?: QuestMemberRole | null
+  status?: QuestMemberStatus | null
+  assignment_reason?: string | null
 }
 
 export type QuestPublic = {
@@ -231,6 +307,7 @@ export type QuestPublic = {
   assigned_member_ids?: string | null
   is_publicized?: boolean
   publicized_at?: string | null
+  quest_members_count?: number
 }
 
 /**
@@ -638,7 +715,7 @@ export type PartiesReadPartyMembersData = {
   partyId: string
 }
 
-export type PartiesReadPartyMembersResponse = PartyMembersPublic
+export type PartiesReadPartyMembersResponse = PartyDetailedMembersPublic
 
 export type PartiesAddPartyMemberData = {
   partyId: string
@@ -723,6 +800,42 @@ export type QuestApplicationsWithdrawApplicationData = {
 
 export type QuestApplicationsWithdrawApplicationResponse = Message
 
+export type QuestMembersReadQuestMembersData = {
+  questId: string
+}
+
+export type QuestMembersReadQuestMembersResponse = QuestMembersPublic
+
+export type QuestMembersReadQuestMembersDetailedData = {
+  questId: string
+}
+
+export type QuestMembersReadQuestMembersDetailedResponse =
+  QuestMemberDetailedPublic
+
+export type QuestMembersGetQuestMembersCountData = {
+  questId: string
+}
+
+export type QuestMembersGetQuestMembersCountResponse = {
+  [key: string]: number
+}
+
+export type QuestMembersUpdateQuestMemberStatusData = {
+  memberId: string
+  requestBody: QuestMemberUpdate
+}
+
+export type QuestMembersUpdateQuestMemberStatusResponse = QuestMemberPublic
+
+export type QuestMembersRemoveQuestMemberData = {
+  memberId: string
+}
+
+export type QuestMembersRemoveQuestMemberResponse = {
+  [key: string]: string
+}
+
 export type QuestsReadQuestsData = {
   category?: QuestCategory | null
   limit?: number
@@ -777,7 +890,7 @@ export type QuestsPublicizeQuestResponse = QuestPublic
 
 export type QuestsAssignQuestMembersData = {
   questId: string
-  requestBody: QuestMemberAssignmentRequest
+  requestBody: QuestMemberAssignRequest
 }
 
 export type QuestsAssignQuestMembersResponse = QuestPublic

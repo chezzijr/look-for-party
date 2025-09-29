@@ -4,14 +4,16 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Link } from "@tanstack/react-router"
-import { Eye, Users, Clock, MessageCircle, FileText, Plus } from "lucide-react"
+import { Eye, Users, Clock, MessageCircle, FileText, Plus, Settings, CheckCircle } from "lucide-react"
 
 import type { QuestPublic, ApplicationStatus } from "@/client"
 import useMyQuests from "@/hooks/useMyQuests"
 import useQuestApplications from "@/hooks/useQuestApplications"
+import useQuestClose from "@/hooks/useQuestClose"
 import { formatDate, getCategoryColor, getQuestStatusColor } from "@/utils/formatters"
 import { ApplicationCard } from "./ApplicationCard"
 import { ApplicationReview } from "./ApplicationReview"
+import { QuestCloseDialog } from "../quest/QuestCloseDialog"
 
 const statusTabs: { value: ApplicationStatus | "all"; label: string; icon: any }[] = [
   { value: "all", label: "All", icon: FileText },
@@ -24,9 +26,14 @@ interface QuestCardProps {
   quest: QuestPublic
   onSelectQuest: (quest: QuestPublic) => void
   isSelected: boolean
+  approvedApplicationsCount: number
+  onCloseQuest: (questId: string) => void
+  isClosing: boolean
 }
 
-function QuestCard({ quest, onSelectQuest, isSelected }: QuestCardProps) {
+function QuestCard({ quest, onSelectQuest, isSelected, approvedApplicationsCount, onCloseQuest, isClosing }: QuestCardProps) {
+  const totalPartySize = approvedApplicationsCount + 1 // +1 for creator
+  const canCloseQuest = quest.status === "RECRUITING" && totalPartySize >= quest.party_size_min && !isClosing
   return (
     <Card
       className={`cursor-pointer transition-colors ${
@@ -69,6 +76,24 @@ function QuestCard({ quest, onSelectQuest, isSelected }: QuestCardProps) {
         <p className="text-sm text-muted-foreground line-clamp-2">
           {quest.description}
         </p>
+        {quest.status === "RECRUITING" && (
+          <div className="bg-muted p-3 rounded text-xs space-y-1">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Party Size:</span>
+              <span className="font-medium">{totalPartySize} / {quest.party_size_min}-{quest.party_size_max}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Approved:</span>
+              <span className="font-medium">{approvedApplicationsCount}</span>
+            </div>
+            {canCloseQuest && (
+              <div className="flex items-center gap-1 text-green-600 mt-1">
+                <CheckCircle className="h-3 w-3" />
+                <span className="font-medium">Ready to close!</span>
+              </div>
+            )}
+          </div>
+        )}
         <div className="flex gap-2 pt-2">
           <Button asChild variant="outline" size="sm">
             <Link to="/quests/$questId" params={{ questId: quest.id }}>
@@ -76,6 +101,23 @@ function QuestCard({ quest, onSelectQuest, isSelected }: QuestCardProps) {
               View Quest
             </Link>
           </Button>
+          {quest.status === "RECRUITING" && (
+            <QuestCloseDialog
+              quest={quest}
+              approvedApplicationsCount={approvedApplicationsCount}
+              onClose={() => onCloseQuest(quest.id)}
+              isLoading={isClosing}
+            >
+              <Button
+                variant={canCloseQuest ? "destructive" : "outline"}
+                size="sm"
+                disabled={!canCloseQuest || isClosing}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Close
+              </Button>
+            </QuestCloseDialog>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -92,9 +134,25 @@ export function QuestManagement() {
     questId: selectedQuest?.id || "",
     status: activeTab === "all" ? undefined : activeTab
   })
+  const { data: approvedApplicationsData } = useQuestApplications({
+    questId: selectedQuest?.id || "",
+    status: "APPROVED"
+  })
+
+  // Quest closing functionality
+  const { closeQuest, isClosing } = useQuestClose({
+    navigateToParty: false, // Stay in quest management view
+    onSuccess: (questId) => {
+      // Refresh the quest list after closing
+      if (selectedQuest?.id === questId) {
+        setSelectedQuest(null)
+      }
+    }
+  })
 
   const quests = questsData?.data || []
   const applications = applicationsData?.data || []
+  const approvedApplicationsCount = approvedApplicationsData?.data?.length || 0
 
   // Auto-select first quest if none selected
   if (quests.length > 0 && !selectedQuest) {
@@ -103,6 +161,10 @@ export function QuestManagement() {
 
   const handleReviewApplication = (application: any) => {
     setReviewingApplication(application)
+  }
+
+  const handleCloseQuest = (questId: string) => {
+    closeQuest({ questId })
   }
 
   if (questsLoading) {
@@ -161,14 +223,21 @@ export function QuestManagement() {
           <div className="lg:col-span-1 space-y-4">
             <h2 className="text-xl font-semibold">Your Quests</h2>
             <div className="space-y-3">
-              {quests.map((quest) => (
-                <QuestCard
-                  key={quest.id}
-                  quest={quest}
-                  onSelectQuest={setSelectedQuest}
-                  isSelected={selectedQuest?.id === quest.id}
-                />
-              ))}
+              {quests.map((quest) => {
+                // Get approved applications count for each quest
+                const questApprovedCount = quest.id === selectedQuest?.id ? approvedApplicationsCount : 0
+                return (
+                  <QuestCard
+                    key={quest.id}
+                    quest={quest}
+                    onSelectQuest={setSelectedQuest}
+                    isSelected={selectedQuest?.id === quest.id}
+                    approvedApplicationsCount={questApprovedCount}
+                    onCloseQuest={handleCloseQuest}
+                    isClosing={isClosing}
+                  />
+                )
+              })}
             </div>
           </div>
 
@@ -176,13 +245,37 @@ export function QuestManagement() {
           <div className="lg:col-span-2">
             {selectedQuest ? (
               <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    Applications for "{selectedQuest.title}"
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Review and manage applications for this quest
-                  </p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      Applications for "{selectedQuest.title}"
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Review and manage applications for this quest
+                    </p>
+                  </div>
+                  {selectedQuest.status === "RECRUITING" && (
+                    <div className="text-right">
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Party Size: {approvedApplicationsCount + 1} / {selectedQuest.party_size_min}-{selectedQuest.party_size_max}
+                      </div>
+                      <QuestCloseDialog
+                        quest={selectedQuest}
+                        approvedApplicationsCount={approvedApplicationsCount}
+                        onClose={() => handleCloseQuest(selectedQuest.id)}
+                        isLoading={isClosing}
+                      >
+                        <Button
+                          variant={approvedApplicationsCount + 1 >= selectedQuest.party_size_min ? "destructive" : "outline"}
+                          size="sm"
+                          disabled={approvedApplicationsCount + 1 < selectedQuest.party_size_min || isClosing}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Close Quest
+                        </Button>
+                      </QuestCloseDialog>
+                    </div>
+                  )}
                 </div>
 
                 <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ApplicationStatus | "all")}>

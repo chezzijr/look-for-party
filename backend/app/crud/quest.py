@@ -6,12 +6,20 @@ from app.models import Quest, QuestCreate, QuestStatus, QuestUpdate
 
 
 def create_quest(
-    *, session: Session, quest_in: QuestCreate, creator_id: uuid.UUID
+    *,
+    session: Session,
+    quest_in: QuestCreate,
+    creator_id: uuid.UUID,
+    commit: bool = True,
 ) -> Quest:
     db_quest = Quest.model_validate(quest_in, update={"creator_id": creator_id})
     session.add(db_quest)
-    session.commit()
-    session.refresh(db_quest)
+    if commit:
+        session.commit()
+        session.refresh(db_quest)
+    else:
+        session.flush()  # Flush to get the ID, but don't commit yet
+        session.refresh(db_quest)
     return db_quest
 
 
