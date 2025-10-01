@@ -3,6 +3,13 @@ import { ApplicationDashboard } from "@/components/application/ApplicationDashbo
 
 export const Route = createFileRoute("/_layout/my-applications")({
   component: MyApplications,
+  head: () => ({
+    meta: [
+      {
+        title: "My Applications | Look For Party",
+      },
+    ],
+  }),
 })
 
 function MyApplications() {

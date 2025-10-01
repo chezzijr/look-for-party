@@ -17,6 +17,13 @@ export const Route = createFileRoute("/")({
       })
     }
   },
+  head: () => ({
+    meta: [
+      {
+        title: "Look For Party - Quest-Based Collaboration Platform",
+      },
+    ],
+  }),
 })
 
 function LandingPage() {

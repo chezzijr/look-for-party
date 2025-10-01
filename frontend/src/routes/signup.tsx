@@ -26,6 +26,13 @@ export const Route = createFileRoute("/signup")({
       })
     }
   },
+  head: () => ({
+    meta: [
+      {
+        title: "Sign Up | Look For Party",
+      },
+    ],
+  }),
 })
 
 interface UserRegisterForm extends UserRegister {

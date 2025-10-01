@@ -3,6 +3,13 @@ import { PartyDashboard } from '@/components/party/PartyDashboard'
 
 export const Route = createFileRoute('/_layout/parties/$partyId')({
   component: PartyDetailPage,
+  head: () => ({
+    meta: [
+      {
+        title: "Party Dashboard | Look For Party",
+      },
+    ],
+  }),
 })
 
 function PartyDetailPage() {

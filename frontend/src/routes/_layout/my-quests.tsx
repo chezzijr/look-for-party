@@ -3,6 +3,13 @@ import { QuestManagement } from "@/components/application/QuestManagement"
 
 export const Route = createFileRoute("/_layout/my-quests")({
   component: MyQuests,
+  head: () => ({
+    meta: [
+      {
+        title: "My Quests | Look For Party",
+      },
+    ],
+  }),
 })
 
 function MyQuests() {

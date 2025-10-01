@@ -26,6 +26,13 @@ export const Route = createFileRoute("/login")({
       })
     }
   },
+  head: () => ({
+    meta: [
+      {
+        title: "Log In | Look For Party",
+      },
+    ],
+  }),
 })
 
 function Login() {
