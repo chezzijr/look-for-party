@@ -9,9 +9,10 @@ import { type UserPublic } from "@/client"
 interface ProfileHeaderProps {
   user: UserPublic
   isOwnProfile: boolean
+  onEditProfile?: () => void
 }
 
-export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
+export default function ProfileHeader({ user, isOwnProfile, onEditProfile }: ProfileHeaderProps) {
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "U"
@@ -61,7 +62,7 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
             size="sm"
             variant="outline"
             className="absolute -bottom-2 -right-2 rounded-full"
-            onClick={() => {}}
+            onClick={onEditProfile}
           >
             Edit
           </Button>
@@ -128,7 +129,7 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
 
       {isOwnProfile && (
         <div className="flex flex-col gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={onEditProfile}>
             Edit Profile
           </Button>
         </div>

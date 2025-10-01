@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -18,6 +17,8 @@ import useCustomToast from "@/hooks/useCustomToast"
 interface ProfileInfoProps {
   user: UserPublic
   isOwnProfile: boolean
+  isEditing: boolean
+  setIsEditing: (value: boolean) => void
 }
 
 const profileSchema = z.object({
@@ -29,8 +30,7 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>
 
-export default function ProfileInfo({ user, isOwnProfile }: ProfileInfoProps) {
-  const [isEditing, setIsEditing] = useState(false)
+export default function ProfileInfo({ user, isOwnProfile, isEditing, setIsEditing }: ProfileInfoProps) {
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
 
@@ -49,6 +49,8 @@ export default function ProfileInfo({ user, isOwnProfile }: ProfileInfoProps) {
     onSuccess: () => {
       showSuccessToast("Profile updated successfully")
       setIsEditing(false)
+      // Invalidate both currentUser (auth context) and user-profile queries
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] })
       queryClient.invalidateQueries({ queryKey: ["user-profile"] })
     },
     onError: (error: ApiError) => {

@@ -1,9 +1,10 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 
-import { type UserPublic } from "@/client"
+import { type UserPublic, UsersService } from "@/client"
 import useAuth from "@/hooks/useAuth"
 
 import ProfileHeader from "./ProfileHeader"
@@ -19,27 +20,24 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ isOwnProfile, userId }: ProfilePageProps) {
   const { user: currentUser } = useAuth()
+  const [isEditing, setIsEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState("profile")
 
   // For own profile, use currentUser data. For other profiles, fetch user data
   const targetUserId = isOwnProfile ? currentUser?.id : userId
 
-  // Fetch user profile data for public profiles
+  // Fetch user profile data
   const { data: profileUser, isLoading: isLoadingProfile } = useQuery<UserPublic>({
     queryKey: ["user-profile", targetUserId],
     queryFn: async () => {
       if (!targetUserId) {
         throw new Error("User ID is required")
       }
-      if (isOwnProfile) {
-        // For own profile, we already have the user data
-        return currentUser as UserPublic
-      } else {
-        // For other profiles, we'd need a getUserProfile endpoint
-        // For now, we'll use the same user data structure
-        return currentUser as UserPublic
-      }
+      // Always fetch fresh data from API, even for own profile
+      // This ensures UI updates after profile edits
+      return UsersService.readUserMe()
     },
-    enabled: !!targetUserId,
+    enabled: !!targetUserId && isOwnProfile,
   })
 
   if (isLoadingProfile) {
@@ -54,11 +52,20 @@ export default function ProfilePage({ isOwnProfile, userId }: ProfilePageProps) 
     )
   }
 
+  const handleEditProfile = () => {
+    setActiveTab("profile")
+    setIsEditing(true)
+  }
+
   return (
     <div className="container mx-auto py-6 px-4">
-      <ProfileHeader user={profileUser} isOwnProfile={isOwnProfile} />
+      <ProfileHeader
+        user={profileUser}
+        isOwnProfile={isOwnProfile}
+        onEditProfile={handleEditProfile}
+      />
 
-      <Tabs defaultValue="profile" className="mt-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="skills">Skills</TabsTrigger>
@@ -67,7 +74,12 @@ export default function ProfilePage({ isOwnProfile, userId }: ProfilePageProps) 
         </TabsList>
 
         <TabsContent value="profile" className="mt-6">
-          <ProfileInfo user={profileUser} isOwnProfile={isOwnProfile} />
+          <ProfileInfo
+            user={profileUser}
+            isOwnProfile={isOwnProfile}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+          />
         </TabsContent>
 
         <TabsContent value="skills" className="mt-6">

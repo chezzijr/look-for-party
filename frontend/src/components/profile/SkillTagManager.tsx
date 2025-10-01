@@ -283,7 +283,7 @@ export default function SkillTagManager({ userId, isOwnProfile }: SkillTagManage
                     onValueChange={([value]) => setNewProficiency(value)}
                     max={3}
                     step={1}
-                    className="flex-1"
+                    className="max-w-xs"
                   />
                   <span className="text-sm font-medium min-w-24">
                     {proficiencyLevels[newProficiency]?.label}
@@ -367,7 +367,7 @@ export default function SkillTagManager({ userId, isOwnProfile }: SkillTagManage
                                     onValueChange={([value]) => handleUpdateProficiency(userTag.tag.id, value)}
                                     max={3}
                                     step={1}
-                                    className="w-20"
+                                    className="w-32"
                                   />
                                   <Button
                                     size="sm"
