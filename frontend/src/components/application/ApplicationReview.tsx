@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CheckCircle, XCircle, User, MessageCircle, Clock } from "lucide-react"
+import { CheckCircle, XCircle, User, MessageCircle, Clock, FileText, UserCircle, Target } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -18,6 +19,8 @@ import { QuestApplicationsService } from "@/client"
 import { formatDate, getApplicationStatusColor, formatApplicationStatus } from "@/utils/formatters"
 import useCustomToast from "@/hooks/useCustomToast"
 import { parseApiError } from "@/utils/apiErrors"
+import { ApplicationReviewDetail } from "./ApplicationReviewDetail"
+import { SkillCompatibilityAnalysis } from "./SkillCompatibilityAnalysis"
 
 const reviewSchema = z.object({
   feedback: z.string().max(500, "Feedback must be under 500 characters").optional(),
@@ -27,15 +30,18 @@ type ReviewFormData = z.infer<typeof reviewSchema>
 
 interface ApplicationReviewProps {
   application: QuestApplicationPublic
+  questId: string
   isOpen: boolean
   onClose: () => void
 }
 
 export function ApplicationReview({
   application,
+  questId,
   isOpen,
   onClose
 }: ApplicationReviewProps) {
+  const [activeTab, setActiveTab] = useState<string>("basic")
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null)
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
@@ -101,7 +107,7 @@ export function ApplicationReview({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Review Application</DialogTitle>
           <DialogDescription>
@@ -109,7 +115,23 @@ export function ApplicationReview({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="basic" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Basic Info
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <UserCircle className="h-4 w-4" />
+              Detailed Profile
+            </TabsTrigger>
+            <TabsTrigger value="skills" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Skill Analysis
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="basic" className="space-y-6 mt-6">
           {/* Application Details */}
           <Card>
             <CardHeader className="pb-3">
@@ -286,7 +308,19 @@ export function ApplicationReview({
               </CardContent>
             </Card>
           )}
-        </div>
+          </TabsContent>
+
+          <TabsContent value="profile" className="mt-6">
+            <ApplicationReviewDetail applicantId={application.applicant_id} />
+          </TabsContent>
+
+          <TabsContent value="skills" className="mt-6">
+            <SkillCompatibilityAnalysis
+              applicantId={application.applicant_id}
+              questId={questId}
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   )

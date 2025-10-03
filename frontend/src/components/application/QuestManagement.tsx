@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Link } from "@tanstack/react-router"
-import { Eye, Users, Clock, MessageCircle, FileText, Plus, Settings, CheckCircle } from "lucide-react"
+import { Eye, Users, Clock, MessageCircle, FileText, Plus, Settings, CheckCircle, GitCompare, UserCheck } from "lucide-react"
 
 import type { QuestPublic, ApplicationStatus } from "@/client"
 import useMyQuests from "@/hooks/useMyQuests"
@@ -13,6 +13,8 @@ import useQuestClose from "@/hooks/useQuestClose"
 import { formatDate, getCategoryColor, getQuestStatusColor } from "@/utils/formatters"
 import { ApplicationCard } from "./ApplicationCard"
 import { ApplicationReview } from "./ApplicationReview"
+import { ApplicationComparison } from "./ApplicationComparison"
+import { PartyFormationPreview } from "./PartyFormationPreview"
 import { QuestCloseDialog } from "../quest/QuestCloseDialog"
 
 const statusTabs: { value: ApplicationStatus | "all"; label: string; icon: any }[] = [
@@ -128,6 +130,8 @@ export function QuestManagement() {
   const [selectedQuest, setSelectedQuest] = useState<QuestPublic | null>(null)
   const [activeTab, setActiveTab] = useState<ApplicationStatus | "all">("all")
   const [reviewingApplication, setReviewingApplication] = useState<any>(null)
+  const [showComparison, setShowComparison] = useState(false)
+  const [showPartyPreview, setShowPartyPreview] = useState(false)
 
   const { data: questsData, isLoading: questsLoading } = useMyQuests()
   const { data: applicationsData, isLoading: applicationsLoading } = useQuestApplications({
@@ -255,25 +259,47 @@ export function QuestManagement() {
                     </p>
                   </div>
                   {selectedQuest.status === "RECRUITING" && (
-                    <div className="text-right">
+                    <div className="text-right space-y-2">
                       <div className="text-sm text-muted-foreground mb-2">
                         Party Size: {approvedApplicationsCount + 1} / {selectedQuest.party_size_min}-{selectedQuest.party_size_max}
                       </div>
-                      <QuestCloseDialog
-                        quest={selectedQuest}
-                        approvedApplicationsCount={approvedApplicationsCount}
-                        onClose={() => handleCloseQuest(selectedQuest.id)}
-                        isLoading={isClosing}
-                      >
-                        <Button
-                          variant={approvedApplicationsCount + 1 >= selectedQuest.party_size_min ? "destructive" : "outline"}
-                          size="sm"
-                          disabled={approvedApplicationsCount + 1 < selectedQuest.party_size_min || isClosing}
+                      <div className="flex gap-2">
+                        {applications.filter((app) => app.status === "PENDING").length >= 2 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowComparison(true)}
+                          >
+                            <GitCompare className="h-4 w-4 mr-2" />
+                            Compare
+                          </Button>
+                        )}
+                        {approvedApplicationsCount > 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowPartyPreview(true)}
+                          >
+                            <UserCheck className="h-4 w-4 mr-2" />
+                            Preview Party
+                          </Button>
+                        )}
+                        <QuestCloseDialog
+                          quest={selectedQuest}
+                          approvedApplicationsCount={approvedApplicationsCount}
+                          onClose={() => handleCloseQuest(selectedQuest.id)}
+                          isLoading={isClosing}
                         >
-                          <Settings className="h-4 w-4 mr-2" />
-                          Close Quest
-                        </Button>
-                      </QuestCloseDialog>
+                          <Button
+                            variant={approvedApplicationsCount + 1 >= selectedQuest.party_size_min ? "destructive" : "outline"}
+                            size="sm"
+                            disabled={approvedApplicationsCount + 1 < selectedQuest.party_size_min || isClosing}
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Close Quest
+                          </Button>
+                        </QuestCloseDialog>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -347,12 +373,43 @@ export function QuestManagement() {
       )}
 
       {/* Application Review Dialog */}
-      {reviewingApplication && (
+      {reviewingApplication && selectedQuest && (
         <ApplicationReview
           application={reviewingApplication}
+          questId={selectedQuest.id}
           isOpen={!!reviewingApplication}
           onClose={() => setReviewingApplication(null)}
         />
+      )}
+
+      {/* Application Comparison Dialog */}
+      {selectedQuest && (
+        <ApplicationComparison
+          applications={applications.filter((app) => app.status === "PENDING")}
+          questId={selectedQuest.id}
+          isOpen={showComparison}
+          onClose={() => setShowComparison(false)}
+        />
+      )}
+
+      {/* Party Formation Preview Dialog */}
+      {selectedQuest && approvedApplicationsCount > 0 && (
+        <div className={showPartyPreview ? "block" : "hidden"}>
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowPartyPreview(false)}>
+            <div className="fixed right-0 top-0 bottom-0 w-full md:w-[500px] bg-background p-6 overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Party Formation Preview</h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowPartyPreview(false)}>
+                  ✕
+                </Button>
+              </div>
+              <PartyFormationPreview
+                quest={selectedQuest}
+                approvedApplications={approvedApplicationsData?.data || []}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
