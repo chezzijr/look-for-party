@@ -29,7 +29,13 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
   const { user: currentUser } = useAuth()
   const { data: quest, isLoading, error } = useQuestDetail(questId)
   const { data: userApplication, isLoading: applicationLoading } = useUserQuestApplication({ questId })
-  const { data: approvedApplications } = useQuestApplications({ questId, status: "APPROVED" })
+
+  // Only fetch approved applications if user is the quest creator
+  const isOwnQuest = currentUser?.id === quest?.creator_id
+  const { data: approvedApplications } = useQuestApplications(
+    { questId, status: "APPROVED" },
+    { enabled: isOwnQuest }
+  )
   const [showApplicationForm, setShowApplicationForm] = useState(false)
 
   // Quest closing functionality
@@ -92,7 +98,6 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
     )
   }
 
-  const isOwnQuest = currentUser?.id === quest.creator_id
   const hasExistingApplication = !!userApplication
   const canApply = !isOwnQuest && !hasExistingApplication && quest.status === "RECRUITING"
 
