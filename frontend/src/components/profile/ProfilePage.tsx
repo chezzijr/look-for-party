@@ -11,7 +11,7 @@ import ProfileHeader from "./ProfileHeader"
 import ProfileInfo from "./ProfileInfo"
 import SkillTagManager from "./SkillTagManager"
 import ReputationDisplay from "./ReputationDisplay"
-import QuestHistory from "./QuestHistory"
+import ProfileActivity from "./ProfileActivity"
 
 interface ProfilePageProps {
   isOwnProfile: boolean
@@ -70,7 +70,7 @@ export default function ProfilePage({ isOwnProfile, userId }: ProfilePageProps) 
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="reputation">Reputation</TabsTrigger>
-          <TabsTrigger value="quests">Quest History</TabsTrigger>
+          <TabsTrigger value="quests">Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-6">
@@ -91,7 +91,7 @@ export default function ProfilePage({ isOwnProfile, userId }: ProfilePageProps) 
         </TabsContent>
 
         <TabsContent value="quests" className="mt-6">
-          <QuestHistory userId={targetUserId} />
+          <ProfileActivity userId={targetUserId} />
         </TabsContent>
       </Tabs>
     </div>
