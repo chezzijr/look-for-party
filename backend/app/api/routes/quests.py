@@ -22,6 +22,7 @@ from app.models import (
     QuestMemberAssignRequest,
     QuestMemberCreate,
     QuestMemberRole,
+    QuestMemberStatus,
     QuestPublic,
     QuestPublicizeRequest,
     QuestsPublic,
@@ -38,7 +39,8 @@ def get_quest_member_count(session: SessionDep, quest_id: uuid.UUID) -> int:
     """Get the count of active quest members for a quest."""
     count = session.exec(
         select(func.count(col(QuestMember.id))).where(
-            QuestMember.quest_id == quest_id, QuestMember.status == "ACTIVE"
+            QuestMember.quest_id == quest_id,
+            QuestMember.status == QuestMemberStatus.ACTIVE,
         )
     ).one()
     return count
@@ -313,6 +315,12 @@ def publicize_quest(
 
     if quest.is_publicized:
         raise HTTPException(status_code=400, detail="Quest is already publicized")
+
+    # Check if quest is recruiting
+    if quest.status != QuestStatus.RECRUITING:
+        raise HTTPException(
+            status_code=400, detail="Only recruiting quests can be publicized"
+        )
 
     # Check permissions - user must be party owner/moderator or quest creator
     if quest.parent_party_id:

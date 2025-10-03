@@ -7,6 +7,7 @@ from sqlmodel import select
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep
+from app.api.routes.quests import create_quest_public_response
 from app.models import (
     JoinMethod,
     Message,
@@ -412,7 +413,7 @@ def create_party_quest(
     session.commit()  # Single commit for both operations
     session.refresh(creator_member)
 
-    return quest_data
+    return create_quest_public_response(session, quest_data)
 
 
 @router.get("/{party_id}/quests", response_model=list[QuestPublic])
@@ -455,4 +456,4 @@ def get_party_quests(
         query = query.where(Quest.quest_type == quest_type)
 
     quests = session.exec(query).all()
-    return quests
+    return [create_quest_public_response(session, quest) for quest in quests]

@@ -75,6 +75,17 @@ export default function useQuestClose(options: UseQuestCloseOptions = {}) {
           query.queryKey[1] === closedQuest.id
       })
 
+      // Invalidate party quests for the created/expanded party
+      if (closedQuest.quest_type === "INDIVIDUAL" && closedQuest.party_id) {
+        queryClient.invalidateQueries({
+          queryKey: ["party-quests", closedQuest.party_id]
+        })
+      } else if (closedQuest.quest_type === "PARTY_EXPANSION" && closedQuest.parent_party_id) {
+        queryClient.invalidateQueries({
+          queryKey: ["party-quests", closedQuest.parent_party_id]
+        })
+      }
+
       // Call custom success handler
       if (options.onSuccess) {
         options.onSuccess(closedQuest.id)
