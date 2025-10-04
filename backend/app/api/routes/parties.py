@@ -413,7 +413,9 @@ def create_party_quest(
     session.commit()  # Single commit for both operations
     session.refresh(creator_member)
 
-    return create_quest_public_response(session, quest_data)
+    return create_quest_public_response(
+        session, quest_data, current_user=current_user, include_members=True
+    )
 
 
 @router.get("/{party_id}/quests", response_model=list[QuestPublic])
@@ -456,4 +458,9 @@ def get_party_quests(
         query = query.where(Quest.quest_type == quest_type)
 
     quests = session.exec(query).all()
-    return [create_quest_public_response(session, quest) for quest in quests]
+    return [
+        create_quest_public_response(
+            session, quest, current_user=current_user, include_members=True
+        )
+        for quest in quests
+    ]

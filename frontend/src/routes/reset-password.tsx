@@ -35,7 +35,7 @@ export const Route = createFileRoute("/reset-password")({
 
 function ResetPassword() {
   const form = useForm<NewPasswordForm>({
-    mode: "onBlur",
+    mode: "onTouched",
     criteriaMode: "all",
     defaultValues: {
       new_password: "",

@@ -23,7 +23,7 @@ const UserInformation = () => {
   const [editMode, setEditMode] = useState(false)
   const { user: currentUser } = useAuth()
   const form = useForm<UserPublic>({
-    mode: "onBlur",
+    mode: "onTouched",
     criteriaMode: "all",
     defaultValues: {
       full_name: currentUser?.full_name,

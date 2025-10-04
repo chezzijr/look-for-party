@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { QuestApplicationForm } from "./QuestApplicationForm"
 import { QuestCloseDialog } from "./QuestCloseDialog"
+import { QuestMembersList } from "./QuestMembersList"
 import useQuestDetail from "@/hooks/useQuestDetail"
 import useAuth from "@/hooks/useAuth"
 import useUserQuestApplication from "@/hooks/useUserQuestApplication"
@@ -258,6 +259,30 @@ export function QuestDetailPage({ questId }: QuestDetailPageProps) {
               </CardContent>
             </Card>
           </div>
+
+          {/* Quest Members Section - Show if user is creator or quest is in progress/completed */}
+          {(isOwnQuest || quest?.status === "IN_PROGRESS" || quest?.status === "COMPLETED") && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Quest Members ({quest?.quest_members_count || 0})
+                </CardTitle>
+                <CardDescription>
+                  {isOwnQuest
+                    ? "Members currently assigned to this quest"
+                    : "Team members working on this quest"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <QuestMembersList
+                  questId={questId}
+                  canManage={isOwnQuest}
+                  showAssignmentReasons={isOwnQuest}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Application Section */}
           <Card>

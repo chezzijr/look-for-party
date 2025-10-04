@@ -34,7 +34,7 @@ export function QuestApplicationForm({ questId, onSuccess, onCancel }: QuestAppl
     formState: { errors, isValid, isSubmitting },
   } = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
-    mode: "onBlur",
+    mode: "onTouched",
   })
 
   const mutation = useMutation({

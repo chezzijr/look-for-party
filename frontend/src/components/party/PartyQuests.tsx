@@ -18,6 +18,7 @@ import {
   XCircle
 } from "lucide-react"
 import { formatDate, getQuestStatusColor } from "@/utils/formatters"
+import { QuestMembersList } from "@/components/quest/QuestMembersList"
 import type { PartyPublic, QuestPublic, PartyMemberDetail } from "@/client"
 import { QuestCreateModal } from "./QuestCreateModal"
 import { QuestAssignModal } from "./QuestAssignModal"
@@ -127,6 +128,17 @@ function QuestCard({ quest, type, onPublicize, onAssign, onComplete, onCancel, c
           </div>
         )}
 
+        {/* Show compact member preview for internal quests with assigned members */}
+        {type === "internal" && assignedCount > 0 && (
+          <div className="pt-2 border-t">
+            <QuestMembersList
+              questId={quest.id}
+              compact={true}
+              maxDisplay={3}
+            />
+          </div>
+        )}
+
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" asChild>
             <Link to="/quests/$questId" params={{ questId: quest.id }}>
@@ -135,7 +147,7 @@ function QuestCard({ quest, type, onPublicize, onAssign, onComplete, onCancel, c
             </Link>
           </Button>
 
-          {canManage && type === "internal" && !quest.is_publicized && (
+          {canManage && type === "internal" && !quest.is_publicized && isRecruiting && (
             <>
               <Button
                 variant="ghost"
@@ -156,7 +168,7 @@ function QuestCard({ quest, type, onPublicize, onAssign, onComplete, onCancel, c
             </>
           )}
 
-          {canManage && type === "hybrid" && !quest.is_publicized && (
+          {canManage && type === "hybrid" && !quest.is_publicized && isRecruiting && (
             <Button
               variant="ghost"
               size="sm"

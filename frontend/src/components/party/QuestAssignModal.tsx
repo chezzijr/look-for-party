@@ -59,23 +59,17 @@ export function QuestAssignModal({
     },
   })
 
-  // Filter out currently assigned members
+  // Filter out currently assigned members using quest_members array
   const availableMembers = members.filter((member) => {
-    if (!quest?.assigned_member_ids) return true
+    if (!quest?.quest_members || quest.quest_members.length === 0) return true
 
-    try {
-      const assignedIds = JSON.parse(quest.assigned_member_ids)
-      const memberId = member.user?.id || member.user_id
-      return !assignedIds.includes(memberId)
-    } catch {
-      return true
-    }
+    const memberId = member.user?.id || member.user_id
+    // Check if member is already in quest_members
+    return !quest.quest_members.some((qm) => qm.user_id === memberId)
   })
 
-  // Get currently assigned member count
-  const currentAssignedCount = quest?.assigned_member_ids
-    ? JSON.parse(quest.assigned_member_ids).length
-    : 0
+  // Get currently assigned member count from quest_members
+  const currentAssignedCount = quest?.quest_members?.length ?? 0
 
   const handleSubmit = async (data: AssignFormData) => {
     try {

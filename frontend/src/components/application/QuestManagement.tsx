@@ -26,7 +26,7 @@ const statusTabs: { value: ApplicationStatus | "all"; label: string; icon: any }
 
 interface QuestCardProps {
   quest: QuestPublic
-  onSelectQuest: (quest: QuestPublic) => void
+  onSelectQuest: (questId: string) => void
   isSelected: boolean
   approvedApplicationsCount: number
   onCloseQuest: (questId: string) => void
@@ -41,7 +41,7 @@ function QuestCard({ quest, onSelectQuest, isSelected, approvedApplicationsCount
       className={`cursor-pointer transition-colors ${
         isSelected ? "ring-2 ring-primary" : "hover:bg-muted/50"
       }`}
-      onClick={() => onSelectQuest(quest)}
+      onClick={() => onSelectQuest(quest.id)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -127,7 +127,7 @@ function QuestCard({ quest, onSelectQuest, isSelected, approvedApplicationsCount
 }
 
 export function QuestManagement() {
-  const [selectedQuest, setSelectedQuest] = useState<QuestPublic | null>(null)
+  const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<ApplicationStatus | "all">("all")
   const [reviewingApplication, setReviewingApplication] = useState<any>(null)
   const [showComparison, setShowComparison] = useState(false)
@@ -135,11 +135,11 @@ export function QuestManagement() {
 
   const { data: questsData, isLoading: questsLoading } = useMyQuests()
   const { data: applicationsData, isLoading: applicationsLoading } = useQuestApplications({
-    questId: selectedQuest?.id || "",
+    questId: selectedQuestId || "",
     status: activeTab === "all" ? undefined : activeTab
   })
   const { data: approvedApplicationsData } = useQuestApplications({
-    questId: selectedQuest?.id || "",
+    questId: selectedQuestId || "",
     status: "APPROVED"
   })
 
@@ -147,9 +147,9 @@ export function QuestManagement() {
   const { closeQuest, isClosing } = useQuestClose({
     navigateToParty: false, // Stay in quest management view
     onSuccess: (questId) => {
-      // Refresh the quest list after closing
-      if (selectedQuest?.id === questId) {
-        setSelectedQuest(null)
+      // Clear selection if the closed quest was selected
+      if (selectedQuestId === questId) {
+        setSelectedQuestId(null)
       }
     }
   })
@@ -158,9 +158,12 @@ export function QuestManagement() {
   const applications = applicationsData?.data || []
   const approvedApplicationsCount = approvedApplicationsData?.data?.length || 0
 
+  // Derive selected quest from quests array to ensure we always have the latest data
+  const selectedQuest = quests.find(q => q.id === selectedQuestId) || null
+
   // Auto-select first quest if none selected
-  if (quests.length > 0 && !selectedQuest) {
-    setSelectedQuest(quests[0])
+  if (quests.length > 0 && !selectedQuestId) {
+    setSelectedQuestId(quests[0].id)
   }
 
   const handleReviewApplication = (application: any) => {
@@ -229,13 +232,13 @@ export function QuestManagement() {
             <div className="space-y-3">
               {quests.map((quest) => {
                 // Get approved applications count for each quest
-                const questApprovedCount = quest.id === selectedQuest?.id ? approvedApplicationsCount : 0
+                const questApprovedCount = quest.id === selectedQuestId ? approvedApplicationsCount : 0
                 return (
                   <QuestCard
                     key={quest.id}
                     quest={quest}
-                    onSelectQuest={setSelectedQuest}
-                    isSelected={selectedQuest?.id === quest.id}
+                    onSelectQuest={setSelectedQuestId}
+                    isSelected={selectedQuestId === quest.id}
                     approvedApplicationsCount={questApprovedCount}
                     onCloseQuest={handleCloseQuest}
                     isClosing={isClosing}

@@ -8,7 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from .application import QuestApplication
     from .party import Party
-    from .quest_member import QuestMember
+    from .quest_member import QuestMember, QuestMemberPublic
     from .tag import QuestTag
     from .user import User
 
@@ -199,6 +199,7 @@ class QuestPublic(QuestBase):
     is_publicized: bool = False
     publicized_at: datetime | None = None
     quest_members_count: int = 0
+    quest_members: list["QuestMemberPublic"] | None = None
 
 
 class QuestDetail(QuestPublic):

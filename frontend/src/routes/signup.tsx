@@ -42,7 +42,7 @@ interface UserRegisterForm extends UserRegister {
 function SignUp() {
   const { signUpMutation } = useAuth()
   const form = useForm<UserRegisterForm>({
-    mode: "onBlur",
+    mode: "onTouched",
     criteriaMode: "all",
     defaultValues: {
       email: "",

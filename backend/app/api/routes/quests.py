@@ -21,6 +21,7 @@ from app.models import (
     QuestMember,
     QuestMemberAssignRequest,
     QuestMemberCreate,
+    QuestMemberPublic,
     QuestMemberRole,
     QuestMemberStatus,
     QuestPublic,
@@ -35,6 +36,39 @@ from app.models import (
 router = APIRouter(prefix="/quests", tags=["quests"])
 
 
+def check_quest_member_access(session: SessionDep, quest: Quest, user: Any) -> bool:
+    """Check if user has access to view quest members."""
+    # User is quest creator
+    if quest.creator_id == user.id:
+        return True
+
+    # User is an active quest member
+    user_quest_member = session.exec(
+        select(QuestMember).where(
+            QuestMember.quest_id == quest.id,
+            QuestMember.user_id == user.id,
+            QuestMember.status == QuestMemberStatus.ACTIVE,
+        )
+    ).first()
+    if user_quest_member:
+        return True
+
+    # For party quests, check if user is party member
+    party_id = quest.party_id or quest.parent_party_id
+    if party_id:
+        party_member = session.exec(
+            select(PartyMember).where(
+                PartyMember.party_id == party_id,
+                PartyMember.user_id == user.id,
+                PartyMember.status == "active",
+            )
+        ).first()
+        if party_member:
+            return True
+
+    return False
+
+
 def get_quest_member_count(session: SessionDep, quest_id: uuid.UUID) -> int:
     """Get the count of active quest members for a quest."""
     count = session.exec(
@@ -46,13 +80,29 @@ def get_quest_member_count(session: SessionDep, quest_id: uuid.UUID) -> int:
     return count
 
 
-def create_quest_public_response(session: SessionDep, quest: Any) -> QuestPublic:
-    """Create QuestPublic response with quest member count populated."""
+def create_quest_public_response(
+    session: SessionDep,
+    quest: Any,
+    current_user: Any | None = None,
+    include_members: bool = False,
+) -> QuestPublic:
+    """Create QuestPublic response with quest member count and optional members list."""
     # Convert the quest to QuestPublic format
     quest_data = QuestPublic.model_validate(quest)
 
-    # Add the quest member count
-    quest_data.quest_members_count = get_quest_member_count(session, quest.id)
+    # Use the quest_members relationship to get active members
+    # This uses the existing SQLAlchemy relationship instead of a separate query
+    active_members = [
+        m for m in quest.quest_members if m.status == QuestMemberStatus.ACTIVE
+    ]
+    quest_data.quest_members_count = len(active_members)
+
+    # Conditionally include quest members list
+    if include_members and current_user:
+        if check_quest_member_access(session, quest, current_user):
+            quest_data.quest_members = [
+                QuestMemberPublic.model_validate(m) for m in active_members
+            ]
 
     return quest_data
 
@@ -148,8 +198,11 @@ def read_my_quests(
         session=session, creator_id=current_user.id, skip=skip, limit=limit
     )
 
-    # Convert to QuestPublic with member counts
-    quest_responses = [create_quest_public_response(session, quest) for quest in quests]
+    # Convert to QuestPublic with member counts and members list
+    quest_responses = [
+        create_quest_public_response(session, quest, current_user, include_members=True)
+        for quest in quests
+    ]
 
     return QuestsPublic(data=quest_responses, count=count)
 
@@ -214,7 +267,9 @@ def create_quest(
     session.commit()
     session.refresh(creator_member)
 
-    return create_quest_public_response(session, quest)
+    return create_quest_public_response(
+        session, quest, current_user, include_members=True
+    )
 
 
 @router.get("/{quest_id}", response_model=QuestPublic)
@@ -266,7 +321,9 @@ def update_quest(
 
     quest = crud.update_quest(session=session, db_quest=quest, quest_in=quest_in)
 
-    return create_quest_public_response(session, quest)
+    return create_quest_public_response(
+        session, quest, current_user, include_members=True
+    )
 
 
 @router.delete("/{quest_id}")
@@ -355,7 +412,9 @@ def publicize_quest(
     session.commit()
     session.refresh(quest)
 
-    return create_quest_public_response(session, quest)
+    return create_quest_public_response(
+        session, quest, current_user, include_members=True
+    )
 
 
 @router.post("/{quest_id}/assign-members", response_model=QuestPublic)
@@ -456,7 +515,9 @@ def assign_quest_members(
     session.commit()
     session.refresh(quest)
 
-    return create_quest_public_response(session, quest)
+    return create_quest_public_response(
+        session, quest, current_user, include_members=True
+    )
 
 
 @router.post("/{quest_id}/close", response_model=QuestPublic)
@@ -613,7 +674,9 @@ def close_quest(
     session.commit()
     session.refresh(quest)
 
-    return create_quest_public_response(session, quest)
+    return create_quest_public_response(
+        session, quest, current_user, include_members=True
+    )
 
 
 @router.post("/{quest_id}/complete", response_model=QuestPublic)
@@ -677,7 +740,9 @@ def complete_quest(
     session.commit()
     session.refresh(quest)
 
-    return create_quest_public_response(session, quest)
+    return create_quest_public_response(
+        session, quest, current_user, include_members=True
+    )
 
 
 @router.post("/{quest_id}/cancel", response_model=QuestPublic)
@@ -742,4 +807,6 @@ def cancel_quest(
     session.commit()
     session.refresh(quest)
 
-    return create_quest_public_response(session, quest)
+    return create_quest_public_response(
+        session, quest, current_user, include_members=True
+    )
