@@ -308,6 +308,7 @@ export type QuestPublic = {
   is_publicized?: boolean
   publicized_at?: string | null
   quest_members_count?: number
+  quest_members?: Array<QuestMemberPublic> | null
 }
 
 /**

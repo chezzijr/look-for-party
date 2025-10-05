@@ -8,6 +8,13 @@ import type { QuestCreate } from "@/client"
 
 export const Route = createFileRoute("/_layout/quests/create")({
   component: CreateQuest,
+  head: () => ({
+    meta: [
+      {
+        title: "Create Quest | Look For Party",
+      },
+    ],
+  }),
 })
 
 function CreateQuest() {

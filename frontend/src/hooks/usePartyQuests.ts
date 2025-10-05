@@ -115,7 +115,9 @@ export function usePublicizeQuest() {
       // Invalidate party quests for the parent party
       if (data.parent_party_id) {
         queryClient.invalidateQueries({
-          queryKey: ["party-quests", data.parent_party_id]
+          predicate: (query) =>
+            query.queryKey[0] === "party-quests" &&
+            query.queryKey[1] === data.parent_party_id
         })
       }
     },
@@ -157,7 +159,9 @@ export function useAssignQuestMembers() {
       // Invalidate party quests for the parent party
       if (data.parent_party_id) {
         queryClient.invalidateQueries({
-          queryKey: ["party-quests", data.parent_party_id]
+          predicate: (query) =>
+            query.queryKey[0] === "party-quests" &&
+            query.queryKey[1] === data.parent_party_id
         })
       }
     },
@@ -190,7 +194,9 @@ export function useCompleteQuest() {
       // Invalidate party quests for the parent party
       if (data.parent_party_id) {
         queryClient.invalidateQueries({
-          queryKey: ["party-quests", data.parent_party_id]
+          predicate: (query) =>
+            query.queryKey[0] === "party-quests" &&
+            query.queryKey[1] === data.parent_party_id
         })
       }
     },
@@ -223,7 +229,9 @@ export function useCancelQuest() {
       // Invalidate party quests for the parent party
       if (data.parent_party_id) {
         queryClient.invalidateQueries({
-          queryKey: ["party-quests", data.parent_party_id]
+          predicate: (query) =>
+            query.queryKey[0] === "party-quests" &&
+            query.queryKey[1] === data.parent_party_id
         })
       }
     },

@@ -26,6 +26,13 @@ export const Route = createFileRoute("/signup")({
       })
     }
   },
+  head: () => ({
+    meta: [
+      {
+        title: "Sign Up | Look For Party",
+      },
+    ],
+  }),
 })
 
 interface UserRegisterForm extends UserRegister {
@@ -35,7 +42,7 @@ interface UserRegisterForm extends UserRegister {
 function SignUp() {
   const { signUpMutation } = useAuth()
   const form = useForm<UserRegisterForm>({
-    mode: "onBlur",
+    mode: "onTouched",
     criteriaMode: "all",
     defaultValues: {
       email: "",

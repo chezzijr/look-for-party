@@ -1,4 +1,4 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router"
+import { HeadContent, Outlet, createRootRoute } from "@tanstack/react-router"
 import React, { Suspense } from "react"
 import '@/styles/global.css'
 
@@ -25,6 +25,7 @@ const TanStackDevtools =
 export const Route = createRootRoute({
   component: () => (
     <>
+      <HeadContent />
       <Outlet />
       <Suspense>
         <TanStackDevtools />

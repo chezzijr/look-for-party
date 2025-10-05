@@ -16,6 +16,13 @@ const tabsConfig = [
 
 export const Route = createFileRoute("/_layout/settings")({
   component: UserSettings,
+  head: () => ({
+    meta: [
+      {
+        title: "Settings | Look For Party",
+      },
+    ],
+  }),
 })
 
 function UserSettings() {

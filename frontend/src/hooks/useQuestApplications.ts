@@ -7,14 +7,21 @@ interface UseQuestApplicationsOptions {
   status?: ApplicationStatus
 }
 
-export const useQuestApplications = ({ questId, status }: UseQuestApplicationsOptions) => {
+interface UseQuestApplicationsQueryOptions {
+  enabled?: boolean
+}
+
+export const useQuestApplications = (
+  { questId, status }: UseQuestApplicationsOptions,
+  options?: UseQuestApplicationsQueryOptions
+) => {
   return useQuery<QuestApplicationsPublic>({
     queryKey: ["quest-applications", questId, status],
     queryFn: () => QuestApplicationsService.readQuestApplications({
       questId,
       status: status || null,
     }),
-    enabled: !!questId,
+    enabled: (options?.enabled ?? true) && !!questId,
   })
 }
 

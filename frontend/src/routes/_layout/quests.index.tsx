@@ -3,6 +3,13 @@ import { QuestBoard } from "@/components/quest/QuestBoard"
 
 export const Route = createFileRoute("/_layout/quests/")({
   component: QuestsIndex,
+  head: () => ({
+    meta: [
+      {
+        title: "Quest Board | Look For Party",
+      },
+    ],
+  }),
 })
 
 function QuestsIndex() {

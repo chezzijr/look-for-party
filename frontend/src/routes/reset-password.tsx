@@ -24,11 +24,18 @@ export const Route = createFileRoute("/reset-password")({
       })
     }
   },
+  head: () => ({
+    meta: [
+      {
+        title: "Reset Password | Look For Party",
+      },
+    ],
+  }),
 })
 
 function ResetPassword() {
   const form = useForm<NewPasswordForm>({
-    mode: "onBlur",
+    mode: "onTouched",
     criteriaMode: "all",
     defaultValues: {
       new_password: "",

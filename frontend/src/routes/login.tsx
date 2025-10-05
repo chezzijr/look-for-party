@@ -26,12 +26,19 @@ export const Route = createFileRoute("/login")({
       })
     }
   },
+  head: () => ({
+    meta: [
+      {
+        title: "Log In | Look For Party",
+      },
+    ],
+  }),
 })
 
 function Login() {
   const { loginMutation, error, resetError } = useAuth()
   const form = useForm<AccessToken>({
-    mode: "onBlur",
+    mode: "onTouched",
     criteriaMode: "all",
     defaultValues: {
       username: "",

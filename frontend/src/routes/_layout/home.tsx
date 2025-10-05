@@ -7,6 +7,13 @@ import { EmptyParties } from "@/components/party/EmptyParties"
 
 export const Route = createFileRoute("/_layout/home")({
   component: Dashboard,
+  head: () => ({
+    meta: [
+      {
+        title: "My Parties | Look For Party",
+      },
+    ],
+  }),
 })
 
 function Dashboard() {
