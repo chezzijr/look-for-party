@@ -29,15 +29,15 @@ export default function ProfilePage({ isOwnProfile, userId }: ProfilePageProps) 
   // Fetch user profile data
   const { data: profileUser, isLoading: isLoadingProfile } = useQuery<UserPublic>({
     queryKey: ["user-profile", targetUserId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!targetUserId) {
         throw new Error("User ID is required")
       }
-      // Always fetch fresh data from API, even for own profile
-      // This ensures UI updates after profile edits
-      return UsersService.readUserMe()
+      return isOwnProfile
+        ? UsersService.readUserMe()
+        : UsersService.readUserById({ userId: targetUserId })
     },
-    enabled: !!targetUserId && isOwnProfile,
+    enabled: !!targetUserId,
   })
 
   if (isLoadingProfile) {
