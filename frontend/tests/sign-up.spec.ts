@@ -66,15 +66,11 @@ test("Sign up with valid name, email, and password", async ({ page }) => {
 test("Sign up with invalid email", async ({ page }) => {
   await page.goto("/signup")
 
-  await fillForm(
-    page,
-    "Playwright Test",
-    "invalid-email",
-    "changethis",
-    "changethis",
-  )
-  await page.getByRole("button", { name: "Sign Up" }).click()
-
+  await page.getByPlaceholder("Enter your full name").fill("Playwright Test")
+  const emailInput = page.getByPlaceholder("Enter your email")
+  await emailInput.click()
+  await emailInput.blur() // Mark as touched
+  await emailInput.fill("invalid-email") // Triggers validation
   await expect(page.getByText("Invalid email address")).toBeVisible()
 })
 
@@ -107,9 +103,12 @@ test("Sign up with weak password", async ({ page }) => {
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
-  await page.getByRole("button", { name: "Sign Up" }).click()
-
+  await page.getByPlaceholder("Enter your full name").fill(fullName)
+  await page.getByPlaceholder("Enter your email").fill(email)
+  const passwordInput = page.getByPlaceholder("Enter your password")
+  await passwordInput.click()
+  await passwordInput.blur() // Mark as touched
+  await passwordInput.fill(password) // Triggers validation
   await expect(
     page.getByText("Password must be at least 8 characters"),
   ).toBeVisible()
@@ -123,20 +122,26 @@ test("Sign up with mismatched passwords", async ({ page }) => {
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password2)
-  await page.getByRole("button", { name: "Sign Up" }).click()
-
-  await expect(page.getByText("Passwords do not match")).toBeVisible()
+  await page.getByPlaceholder("Enter your full name").fill(fullName)
+  await page.getByPlaceholder("Enter your email").fill(email)
+  await page.getByPlaceholder("Enter your password").fill(password)
+  const confirmInput = page.getByPlaceholder("Confirm your password")
+  await confirmInput.click()
+  await confirmInput.blur() // Mark as touched
+  await confirmInput.fill(password2) // Triggers validation
+  await expect(page.getByText("The passwords do not match")).toBeVisible()
 })
 
 test("Sign up with missing full name", async ({ page }) => {
-  const fullName = ""
   const email = randomEmail()
   const password = randomPassword()
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  // Fill other fields first, then try to submit without full name
+  await page.getByPlaceholder("Enter your email").fill(email)
+  await page.getByPlaceholder("Enter your password").fill(password)
+  await page.getByPlaceholder("Confirm your password").fill(password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Full Name is required")).toBeVisible()
@@ -144,25 +149,28 @@ test("Sign up with missing full name", async ({ page }) => {
 
 test("Sign up with missing email", async ({ page }) => {
   const fullName = "Test User"
-  const email = ""
   const password = randomPassword()
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  // Fill other fields first, then try to submit without email
+  await page.getByPlaceholder("Enter your full name").fill(fullName)
+  await page.getByPlaceholder("Enter your password").fill(password)
+  await page.getByPlaceholder("Confirm your password").fill(password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Email is required")).toBeVisible()
 })
 
 test("Sign up with missing password", async ({ page }) => {
-  const fullName = ""
+  const fullName = "Test User"
   const email = randomEmail()
-  const password = ""
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  // Fill other fields first, then try to submit without password
+  await page.getByPlaceholder("Enter your full name").fill(fullName)
+  await page.getByPlaceholder("Enter your email").fill(email)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Password is required")).toBeVisible()

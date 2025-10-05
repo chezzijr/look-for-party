@@ -61,9 +61,10 @@ test("Log in with valid email and password ", async ({ page }) => {
 test("Log in with invalid email", async ({ page }) => {
   await page.goto("/login")
 
-  await fillForm(page, "invalidemail", firstSuperuserPassword)
-  await page.getByRole("button", { name: "Log In" }).click()
-
+  const emailInput = page.getByPlaceholder("Enter your email")
+  await emailInput.click() // Focus the field
+  await emailInput.blur() // Blur to mark as touched
+  await emailInput.fill("invalidemail") // Now validation triggers on input
   await expect(page.getByText("Invalid email address")).toBeVisible()
 })
 

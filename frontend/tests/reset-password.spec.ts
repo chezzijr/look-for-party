@@ -116,9 +116,7 @@ test("Weak new password validation", async ({ page, request }) => {
   // Set a weak new password
   await page.goto(url)
   await page.getByPlaceholder("Enter new password").fill(weakPassword)
-  await page.getByPlaceholder("Confirm new password").fill(weakPassword)
-  await page.getByRole("button", { name: "Reset Password" }).click()
-
+  // With onTouched mode, validation error appears immediately
   await expect(
     page.getByText("Password must be at least 8 characters"),
   ).toBeVisible({ timeout: 10000 })

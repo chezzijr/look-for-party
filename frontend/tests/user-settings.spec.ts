@@ -86,8 +86,10 @@ test.describe("Edit user with invalid data", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "My profile" }).click()
     await page.getByRole("button", { name: "Edit" }).click()
-    await page.getByLabel("Email").fill(invalidEmail)
-    await page.locator("body").click()
+    const emailInput = page.getByLabel("Email")
+    await emailInput.click()
+    await emailInput.blur() // Mark as touched
+    await emailInput.fill(invalidEmail) // Triggers validation
     await expect(page.getByText("Email is required")).toBeVisible()
   })
 
@@ -152,11 +154,8 @@ test.describe("Change password successfully", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "Password" }).click()
     await page.getByPlaceholder("Current Password").fill(password)
-    await page.getByPlaceholder("Current Password").blur()
     await page.getByPlaceholder("New Password").fill(NewPassword)
-    await page.getByPlaceholder("New Password").blur()
     await page.getByPlaceholder("Confirm Password").fill(NewPassword)
-    await page.getByPlaceholder("Confirm Password").blur()
     await page.getByRole("button", { name: "Save" }).click()
     await expect(page.getByText("Password updated successfully.")).toBeVisible({ timeout: 10000 })
 
@@ -183,8 +182,10 @@ test.describe("Change password with invalid data", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "Password" }).click()
     await page.getByPlaceholder("Current Password").fill(password)
-    await page.getByPlaceholder("New Password").fill(weakPassword)
-    await page.getByPlaceholder("Confirm Password").fill(weakPassword)
+    const newPasswordInput = page.getByPlaceholder("New Password")
+    await newPasswordInput.click()
+    await newPasswordInput.blur() // Mark as touched
+    await newPasswordInput.fill(weakPassword) // Triggers validation
     await expect(
       page.getByText("Password must be at least 8 characters"),
     ).toBeVisible()
@@ -207,8 +208,10 @@ test.describe("Change password with invalid data", () => {
     await page.getByRole("tab", { name: "Password" }).click()
     await page.getByPlaceholder("Current Password").fill(password)
     await page.getByPlaceholder("New Password").fill(newPassword)
-    await page.getByPlaceholder("Confirm Password").fill(confirmPassword)
-    await page.getByLabel("Password", { exact: true }).locator("form").click()
+    const confirmInput = page.getByPlaceholder("Confirm Password")
+    await confirmInput.click()
+    await confirmInput.blur() // Mark as touched
+    await confirmInput.fill(confirmPassword) // Triggers validation
     await expect(page.getByText("The passwords do not match")).toBeVisible()
   })
 
@@ -224,11 +227,8 @@ test.describe("Change password with invalid data", () => {
     await page.goto("/settings")
     await page.getByRole("tab", { name: "Password" }).click()
     await page.getByPlaceholder("Current Password").fill(password)
-    await page.getByPlaceholder("Current Password").blur()
     await page.getByPlaceholder("New Password").fill(password)
-    await page.getByPlaceholder("New Password").blur()
     await page.getByPlaceholder("Confirm Password").fill(password)
-    await page.getByPlaceholder("Confirm Password").blur()
     await page.getByRole("button", { name: "Save" }).click()
     await expect(
       page.getByText("New password cannot be the same as the current one"),
