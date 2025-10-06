@@ -21,6 +21,7 @@ from app.models import (
     PartyMemberUpdate,
     PartyPublic,
     PartyQuestCreate,
+    PartyStatus,
     PartyUpdate,
     Quest,
     QuestMember,
@@ -337,6 +338,13 @@ def create_party_quest(
     if party_member.role not in [PartyMemberRole.OWNER, PartyMemberRole.MODERATOR]:
         raise HTTPException(
             status_code=403, detail="Only party owners and moderators can create quests"
+        )
+
+    # Check if party is active (completed/archived parties cannot create quests)
+    if party.status in [PartyStatus.COMPLETED, PartyStatus.ARCHIVED]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot create quests for {party.status.lower()} parties. Only active parties can create quests.",
         )
 
     # Validate quest type specific requirements

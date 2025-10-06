@@ -22,6 +22,7 @@ from app.models import (
     Party,
     PartyMember,
     PartyMemberRole,
+    PartyStatus,
     Quest,
     QuestApplication,
     QuestMember,
@@ -345,6 +346,94 @@ class TestPartyQuestCreation:
         assert quest["internal_slots"] == 1
         assert quest["public_slots"] == 0
         assert quest["is_publicized"] is False
+
+    def test_completed_party_cannot_create_quest(
+        self,
+        client: TestClient,
+        db: Session,
+        existing_party: tuple[Party, list[PartyMember]],
+    ) -> None:
+        """Test: Completed party cannot create new quests (no new activity)"""
+        party, members = existing_party
+        owner = members[0]
+
+        # Set party status to COMPLETED
+        party.status = PartyStatus.COMPLETED
+        db.add(party)
+        db.commit()
+
+        # Get proper JWT token for owner
+        owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
+        assert owner_user
+        owner_headers = authentication_token_from_email(
+            client=client, email=owner_user.email, db=db
+        )
+
+        # Attempt to create internal quest
+        internal_quest_data = {
+            "title": "Should not be created",
+            "description": "Completed parties cannot create quests",
+            "objective": "This should fail",
+            "category": "PROFESSIONAL",
+            "quest_type": QuestType.PARTY_INTERNAL,
+            "required_commitment": "MODERATE",
+            "location_type": "REMOTE",
+            "internal_slots": 1,
+            "visibility": QuestVisibility.PRIVATE,
+        }
+
+        response = client.post(
+            f"{settings.API_V1_STR}/parties/{party.id}/quests",
+            headers=owner_headers,
+            json=internal_quest_data,
+        )
+        assert response.status_code == 400
+        assert "Cannot create quests for completed parties" in response.json()["detail"]
+
+    def test_archived_party_cannot_create_quest(
+        self,
+        client: TestClient,
+        db: Session,
+        existing_party: tuple[Party, list[PartyMember]],
+    ) -> None:
+        """Test: Archived party cannot create new quests (no new activity)"""
+        party, members = existing_party
+        owner = members[0]
+
+        # Set party status to ARCHIVED
+        party.status = PartyStatus.ARCHIVED
+        db.add(party)
+        db.commit()
+
+        # Get proper JWT token for owner
+        owner_user = db.exec(select(User).where(User.id == owner.user_id)).first()
+        assert owner_user
+        owner_headers = authentication_token_from_email(
+            client=client, email=owner_user.email, db=db
+        )
+
+        # Attempt to create expansion quest
+        expansion_quest_data = {
+            "title": "Should not be created",
+            "description": "Archived parties cannot create quests",
+            "objective": "This should fail",
+            "category": "PROFESSIONAL",
+            "quest_type": QuestType.PARTY_EXPANSION,
+            "party_size_min": 1,
+            "party_size_max": 2,
+            "public_slots": 2,
+            "required_commitment": "MODERATE",
+            "location_type": "REMOTE",
+            "visibility": QuestVisibility.PUBLIC,
+        }
+
+        response = client.post(
+            f"{settings.API_V1_STR}/parties/{party.id}/quests",
+            headers=owner_headers,
+            json=expansion_quest_data,
+        )
+        assert response.status_code == 400
+        assert "Cannot create quests for archived parties" in response.json()["detail"]
 
 
 class TestQuestPublicizingFlow:
