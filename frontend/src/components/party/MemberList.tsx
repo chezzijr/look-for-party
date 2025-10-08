@@ -220,22 +220,6 @@ export function MemberList({ partyId }: MemberListProps) {
           ))
         )}
       </div>
-
-      {/* Add Member Section */}
-      {canManage && (
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center space-y-4">
-              <div className="text-sm text-muted-foreground">
-                Add new members by creating a party expansion quest
-              </div>
-              <Button variant="outline">
-                Create Recruitment Quest
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
