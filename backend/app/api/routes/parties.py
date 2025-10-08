@@ -110,25 +110,20 @@ def update_party(
     party_in: PartyUpdate,
 ) -> Any:
     """
-    Update party (party leaders and quest creator only).
+    Update party (party owner only).
     """
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
 
-    # Check permissions - quest creator or party leader
-    quest = crud.get_quest(session=session, quest_id=party.quest_id)
-    is_creator = quest and quest.creator_id == current_user.id
-
-    # Check if user is a party leader
+    # Check permissions - party owner only
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(
-        m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"]
-        for m in members
-    )
+    is_owner = any(m.user_id == current_user.id and m.role == "OWNER" for m in members)
 
-    if not is_creator and not is_leader and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if not is_owner:
+        raise HTTPException(
+            status_code=403, detail="Only party owners can update party information"
+        )
 
     party = crud.update_party(session=session, db_party=party, party_in=party_in)
     return party
