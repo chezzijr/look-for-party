@@ -323,7 +323,7 @@ export class PartiesService {
 
   /**
    * Update Party
-   * Update party (party leaders and quest creator only).
+   * Update party (party owner only).
    * @param data The data for the request.
    * @param data.partyId
    * @param data.requestBody

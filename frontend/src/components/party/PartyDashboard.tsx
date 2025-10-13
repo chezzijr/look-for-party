@@ -9,7 +9,10 @@ import { PartyHeader } from "./PartyHeader"
 import { MemberList } from "./MemberList"
 import { PartyQuests } from "./PartyQuests"
 import { PartySettings } from "./PartySettings"
+import { RatingCTA } from "../rating/RatingCTA"
 import { getPartyStatusColor, formatDate } from "@/utils/formatters"
+import useAuth from "@/hooks/useAuth"
+import type { PartyMemberDetail } from "@/client"
 
 interface PartyDashboardProps {
   partyId: string
@@ -19,6 +22,15 @@ export function PartyDashboard({ partyId }: PartyDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const { data: party, isLoading: partyLoading, error: partyError } = usePartyDetail(partyId)
   const { data: membersData } = usePartyMembers(partyId)
+  const { user: currentUser } = useAuth()
+
+  // Check if current user is the party owner
+  const isOwner = membersData?.data?.some(
+    (member: PartyMemberDetail) => {
+      const userId = member.user?.id || member.user_id
+      return userId === currentUser?.id && member.role === "OWNER"
+    }
+  ) || false
 
   if (partyLoading) {
     return (
@@ -51,7 +63,7 @@ export function PartyDashboard({ partyId }: PartyDashboardProps) {
 
       {/* Main Tabs Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className={`grid w-full ${isOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
             Overview
@@ -64,13 +76,20 @@ export function PartyDashboard({ partyId }: PartyDashboardProps) {
             <Calendar className="h-4 w-4" />
             Quests
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
-          </TabsTrigger>
+          {isOwner && (
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          {/* Rating CTA - Show when party is completed */}
+          {(party.status === "COMPLETED" || party.status === "ARCHIVED") && (
+            <RatingCTA partyId={partyId} />
+          )}
+
           <div className="grid gap-6 md:grid-cols-2">
             {/* Party Stats */}
             <Card>
@@ -135,9 +154,11 @@ export function PartyDashboard({ partyId }: PartyDashboardProps) {
           <PartyQuests partyId={partyId} party={party} />
         </TabsContent>
 
-        <TabsContent value="settings">
-          <PartySettings partyId={partyId} party={party} />
-        </TabsContent>
+        {isOwner && (
+          <TabsContent value="settings">
+            <PartySettings partyId={partyId} party={party} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

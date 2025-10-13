@@ -297,14 +297,14 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
   const completeMutation = useCompleteQuest()
   const cancelMutation = useCancelQuest()
 
-  // Check if current user can manage quests (owner or moderator)
-  const canCreateQuests = membersData?.data?.some(
+  // Check if current user can manage quests (owner or moderator) AND party is ACTIVE
+  const canCreateQuests = party.status === "ACTIVE" && (membersData?.data?.some(
     (member: PartyMemberDetail) => {
       const userId = member.user?.id || member.user_id
       return userId === currentUser?.id &&
         (member.role === "OWNER" || member.role === "MODERATOR")
     }
-  ) || false
+  ) || false)
 
   const handleCreateQuest = () => {
     setIsCreateModalOpen(true)
@@ -390,15 +390,22 @@ export function PartyQuests({ partyId, party }: PartyQuestsProps) {
                 Create and manage quests for your party members or recruit new talent.
               </CardDescription>
             </div>
-            {canCreateQuests && (
-              <Button
-                className="flex items-center gap-2"
-                onClick={handleCreateQuest}
-              >
-                <Plus className="h-4 w-4" />
-                Create Quest
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              {party.status !== "ACTIVE" && party.status && (
+                <div className="text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-md">
+                  Quest creation disabled - Party is {party.status.toLowerCase()}
+                </div>
+              )}
+              {canCreateQuests && (
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={handleCreateQuest}
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Quest
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
       </Card>

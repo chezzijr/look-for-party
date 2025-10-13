@@ -21,6 +21,7 @@ from app.models import (
     PartyMemberUpdate,
     PartyPublic,
     PartyQuestCreate,
+    PartyStatus,
     PartyUpdate,
     Quest,
     QuestMember,
@@ -109,25 +110,20 @@ def update_party(
     party_in: PartyUpdate,
 ) -> Any:
     """
-    Update party (party leaders and quest creator only).
+    Update party (party owner only).
     """
     party = crud.get_party(session=session, party_id=party_id)
     if not party:
         raise HTTPException(status_code=404, detail="Party not found")
 
-    # Check permissions - quest creator or party leader
-    quest = crud.get_quest(session=session, quest_id=party.quest_id)
-    is_creator = quest and quest.creator_id == current_user.id
-
-    # Check if user is a party leader
+    # Check permissions - party owner only
     members = crud.get_party_members(session=session, party_id=party_id)
-    is_leader = any(
-        m.user_id == current_user.id and m.role in ["OWNER", "MODERATOR"]
-        for m in members
-    )
+    is_owner = any(m.user_id == current_user.id and m.role == "OWNER" for m in members)
 
-    if not is_creator and not is_leader and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if not is_owner:
+        raise HTTPException(
+            status_code=403, detail="Only party owners can update party information"
+        )
 
     party = crud.update_party(session=session, db_party=party, party_in=party_in)
     return party
@@ -337,6 +333,13 @@ def create_party_quest(
     if party_member.role not in [PartyMemberRole.OWNER, PartyMemberRole.MODERATOR]:
         raise HTTPException(
             status_code=403, detail="Only party owners and moderators can create quests"
+        )
+
+    # Check if party is active (completed/archived parties cannot create quests)
+    if party.status in [PartyStatus.COMPLETED, PartyStatus.ARCHIVED]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot create quests for {party.status.lower()} parties. Only active parties can create quests.",
         )
 
     # Validate quest type specific requirements

@@ -15,7 +15,12 @@ import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { PartiesService } from "@/client"
 import { toast } from "sonner"
-import type { PartyPublic } from "@/client"
+import type { PartyPublic, PartyMemberDetail } from "@/client"
+import { useIncompletePartyQuests } from "@/hooks/useIncompletePartyQuests"
+import { usePartyMembers } from "@/hooks/usePartyMembers"
+import { CompletePartyButton } from "./CompletePartyButton"
+import { ArchivePartyButton } from "./ArchivePartyButton"
+import useAuth from "@/hooks/useAuth"
 
 interface PartySettingsProps {
   partyId: string
@@ -25,7 +30,6 @@ interface PartySettingsProps {
 const partySettingsSchema = z.object({
   name: z.string().min(1, "Party name is required").max(100),
   description: z.string().max(500).optional(),
-  status: z.enum(["ACTIVE", "COMPLETED", "ARCHIVED"]),
   is_private: z.boolean(),
   auto_accept_applications: z.boolean(),
 })
@@ -44,12 +48,18 @@ export function PartySettings({ party }: PartySettingsProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const queryClient = useQueryClient()
 
+  // Get current user and party members for role checking
+  const { user: currentUser } = useAuth()
+  const { data: membersData } = usePartyMembers(party.id)
+
+  // Fetch incomplete quests to validate party completion
+  const { incompleteQuests, hasIncompleteQuests } = useIncompletePartyQuests(party.id)
+
   const form = useForm<PartySettingsForm>({
     resolver: zodResolver(partySettingsSchema),
     defaultValues: {
       name: party.name || "",
       description: party.description || "",
-      status: party.status || "ACTIVE",
       is_private: false, // TODO: Get from party data
       auto_accept_applications: false, // TODO: Get from party data
     },
@@ -99,15 +109,72 @@ export function PartySettings({ party }: PartySettingsProps) {
     updatePartyMutation.mutate(data)
   }
 
+  // Separate mutation for completing party
+  const completePartyMutation = useMutation({
+    mutationFn: () =>
+      PartiesService.updateParty({
+        partyId: party.id,
+        requestBody: { status: "COMPLETED" },
+      }),
+    onSuccess: () => {
+      queryClient.setQueryData(["party", party.id], (old: any) => ({
+        ...old,
+        status: "COMPLETED",
+      }))
+      queryClient.invalidateQueries({ queryKey: ["parties"] })
+      queryClient.invalidateQueries({ queryKey: ["party", party.id] })
+      toast.success("Party completed! Members can now rate each other.")
+    },
+    onError: (error) => {
+      toast.error("Failed to complete party")
+      console.error("Complete party error:", error)
+    },
+  })
+
+  // Separate mutation for archiving party
+  const archivePartyMutation = useMutation({
+    mutationFn: () =>
+      PartiesService.updateParty({
+        partyId: party.id,
+        requestBody: { status: "ARCHIVED" },
+      }),
+    onSuccess: () => {
+      queryClient.setQueryData(["party", party.id], (old: any) => ({
+        ...old,
+        status: "ARCHIVED",
+      }))
+      queryClient.invalidateQueries({ queryKey: ["parties"] })
+      queryClient.invalidateQueries({ queryKey: ["party", party.id] })
+      toast.success("Party archived successfully")
+    },
+    onError: (error) => {
+      toast.error("Failed to archive party")
+      console.error("Archive party error:", error)
+    },
+  })
+
+  const handleCompleteParty = () => {
+    completePartyMutation.mutate()
+  }
+
+  const handleArchiveParty = () => {
+    archivePartyMutation.mutate()
+  }
+
   const onDeleteSubmit = (_: DeletePartyForm) => {
     deletePartyMutation.mutate()
     setIsDeleting(false)
   }
 
-  const isOwner = true // TODO: Check if user is party owner
-  const canManageSettings = true // TODO: Check if user is owner or moderator
+  // Check if current user is the party owner
+  const isOwner = membersData?.data?.some(
+    (member: PartyMemberDetail) => {
+      const userId = member.user?.id || member.user_id
+      return userId === currentUser?.id && member.role === "OWNER"
+    }
+  ) || false
 
-  if (!canManageSettings) {
+  if (!isOwner) {
     return (
       <Card>
         <CardContent className="p-8">
@@ -116,7 +183,7 @@ export function PartySettings({ party }: PartySettingsProps) {
             <div className="space-y-2">
               <h3 className="font-medium">Access Restricted</h3>
               <p className="text-sm text-muted-foreground">
-                Only party owners and moderators can access settings.
+                Only party owners can access settings.
               </p>
             </div>
           </div>
@@ -141,43 +208,19 @@ export function PartySettings({ party }: PartySettingsProps) {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSettingsSubmit)} className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Party Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter party name..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="ACTIVE">Active</SelectItem>
-                          <SelectItem value="INACTIVE">Inactive</SelectItem>
-                          <SelectItem value="COMPLETED">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Party Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter party name..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -252,6 +295,45 @@ export function PartySettings({ party }: PartySettingsProps) {
           </Form>
         </CardContent>
       </Card>
+
+      {/* Party Status Management */}
+      {isOwner && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Party Status</CardTitle>
+            <CardDescription>
+              Current status: <strong>{party.status}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {party.status === "ACTIVE" && (
+              <CompletePartyButton
+                party={party}
+                incompleteQuests={incompleteQuests}
+                hasIncompleteQuests={hasIncompleteQuests}
+                onComplete={handleCompleteParty}
+              />
+            )}
+
+            {party.status === "COMPLETED" && (
+              <ArchivePartyButton party={party} onArchive={handleArchiveParty} />
+            )}
+
+            {party.status === "ARCHIVED" && (
+              <Card className="bg-muted">
+                <CardContent className="p-6">
+                  <div className="text-center space-y-2">
+                    <p className="font-medium">Party is Archived</p>
+                    <p className="text-sm text-muted-foreground">
+                      This party is archived and read-only. All data is preserved.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Member Management */}
       <Card>

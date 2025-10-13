@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.core.config import settings
-from app.models import PartyStatus
+from app.models import PartyMemberRole, PartyStatus
 from app.tests.utils.factories import (
     create_party,
     create_party_member,
@@ -159,6 +159,7 @@ def test_update_party_as_creator(
     client: TestClient,
     superuser_token_headers: dict[str, str],
     quest_data: dict[str, Any],
+    db: Session,
 ) -> None:
     # Create quest and party as superuser
     # quest_data provided by fixture
@@ -177,7 +178,22 @@ def test_update_party_as_creator(
     )
     party = response.json()
 
-    # Update party
+    # Get superuser's ID
+    response = client.get(
+        f"{settings.API_V1_STR}/users/me",
+        headers=superuser_token_headers,
+    )
+    superuser = response.json()
+
+    # Add superuser as OWNER member using database directly
+    create_party_member(
+        db,
+        party_id=uuid.UUID(party["id"]),
+        user_id=uuid.UUID(superuser["id"]),
+        role=PartyMemberRole.OWNER,
+    )
+
+    # Update party (now as owner)
     update_data = {"status": PartyStatus.ACTIVE, "chat_channel_id": "new-channel-id"}
     response = client.patch(
         f"{settings.API_V1_STR}/parties/{party['id']}",
